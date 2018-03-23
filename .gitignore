@@ -1,0 +1,6 @@
+.idea
+.__pycache__
+passwords.py
+.idea/workspace.xml
+*.pyc
+*.pem
