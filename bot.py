@@ -60,8 +60,6 @@ def update(message):
 #    Popen(r'update.bat', creationflags=CREATE_NEW_CONSOLE)
 
 
-
-
 @bot.callback_query_handler(func=lambda c: True)
 def callback_query_handler(query):
     cmd = query.data.split('-|-')
@@ -91,18 +89,20 @@ def callback_query_handler(query):
             text='Отклонить',
             callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])))
 
-        t = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
-        if cmd[1] == '6':  # в воскресенье есть только дневной (0) и вечерний (1) эфир
-            t += 'днем' if cmd[2] == 0 else 'вечером'
-        else:
-            t += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
-        if int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num():
-            t += ' (cейчас!)'
+        now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
 
-        bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id,
-                       'Новый заказ, ' + t + bot_utils.get_user_name(query.from_user),
+        text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
+        if cmd[1] == '6':
+            text += 'днем' if cmd[2] == 0 else 'вечером'  # в воскресенье есть только дневной (0) и вечерний (1) эфир
+        else:
+            text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
+
+        admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
+                     ' от ' + bot_utils.get_user_name(query.from_user)
+        bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                        reply_markup=keyboard, parse_mode='HTML')
-        bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(t),
+
+        bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(text),
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
                                  reply_markup=telebot.types.InlineKeyboardMarkup())
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
@@ -116,24 +116,26 @@ def callback_query_handler(query):
     #
     elif cmd[0] == 'predlozka_answ':
         name = str(query.message.audio.performer) + ' - ' + str(query.message.audio.title)
-        bot.edit_message_caption(caption=query.message.caption +' - '+cmd[1]+'('+bot_utils.get_user_name(query.from_user)+')',
+        new_text = 'Заказ: ' + query.message.caption.split(' - ')[1].split(' от')[0] + \
+                   ', от ' + bot_utils.get_user_name(query.message.caption_entities[0].user) + \
+                   ' - ' + ("✅Принят" if cmd[1] == 'ok' else "❌Отклонен") + \
+                   ' (' + bot_utils.get_user_name(query.from_user) + ')'
+        bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
                                  reply_markup=telebot.types.InlineKeyboardMarkup(), parse_mode='HTML')
         if cmd[1] == 'ok':
             url = 'https://api.telegram.org/file/bot{0}/{1}'.format(
                     TOKEN, bot.get_file(query.message.audio.file_id).file_path)
             to = bot_utils.get_music_path(int(cmd[3]), int(cmd[4])) + name + '.mp3'
-
             bot_utils.save_file(url, to)
+
             if int(cmd[3]) == datetime.today().weekday() and int(cmd[4]) == bot_utils.get_break_num():
                 bot_utils.radioboss_api(action='inserttrack', filename=to, pos=-2)
-                t = bot_utils.CONFIG['predlozka_ok_next'].format(name)
+                bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok_next'].format(name))
             else:
-                t = bot_utils.CONFIG['predlozka_ok'].format(name)
+                bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
         else:
-            t = bot_utils.CONFIG['predlozka_neok'].format(name)
-
-        bot.send_message(int(cmd[2]), t)
+            bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_neok'].format(name))
 
     #
     # Кнопка назад при выборе времени
@@ -202,7 +204,7 @@ def message_handler(message):
             else:
                 try:
                     audio_file = requests.get(audio['download'], stream=True).raw
-                    bot.send_audio(message.chat.id, audio_file, ' (или отредактируй название)',
+                    bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'],
                                    reply_markup=bot_utils.keyboard_day())
 
@@ -211,7 +213,7 @@ def message_handler(message):
                     bot.send_message(message.chat.id, bot_utils.CONFIG['error'],
                                      reply_markup=bot_utils.keyboard_start())
 
-        # Заявка на вступление в команду
+        # Обратная связь
         if message.reply_to_message.text == bot_utils.CONFIG['feedback']:
             bot.send_message(message.chat.id, bot_utils.CONFIG['feedback_thanks'], reply_markup=bot_utils.keyboard_start())
             bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
@@ -223,6 +225,7 @@ def message_handler(message):
                 user_time = dt.tm_hour*60+dt.tm_min
             except:
                 bot.send_message(message.chat.id, "Похоже, что вы неправильно написали время :)")
+                return
             
             playback = bot_utils.radioboss_api(action='getlastplayed')
             if playback:
@@ -256,7 +259,7 @@ def message_handler(message):
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
-                telebot.types.InlineKeyboardButton(text='Поиск песни по времени', callback_data='song_played_time')])
+                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', callback_data='song_played_time')])
 
         playback = bot_utils.radioboss_api(action='playbackinfo')
         if playback:

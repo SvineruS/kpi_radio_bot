@@ -118,9 +118,9 @@ def keyboard_time(day):
 
 
 def get_user_name(user_obj):
-    if user_obj.username:
+    return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
+    if user_obj.username: #пока что не нужно
         return ' (@' + user_obj.username + ')'
-    return ' (<a href="tg://user?id={0}">{1}</a>)'.format(user_obj.id, user_obj.first_name)
 
 
 def find_song(name):
