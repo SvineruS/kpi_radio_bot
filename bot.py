@@ -171,6 +171,7 @@ def callback_query_handler(query):
     if cmd[0] == 'song_played_time':
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['what_played_choose_time'],
                          reply_markup=telebot.types.ForceReply())
+        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
 
     bot.answer_callback_query(callback_query_id=query.id)
 
