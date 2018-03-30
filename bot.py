@@ -171,7 +171,6 @@ def callback_query_handler(query):
     if cmd[0] == 'song_played_time':
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['what_played_choose_time'],
                          reply_markup=telebot.types.ForceReply())
-        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
 
     bot.answer_callback_query(callback_query_id=query.id)
 
@@ -226,6 +225,7 @@ def message_handler(message):
                 user_time = dt.tm_hour*60+dt.tm_min
             except:
                 bot.send_message(message.chat.id, "Похоже, что вы неправильно написали время :)")
+                bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
                 return
             
             playback = bot_utils.radioboss_api(action='getlastplayed')
@@ -249,6 +249,8 @@ def message_handler(message):
                         bot.send_message(message.chat.id, 'Видимо, в это время ничего не играло')
                 except Exception as e:
                     print(e)
+            bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
+
         return
 
     if message.chat.id < 0:
