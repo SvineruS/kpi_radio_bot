@@ -144,7 +144,8 @@ def save_file(url, to):
         os.makedirs(dirname)
     if os.path.isfile(to):
         return
-
+    
+    to.translate(None, '\/:*?"<>|')  # винда агрится на эти символы в пути
     print('Donwloading... ', to)
     try:
         file = requests.get(url, stream=True)
