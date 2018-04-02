@@ -144,7 +144,7 @@ def save_file(url, to):
         os.makedirs(dirname)
     if os.path.isfile(to):
         return
-    to = ''.join(list(filter(lambda c: c != 'b', to)))  # винда агрится на эти символы в пути
+    to = ''.join(list(filter(lambda c: (c not in '\/:*?"<>|'), to)))  # винда агрится на эти символы в пути
     print('Donwloading... ', to)
     try:
         file = requests.get(url, stream=True)
