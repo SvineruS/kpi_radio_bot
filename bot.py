@@ -183,6 +183,10 @@ def message_handler(message):
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
 
+            # Одмены отвечают на заказ
+            if message.reply_to_message.audio:
+                bot.send_message(message.reply_to_message.caption_entities[0].user.id, message.text)
+
             # Одмены отвечают на отзыв
             if message.reply_to_message.forward_from:
                 bot.send_message(message.reply_to_message.forward_from.id, "На ваше сообщение ответили\n"+message.text)
@@ -303,7 +307,8 @@ def message_handler(message):
 
 @bot.message_handler(content_types=['audio'])
 def message_width_audio(message):
-    bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
+    if message.chat.id != ADMINS_CHAT_ID:
+        bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
 
 
 @bot.edited_message_handler(func=lambda message: True)
