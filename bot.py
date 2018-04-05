@@ -115,7 +115,7 @@ def callback_query_handler(query):
     #   cmd[4] = выбранное время
     #
     elif cmd[0] == 'predlozka_answ':
-        name = str(query.message.audio.performer) + ' - ' + str(query.message.audio.title)
+        name = bot_utils.get_audio_name(query.message.audio)
         new_text = 'Заказ: ' + query.message.caption.split(' - ')[1].split(' от')[0] + \
                    ', от ' + bot_utils.get_user_name(query.message.caption_entities[0].user) + \
                    ' - ' + ("✅Принят" if cmd[1] == 'ok' else "❌Отклонен") + \
@@ -185,11 +185,14 @@ def message_handler(message):
 
             # Одмены отвечают на заказ
             if message.reply_to_message.audio:
-                bot.send_message(message.reply_to_message.caption_entities[0].user.id, message.text)
+                name = bot_utils.get_audio_name(query.message.audio)
+                bot.send_message(message.reply_to_message.caption_entities[0].user.id, 
+                                 "  На ваш заказ " + name + " ответили: \n" + message.text)
 
             # Одмены отвечают на отзыв
             if message.reply_to_message.forward_from:
-                bot.send_message(message.reply_to_message.forward_from.id, "На ваше сообщение ответили\n"+message.text)
+                bot.send_message(message.reply_to_message.forward_from.id,
+                                 "  На ваше сообщение ответили: \n" + message.text)
 
             # Сохранение картинок
             if message.reply_to_message.text == bot_utils.CONFIG['save_pic']:
