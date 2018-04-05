@@ -118,7 +118,10 @@ def keyboard_time(day):
 
 
 def get_audio_name(audio):
-    return str(audio.performer) + ' - ' + str(audio.title)
+    name = str(audio.performer) + ' - ' + str(audio.title)
+    name = ''.join(list(filter(lambda c: (c not in '\/:*?"<>|'), name)))  # винда агрится на эти символы в пути
+    return name
+
 
 def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
@@ -147,7 +150,7 @@ def save_file(url, to):
         os.makedirs(dirname)
     if os.path.isfile(to):
         return
-    to = ''.join(list(filter(lambda c: (c not in '\/:*?"<>|'), to)))  # винда агрится на эти символы в пути
+
     print('Donwloading... ', to)
     try:
         file = requests.get(url, stream=True)
