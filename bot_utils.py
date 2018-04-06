@@ -159,6 +159,7 @@ def save_file(url, to):
             if chunk:
                 f.write(chunk)
         f.close()
+        print('downloaded')
     except Exception as e:
         print('Error: download!', e)
 

@@ -3,21 +3,24 @@ from numpy.fft import rfft
 import wave
 import subprocess
 import json
+import os
 
 NEED_FREQS = [2**t for t in range(5, 15)]
 BOUNDARY_FREQS_RANGE = 15
 SAMPLES_COUNT = 10
+THIS_PATH = '\\'.join(os.path.abspath(__file__).split('\\')[0:-1]) + '\\'
 
 
 def learn(file, state):
+    print('--ОБУЧЕНИЕ-- ', state)
     full_bd = bd_read()
-
     imprint = get_imprint(file)
-
     i = find_most_similar(full_bd[state], imprint)
     if i[0] < 0.4:
+        print('Чото новенькое')
         full_bd[state].append(imprint)
     else:
+        print('Похоже на',  i[1], ', добавляю туды')
         bd = full_bd[state][i[1]]
         for s in range(SAMPLES_COUNT):
             for f in range(len(bd[s])):
@@ -25,18 +28,20 @@ def learn(file, state):
             bd[s] = normalize(bd[s])
             full_bd[state][i[1]] = bd
     bd_write(full_bd)
+    print('--ОБУЧИЛСЯ--')
 
 
 def check(file):
+    print('--СРАВНЕНИЕ--')
     imprint = get_imprint(file)
-
     bd = bd_read()
 
     good = find_most_similar(bd['good'], imprint)[0]
     bad = find_most_similar(bd['bad'], imprint)[0]
 
-    print(good, bad)
+    print('+', good, ' -', bad)
     good /= (good + bad)/100
+    print('=', good)
     return good
 
 
@@ -58,12 +63,11 @@ def how_similar(a, b):
 
 
 def get_imprint(filename):
-    subprocess.call(['ffmpeg\\bin\\ffmpeg', '-y', '-i', filename, filename + '.wav'])
-    print("open " + filename)
-
+    subprocess.call([THIS_PATH + 'ffmpeg\\bin\\ffmpeg', '-y', '-i', filename,
+                     THIS_PATH + 'temp.wav'])
     FD = 44100
 
-    wr = wave.open(filename + '.wav', 'r')
+    wr = wave.open(THIS_PATH + 'temp.wav', 'r')
 
     time_interval = round( (wr.getnframes() - FD)/SAMPLES_COUNT )
     samples = []
@@ -75,7 +79,7 @@ def get_imprint(filename):
         samples.append(freqs)
 
     wr.close()
-
+    print('Отпечаток получен')
     return samples
 
 
@@ -114,16 +118,13 @@ def normalize(vec):
 
 
 def bd_read():
-    f = open('bd.bd', 'r')
+    f = open(THIS_PATH + 'bd.bd', 'r')
     bd = json.loads(f.read())
     f.close()
     return bd
 
 
 def bd_write(bd):
-    f = open('bd.bd', 'w')
+    f = open(THIS_PATH + 'bd.bd', 'w')
     f.write(json.dumps(bd))
     f.close()
-
-
-print(check('test.mp3'))

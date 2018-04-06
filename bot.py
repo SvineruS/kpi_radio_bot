@@ -19,13 +19,14 @@ from sys import exit as sys_exit
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
 import bot_utils
+import neuro.neuro as neuro
 from passwords import *
 
 if __name__ == '__main__':
-    bot = telebot.TeleBot(TOKEN_TEST)
+    TOKEN = TOKEN_TEST
     ADMINS_CHAT_ID = 185520398
-else:
-    bot = telebot.TeleBot(TOKEN)
+
+bot = telebot.TeleBot(TOKEN)
 
 bot_me = bot.get_me()
 print('Запускаем ботика..', bot_me)
@@ -57,7 +58,7 @@ def save_pic_request(message):
 def update(message):
     if message.chat.id != 185520398:
         return
-#    Popen(r'update.bat', creationflags=CREATE_NEW_CONSOLE)
+#    Popen(r'update.bat', creationflags=CREATE_NEW_CONSOLE)  # TODO
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -97,8 +98,11 @@ def callback_query_handler(query):
         else:
             text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
 
+        rate = "\n" + str(round(neuro.check('https://api.telegram.org/file/bot{0}/{1}'.format(   # TODO
+            TOKEN, bot.get_file(query.message.audio.file_id).file_path)))) + "%"
+
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
-                     ' от ' + bot_utils.get_user_name(query.from_user)
+                                               ' от ' + bot_utils.get_user_name(query.from_user) + rate
         bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                        reply_markup=keyboard, parse_mode='HTML')
 
@@ -123,11 +127,14 @@ def callback_query_handler(query):
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
                                  reply_markup=telebot.types.InlineKeyboardMarkup(), parse_mode='HTML')
+
+        url = 'https://api.telegram.org/file/bot{0}/{1}'.format(
+            TOKEN, bot.get_file(query.message.audio.file_id).file_path)
+
         if cmd[1] == 'ok':
-            url = 'https://api.telegram.org/file/bot{0}/{1}'.format(
-                    TOKEN, bot.get_file(query.message.audio.file_id).file_path)
             to = bot_utils.get_music_path(int(cmd[3]), int(cmd[4])) + name + '.mp3'
             bot_utils.save_file(url, to)
+            neuro.learn(to, 'good')
 
             if int(cmd[3]) == datetime.today().weekday() and int(cmd[4]) == bot_utils.get_break_num():
                 bot_utils.radioboss_api(action='inserttrack', filename=to, pos=-2)
@@ -135,6 +142,7 @@ def callback_query_handler(query):
             else:
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
         else:
+            neuro.learn(url, 'bad')
             bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_neok'].format(name))
 
     #
@@ -211,6 +219,7 @@ def message_handler(message):
             else:
                 try:
                     audio_file = requests.get(audio['download'], stream=True).raw
+                    # rate = neuro.check(audio['download']) #TODO
                     bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'],
                                    reply_markup=bot_utils.keyboard_day())
