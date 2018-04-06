@@ -24,7 +24,7 @@ def learn(file, state):
         bd = full_bd[state][i[1]]
         for s in range(SAMPLES_COUNT):
             for f in range(len(bd[s])):
-                bd[s][f] += bd[s][f] + imprint[s][f]/10
+                bd[s][f] += bd[s][f] + imprint[s][f]/2
             bd[s] = normalize(bd[s])
             full_bd[state][i[1]] = bd
     bd_write(full_bd)

@@ -82,6 +82,16 @@ def callback_query_handler(query):
     #   cmd[2] = выбранное время
     #
     elif cmd[0] == 'predlozka':
+        text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
+        if cmd[1] == '6':
+            text += 'днем' if cmd[2] == 0 else 'вечером'  # в воскресенье есть только дневной (0) и вечерний (1) эфир
+        else:
+            text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
+
+        bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(text),
+                                 chat_id=query.message.chat.id, message_id=query.message.message_id,
+                                 reply_markup=telebot.types.InlineKeyboardMarkup())
+
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(telebot.types.InlineKeyboardButton(
             text='Принять',
@@ -91,24 +101,13 @@ def callback_query_handler(query):
             callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])))
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
-
-        text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
-        if cmd[1] == '6':
-            text += 'днем' if cmd[2] == 0 else 'вечером'  # в воскресенье есть только дневной (0) и вечерний (1) эфир
-        else:
-            text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
-
         rate = "\n" + str(round(neuro.check('https://api.telegram.org/file/bot{0}/{1}'.format(   # TODO
             TOKEN, bot.get_file(query.message.audio.file_id).file_path)))) + "%"
-
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
                                                ' от ' + bot_utils.get_user_name(query.from_user) + rate
         bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                        reply_markup=keyboard, parse_mode='HTML')
 
-        bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(text),
-                                 chat_id=query.message.chat.id, message_id=query.message.message_id,
-                                 reply_markup=telebot.types.InlineKeyboardMarkup())
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
 
     # Админы выбрали принять\отменить
@@ -162,6 +161,7 @@ def callback_query_handler(query):
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_played':
+        bot.answer_callback_query(callback_query_id=query.id)
         playback = bot_utils.radioboss_api(action='getlastplayed')
         if playback:
             text = ''
@@ -177,10 +177,11 @@ def callback_query_handler(query):
 
     # Кнопка ввода вермени в сообщении "что играет"
     if cmd[0] == 'song_played_time':
+        bot.answer_callback_query(callback_query_id=query.id)
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['what_played_choose_time'],
                          reply_markup=telebot.types.ForceReply())
 
-    bot.answer_callback_query(callback_query_id=query.id)
+
 
 
 @bot.message_handler(content_types=['text', 'photo'])
