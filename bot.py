@@ -187,7 +187,7 @@ def message_handler(message):
             if message.reply_to_message.audio:
                 name = bot_utils.get_audio_name(message.reply_to_message.audio)
                 bot.send_message(message.reply_to_message.caption_entities[0].user.id, 
-                                 "  На ваш заказ " + name + " ответили: \n" + message.text)
+                                 "  На ваш заказ _" + name + "_ ответили: \n" + message.text, parse_mode='Markdown')
 
             # Одмены отвечают на отзыв
             if message.reply_to_message.forward_from:
