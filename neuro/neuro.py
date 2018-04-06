@@ -36,13 +36,18 @@ def check(file):
     imprint = get_imprint(file)
     bd = bd_read()
 
+    # 0 <= e <= 1
     good = find_most_similar(bd['good'], imprint)[0]
     bad = find_most_similar(bd['bad'], imprint)[0]
 
-    print('+', good, ' -', bad)
-    good /= (good + bad)/100
-    print('=', good)
-    return good
+    # -1 <= e <= 1    + cubic ease
+    good = ((good - 0.5)*2)**3
+    bad = ((bad - 0.5)*2)**3
+
+    answ = (good - bad + 2) / 4  # 0 <= e <= 1
+
+    print('+', good, ' -', bad, ' =', answ)
+    return answ
 
 
 def find_most_similar(bd, imprint):
