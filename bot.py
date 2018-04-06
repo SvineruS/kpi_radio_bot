@@ -185,7 +185,7 @@ def message_handler(message):
 
             # Одмены отвечают на заказ
             if message.reply_to_message.audio:
-                name = bot_utils.get_audio_name(query.message.audio)
+                name = bot_utils.get_audio_name(message.audio)
                 bot.send_message(message.reply_to_message.caption_entities[0].user.id, 
                                  "  На ваш заказ " + name + " ответили: \n" + message.text)
 
