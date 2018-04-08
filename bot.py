@@ -102,7 +102,7 @@ def callback_query_handler(query):
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
         rate = "\n" + str(round(neuro.check('https://api.telegram.org/file/bot{0}/{1}'.format(   # TODO
-            TOKEN, bot.get_file(query.message.audio.file_id).file_path)))) + "%"
+            TOKEN, bot.get_file(query.message.audio.file_id).file_path))*100)) + "%"
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
                                                ' от ' + bot_utils.get_user_name(query.from_user) + rate
         bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
