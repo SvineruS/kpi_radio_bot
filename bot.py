@@ -15,11 +15,9 @@ from datetime import datetime
 from time import strptime, strftime
 from os import listdir
 from random import choice
-from sys import exit as sys_exit
-from subprocess import Popen, CREATE_NEW_CONSOLE
+
 
 import bot_utils
-import neuro.neuro as neuro
 from passwords import *
 
 if __name__ == '__main__':
@@ -101,10 +99,8 @@ def callback_query_handler(query):
             callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])))
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
-        rate = "\n" + str(round(neuro.check('https://api.telegram.org/file/bot{0}/{1}'.format(   # TODO
-            TOKEN, bot.get_file(query.message.audio.file_id).file_path)))) + "%"
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
-                                               ' от ' + bot_utils.get_user_name(query.from_user) + rate
+                                               ' от ' + bot_utils.get_user_name(query.from_user)
         bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                        reply_markup=keyboard, parse_mode='HTML')
 
@@ -133,7 +129,6 @@ def callback_query_handler(query):
         if cmd[1] == 'ok':
             to = bot_utils.get_music_path(int(cmd[3]), int(cmd[4])) + name + '.mp3'
             bot_utils.save_file(url, to)
-            neuro.learn(to, 'good')
 
             if int(cmd[3]) == datetime.today().weekday() and int(cmd[4]) == bot_utils.get_break_num():
                 bot_utils.radioboss_api(action='inserttrack', filename=to, pos=-2)
@@ -141,7 +136,6 @@ def callback_query_handler(query):
             else:
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
         else:
-            neuro.learn(url, 'bad')
             bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_neok'].format(name))
 
     #
@@ -215,12 +209,14 @@ def message_handler(message):
             audio = bot_utils.find_song(message.text)
 
             if not audio:
-                bot.send_message(message.chat.id, 'Ничего не нашел( \nНо ты можешь загрузить свое аудио сам!',
+                bot.send_message(message.chat.id,
+                                 'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота! \n \
+                                 Вероятно ошибка со стороны @datmusicbot, мы уже пытаемся найти новый сервис для аудио \
+                                 и открыты для предложений!',
                                  reply_markup=bot_utils.keyboard_start())
             else:
                 try:
                     audio_file = requests.get(audio['download'], stream=True).raw
-                    # rate = neuro.check(audio['download']) #TODO
                     bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'],
                                    reply_markup=bot_utils.keyboard_day())
