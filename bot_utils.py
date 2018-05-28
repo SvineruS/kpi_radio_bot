@@ -4,7 +4,6 @@ import os
 import requests
 from telebot import types
 from datetime import datetime
-from json import loads as json_decode  # для апи датмузик
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 from passwords import *
 
@@ -127,21 +126,6 @@ def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
     if user_obj.username: #пока что не нужно
         return ' (@' + user_obj.username + ')'
-
-
-def find_song(name):
-    try:
-        s = requests.get('https://api-2.datmusic.xyz/search?q=' + name)
-        if s.status_code != 200:
-            print('datmusic лег!')
-            return False
-        s = json_decode(s.text)
-        if s['status'] != 'ok' or not s['data']:
-            return False
-        return s['data'][0]
-    except Exception as e:
-        print('Error: find song!', e)
-        return False
 
 
 def save_file(url, to):

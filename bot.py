@@ -8,7 +8,7 @@
 
 
 import telebot
-import requests
+
 
 from db import db
 from datetime import datetime
@@ -16,7 +16,7 @@ from time import strptime, strftime
 from os import listdir
 from random import choice
 
-
+import datmusic
 import bot_utils
 from passwords import *
 
@@ -176,8 +176,6 @@ def callback_query_handler(query):
                          reply_markup=telebot.types.ForceReply())
 
 
-
-
 @bot.message_handler(content_types=['text', 'photo'])
 def message_handler(message):
     # Форс реплаи
@@ -206,17 +204,15 @@ def message_handler(message):
         # Ввод названия песни
         if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
             bot.send_chat_action(message.chat.id, 'upload_audio')
-            audio = bot_utils.find_song(message.text)
+            audio = datmusic.search(message.text)
 
             if not audio:
                 bot.send_message(message.chat.id,
-                                 'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота! \n \
-                                 Вероятно ошибка со стороны @datmusicbot, мы уже пытаемся найти новый сервис для аудио \
-                                 и открыты для предложений!',
+                                 'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота!',
                                  reply_markup=bot_utils.keyboard_start())
             else:
                 try:
-                    audio_file = requests.get(audio['download'], stream=True).raw
+                    audio_file = datmusic.download(audio['download'])
                     bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'],
                                    reply_markup=bot_utils.keyboard_day())
