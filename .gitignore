@@ -2,5 +2,6 @@
 .__pycache__
 passwords.py
 .idea/workspace.xml
+.neuro/bd.bd
 *.pyc
 *.pem
