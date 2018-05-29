@@ -321,7 +321,6 @@ def message_handler(message):
 def query_text(inline_query):
     name = inline_query.query
     music = datmusic.search(name)
-    print(music)
     articles = []
     for i in range(min(50, len(music))):
         audio = music[i]
