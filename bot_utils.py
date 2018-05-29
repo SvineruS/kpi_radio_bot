@@ -124,8 +124,6 @@ def get_audio_name(audio):
 
 def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
-    if user_obj.username: #пока что не нужно
-        return ' (@' + user_obj.username + ')'
 
 
 def save_file(url, to):

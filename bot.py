@@ -9,16 +9,17 @@
 
 import telebot
 
+import datmusic
+import bot_utils
+import db
+import config
+from passwords import *
 
-from db import db
 from datetime import datetime
 from time import strptime, strftime
 from os import listdir
 from random import choice
 
-import datmusic
-import bot_utils
-from passwords import *
 
 if __name__ == '__main__':
     TOKEN = TOKEN_TEST
@@ -32,8 +33,7 @@ print('Запускаем ботика..', bot_me)
 
 @bot.message_handler(commands=['start', 'help', 'song'])
 def start(message):
-    if db.find_one({'usr': message.chat.id}) is None:
-        db.insert({'usr': message.chat.id})
+    db.add(message.chat.id)
     if message.chat.id < 0:
         return
 
@@ -97,6 +97,9 @@ def callback_query_handler(query):
         keyboard.add(telebot.types.InlineKeyboardButton(
             text='Отклонить',
             callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])))
+        keyboard.add(telebot.types.InlineKeyboardButton(
+            text='Занято',
+            callback_data='-|-'.join(['predlozka_answ', 'later', str(query.message.chat.id)])))
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
@@ -135,7 +138,7 @@ def callback_query_handler(query):
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok_next'].format(name))
             else:
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
-        else:
+        elif cmd[1] == 'neok':
             bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_neok'].format(name))
 
     #
@@ -211,10 +214,11 @@ def message_handler(message):
                                  'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота!',
                                  reply_markup=bot_utils.keyboard_start())
             else:
+                audio = audio[0]
                 try:
                     audio_file = datmusic.download(audio['download'])
                     bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
-                                   performer=audio['artist'], title=audio['title'],
+                                   performer=audio['artist'], title=audio['title'], duration=audio['duration'],
                                    reply_markup=bot_utils.keyboard_day())
 
                 except Exception as e:
@@ -311,6 +315,25 @@ def message_handler(message):
 
     else:
         bot.send_message(message.chat.id, 'Шо ты хош?', reply_markup=bot_utils.keyboard_start())
+
+
+@bot.inline_handler(func=lambda kek: True)
+def query_text(inline_query):
+    name = inline_query.query
+    music = datmusic.search(name)
+    print(music)
+    articles = []
+    for i in range(min(50, len(music))):
+        audio = music[i]
+        link = 'https://' + config.WEBHOOK_HOST + '/music/' + '/'.join(audio['download'].split('/')[-2:])
+        articles.append(
+            telebot.types.InlineQueryResultAudio(i, link,
+                                                 performer=audio['artist'],
+                                                 title=audio['title'],
+                                                 audio_duration=audio['duration'])
+        )
+    if articles:
+        bot.answer_inline_query(inline_query.id, articles)
 
 
 @bot.message_handler(content_types=['audio'])

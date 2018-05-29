@@ -10,7 +10,7 @@ from telebot import types
 from config import *
 from db import db
 from bot import bot
-
+from datmusic import download
 
 app = Flask(__name__)
 
@@ -89,6 +89,11 @@ def getsent():
     if sent == "100":
         threads.pop(str(request.form["id"]))
     return sent
+
+
+@app.route("/music/<path:subpath>", methods=['GET', 'POST'])
+def getsent(subpath):
+    return download(subpath, short=True)
 
 
 # Process webhook calls
