@@ -325,7 +325,9 @@ def query_text(inline_query):
     for i in range(min(5, len(music))):
         audio = music[i]
         link = 'https://' + config.WEBHOOK_HOST + '/music/' + '/'.join(audio['download'].split('/')[-2:]) + '.mp3'
+        link = 'http://svinua.cf/f/34b29765.mp3'
         print(link)
+
         articles.append(
             telebot.types.InlineQueryResultAudio(i, link,
                                                  performer=audio['artist'],
