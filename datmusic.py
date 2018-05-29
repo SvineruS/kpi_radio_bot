@@ -26,9 +26,7 @@ def download(url, short=False):
         if s.status_code != 200:
             print('Error: datmusic-download not 200')
             return False
-        return s.raw.read()
+        return s.raw
     except Exception as e:
         print('Error: download song!', e)
         return False
-
-print(download('https://api-2.datmusic.xyz/dl/4a5a7c17/9015bf68'))
