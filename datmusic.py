@@ -20,7 +20,7 @@ def search(name):
 
 def download(url, short=False):
     if short:
-        url = 'https://api-2.datmusic.xyz/dl/' + url
+        url = 'https://api-2.datmusic.xyz/dl/' + url.replace('.mp3', '')
     try:
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"}, stream=True)
         if s.status_code != 200:

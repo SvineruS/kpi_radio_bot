@@ -100,7 +100,6 @@ def getmusic(subpath):
         return ""
     response = make_response(t.read())
     response.headers.set('Content-Type', 'audio/mpeg')
-    response.headers.set('Content-Disposition', 'attachment')
     return response
 
 
@@ -116,6 +115,9 @@ def webhook():
         flask.abort(403)
 
 
+
+
+
 if __name__ == "__main__":
 
     # Remove webhook, it fails sometimes the set if there is a previous webhook
@@ -124,6 +126,7 @@ if __name__ == "__main__":
     # Set webhook
     bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                     certificate=open(WEBHOOK_SSL_CERT, 'r'))
+
 
     # Start flask server
     app.run(host=WEBHOOK_LISTEN,

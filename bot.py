@@ -284,10 +284,10 @@ def message_handler(message):
                     bot.send_message(message.chat.id, "Ничего", reply_markup=keyboard)
                 else:
                     bot.send_message(message.chat.id,
-                                     '⏮ *Предыдущий трек: *' + playback[0][0].attrib['CASTTITLE'] +
-                                     '\n▶️ *Сейчас играет: *' + playback[1][0].attrib['CASTTITLE'] +
-                                     '\n⏭ *Следующий трек: *' + playback[2][0].attrib['CASTTITLE'],
-                                     parse_mode='Markdown', reply_markup=keyboard)
+                                     '⏮ <b>Предыдущий трек: </b>' + playback[0][0].attrib['CASTTITLE'] +
+                                     '\n▶️ <b>Сейчас играет: </b>' + playback[1][0].attrib['CASTTITLE'] +
+                                     '\n⏭ <b>Следующий трек: </b>' + playback[2][0].attrib['CASTTITLE'],
+                                     parse_mode='HTML', reply_markup=keyboard)
             except Exception as e:
                 print('Error! what playing', e)
                 bot.send_message(message.chat.id, 'Ничего', reply_markup=keyboard)
@@ -322,9 +322,10 @@ def query_text(inline_query):
     name = inline_query.query
     music = datmusic.search(name)
     articles = []
-    for i in range(min(50, len(music))):
+    for i in range(min(5, len(music))):
         audio = music[i]
-        link = 'https://' + config.WEBHOOK_HOST + '/music/' + '/'.join(audio['download'].split('/')[-2:])
+        link = 'https://' + config.WEBHOOK_HOST + '/music/' + '/'.join(audio['download'].split('/')[-2:]) + '.mp3'
+        print(link)
         articles.append(
             telebot.types.InlineQueryResultAudio(i, link,
                                                  performer=audio['artist'],
