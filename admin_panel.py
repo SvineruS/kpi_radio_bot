@@ -3,7 +3,7 @@
 import hashlib
 import time
 import math
-from flask import Flask, request, redirect, url_for, abort, render_template, current_app
+from flask import Flask, request, redirect, url_for, abort, render_template, current_app, make_response
 import flask
 from sender import Sender, threads
 from telebot import types
@@ -95,8 +95,13 @@ def getsent():
 def getmusic(subpath):
     if not subpath:
         return ""
-    print(subpath)
-    return download(subpath, short=True)
+    t = download(subpath, short=True)
+    if not t:
+        return ""
+    response = make_response(t)
+    response.headers.set('Content-Type', 'image/jpeg')
+    response.headers.set('Content-Disposition', 'attachment')
+    return response
 
 
 # Process webhook calls
