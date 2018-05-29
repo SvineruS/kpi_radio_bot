@@ -92,7 +92,7 @@ def getsent():
 
 
 @app.route("/music/<path:subpath>", methods=['GET', 'POST'])
-def getsent(subpath):
+def getmusic(subpath):
     return download(subpath, short=True)
 
 
