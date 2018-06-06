@@ -3,7 +3,7 @@
 import hashlib
 import time
 import math
-from flask import Flask, request, redirect, url_for, abort, render_template, current_app, make_response
+from flask import Flask, request, redirect, url_for, abort, render_template, current_app, make_response, send_file
 import flask
 from sender import Sender, threads
 from telebot import types
@@ -11,6 +11,7 @@ from config import *
 from db import db
 from bot import bot
 from datmusic import download
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -98,9 +99,9 @@ def getmusic(subpath):
     t = download(subpath, short=True)
     if not t:
         return ""
-    response = make_response(t.read())
-    response.headers.set('Content-Type', 'audio/mpeg')
-    return response
+
+    byte_io = BytesIO(t.read())
+    return send_file(byte_io, mimetype='audio/mpeg')
 
 
 # Process webhook calls
