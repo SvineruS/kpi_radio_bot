@@ -98,7 +98,7 @@ def getmusic(subpath):
     t = download(subpath, short=True)
     if not t:
         return ""
-    response = make_response(t.read())
+    response = make_response(t.read(), 206)
     response.headers.set('Content-Type', 'audio/mpeg')
     return response
 

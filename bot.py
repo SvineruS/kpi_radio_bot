@@ -321,13 +321,12 @@ def message_handler(message):
 def query_text(inline_query):
     name = inline_query.query
     music = datmusic.search(name)
+    if not music:
+        return
     articles = []
     for i in range(min(5, len(music))):
         audio = music[i]
         link = 'https://' + config.WEBHOOK_HOST + '/music/' + '/'.join(audio['download'].split('/')[-2:]) + '.mp3'
-        link = 'http://svinua.cf/f/34b29765.mp3'
-        print(link)
-
         articles.append(
             telebot.types.InlineQueryResultAudio(i, link,
                                                  performer=audio['artist'],
@@ -354,4 +353,5 @@ def edited_message(message):
 
 
 if __name__ == '__main__':
+    bot.remove_webhook()
     bot.polling(none_stop=True)
