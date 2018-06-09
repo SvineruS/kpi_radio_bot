@@ -300,7 +300,7 @@ def message_handler(message):
                          reply_markup=telebot.types.ForceReply(), parse_mode="HTML")
 
         keyboard = telebot.types.InlineKeyboardMarkup()
-        keyboard.add(telebot.types.InlineKeyboardButton("Опробовать!", switch_inline_query=""))
+        keyboard.add(telebot.types.InlineKeyboardButton("Опробовать!", switch_inline_query_current_chat=""))
         bot.send_message(message.chat.id, "Или можно использовать новый удобный inline-режим поиска",
                          reply_markup=keyboard, parse_mode="HTML")
 
