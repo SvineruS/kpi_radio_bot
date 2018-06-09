@@ -299,6 +299,11 @@ def message_handler(message):
         bot.send_message(message.chat.id, bot_utils.CONFIG['predlozka_choose_song'],
                          reply_markup=telebot.types.ForceReply(), parse_mode="HTML")
 
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.add(telebot.types.InlineKeyboardButton("Опробовать!", switch_inline_query=""))
+        bot.send_message(message.chat.id, "Или можно использовать новый удобный inline-режим поиска",
+                         reply_markup=keyboard, parse_mode="HTML")
+
     # Кнопка 'Хочу в команду'
     elif message.text == bot_utils.btn['feedback_v_komandu']:
         bot.send_message(message.chat.id, bot_utils.CONFIG['feedback'], reply_markup=telebot.types.ForceReply())
