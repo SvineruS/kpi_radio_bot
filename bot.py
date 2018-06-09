@@ -297,7 +297,7 @@ def message_handler(message):
     # Кнопка 'Предложить песню'
     elif message.text == bot_utils.btn['predlozka']:
         bot.send_message(message.chat.id, bot_utils.CONFIG['predlozka_choose_song'],
-                         reply_markup=telebot.types.ForceReply())
+                         reply_markup=telebot.types.ForceReply(), parse_mode="HTML")
 
     # Кнопка 'Хочу в команду'
     elif message.text == bot_utils.btn['feedback_v_komandu']:
