@@ -210,7 +210,6 @@ def message_handler(message):
             audio = datmusic.search(message.text)
 
             if not audio:
-                print('lel')
                 bot.send_message(message.chat.id,
                                  'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота!',
                                  reply_markup=bot_utils.keyboard_start())
