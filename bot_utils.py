@@ -181,12 +181,13 @@ def check_bad_words(text):
                  'долбо',
                  'дрочит',
                  'мудак', 'мудило',
-                 'пидор', 'пидар']
+                 'пидор', 'пидар',
+                 'сука', 'суку']
 
     answ = []
     for word in bad_words:
         if word in text:
-            answ.append('word')
+            answ.append(word)
 
     if not answ:
         return "Все ок вродь"
