@@ -128,7 +128,7 @@ def callback_query_handler(query):
             keyboard = telebot.types.InlineKeyboardMarkup()
             keyboard.add(telebot.types.InlineKeyboardButton(
                     text='Скрыть',
-                    callback_data='-|-'.join(['predlozka_answ', 'text_delete', str(query.message.chat.id)])))
+                    callback_data='-|-'.join(['text_delete', str(query.message.chat.id)])))
             text = music_api.search_text(name)
             bot.send_message(query.message.chat.id, text, reply_markup=keyboard)
             bot.answer_callback_query(query.id)
@@ -138,10 +138,6 @@ def callback_query_handler(query):
             n = bot_utils.check_bad_words(text)
             bot.answer_callback_query(query.id, text=n)
             return
-        elif cmd[1] == 'text_delete':
-            bot.delete_message(query.message.chat.id, query.message.message_id)
-            bot.answer_callback_query(query.id)
-
 
         new_text = 'Заказ: ' + query.message.caption.split(' - ')[1].split(' от')[0] + \
                    ', от ' + bot_utils.get_user_name(query.message.caption_entities[0].user) + \
@@ -181,6 +177,10 @@ def callback_query_handler(query):
             caption='Ну ок(', reply_markup=telebot.types.InlineKeyboardMarkup()
         )
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+    # Кнопка скрытия текста
+    elif cmd[0] == 'text_delete':
+            bot.delete_message(query.message.chat.id, query.message.message_id)
+            bot.answer_callback_query(query.id)
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_played':
