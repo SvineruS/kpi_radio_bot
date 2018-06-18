@@ -33,10 +33,10 @@ def download(url, short=False):
         return False
 
 
-def search_text(name):
+def search_text(name, attempt2=False):
     s = requests.get("https://genius.com/api/search/multi?q=" + name)
     if s.status_code != 200:
-        return 'Ошибка'
+        return 'Ошибка доступа'
     s = json_decode(s.text)
     s = s['response']['sections']
     for t in s:
@@ -45,12 +45,16 @@ def search_text(name):
             break
 
     if not s['hits']:
-        return 'Ошибка'
+        if attempt2:
+            return 'Ошибка поиска'
+        name = name.split('- ')[1]
+        return search_text(name, True)
+
     s = s['hits'][0]['result']['url']
 
     s = requests.get(s)
     if s.status_code != 200:
-        return 'Ошибка'
+        return 'Ошибка взятия текста'
 
     t = BeautifulSoup(s.text, "html.parser")
     t = t.find("div", class_="lyrics")
