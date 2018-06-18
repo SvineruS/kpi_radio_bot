@@ -130,7 +130,7 @@ def callback_query_handler(query):
                     text='Скрыть',
                     callback_data='-|-'.join(['predlozka_answ', 'text_delete', str(query.message.chat.id)])))
             text = music_api.search_text(name)
-            bot.send_message(query.message.chat.id, text)
+            bot.send_message(query.message.chat.id, text, reply_markup=keyboard)
             bot.answer_callback_query(query.id)
             return
         elif cmd[1] == 'check':
