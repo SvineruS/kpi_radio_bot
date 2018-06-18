@@ -125,14 +125,22 @@ def callback_query_handler(query):
         name = bot_utils.get_audio_name(query.message.audio)
 
         if cmd[1] == 'text':
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            keyboard.add(telebot.types.InlineKeyboardButton(
+                    text='Скрыть',
+                    callback_data='-|-'.join(['predlozka_answ', 'text_delete', str(query.message.chat.id)])))
             text = music_api.search_text(name)
             bot.send_message(query.message.chat.id, text)
+            bot.answer_callback_query(query.id)
             return
         elif cmd[1] == 'check':
             text = music_api.search_text(name)
             n = bot_utils.check_bad_words(text)
             bot.answer_callback_query(query.id, text=n)
             return
+        elif cmd[1] == 'text_delete':
+            bot.delete_message(query.message.chat.id, query.message.message_id)
+            bot.answer_callback_query(query.id)
 
 
         new_text = 'Заказ: ' + query.message.caption.split(' - ')[1].split(' от')[0] + \
