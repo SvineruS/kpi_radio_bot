@@ -1,5 +1,6 @@
 import requests
 from json import loads as json_decode
+from bs4 import BeautifulSoup
 
 
 def search(name):
@@ -30,3 +31,28 @@ def download(url, short=False):
     except Exception as e:
         print('Error: download song!', e)
         return False
+
+
+def search_text(name):
+    s = requests.get("https://genius.com/api/search/multi?q=" + name)
+    if s.status_code != 200:
+        return 'Ошибка'
+    s = json_decode(s.text)
+    s = s['response']['sections']
+    for t in s:
+        if t['type'] == 'song':
+            s = t
+            break
+
+    if not s['hits']:
+        return 'Ошибка'
+    s = s['hits'][0]['result']['url']
+
+    s = requests.get(s)
+    if s.status_code != 200:
+        return 'Ошибка'
+
+    t = BeautifulSoup(s.text, "html.parser")
+    t = t.find("div", class_="lyrics")
+    t = t.get_text()
+    return t

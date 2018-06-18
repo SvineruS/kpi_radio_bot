@@ -173,6 +173,28 @@ def get_break_num():
     return 0
 
 
+def check_bad_words(text):
+    bad_words = ['пизд',
+                 'бля',
+                 'хуй', 'хуя', 'хуи', 'хуе',
+                 'ебать', 'еби', 'ебло', 'ебля', 'ебуч',
+                 'долбо',
+                 'дрочит',
+                 'мудак', 'мудило',
+                 'пидор', 'пидар']
+
+    answ = []
+    for word in bad_words:
+        if word in text:
+            answ.append('word')
+
+    if not answ:
+        return "Все ок вродь"
+    else:
+        return "Нашел это: ", ' '.join(answ)
+
+
+
 # почему бы и нет
 def radioboss_api(**kwargs):
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)

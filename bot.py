@@ -9,10 +9,9 @@
 
 import telebot
 
-import datmusic
+import music_api
 import bot_utils
 import db
-import config
 from passwords import *
 
 from datetime import datetime
@@ -91,15 +90,21 @@ def callback_query_handler(query):
                                  reply_markup=telebot.types.InlineKeyboardMarkup())
 
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(telebot.types.InlineKeyboardButton(
-            text='Принять',
-            callback_data='-|-'.join(['predlozka_answ', 'ok', str(query.message.chat.id), cmd[1], cmd[2]])))
-        keyboard.add(telebot.types.InlineKeyboardButton(
-            text='Отклонить',
-            callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])))
-        keyboard.add(telebot.types.InlineKeyboardButton(
-            text='Занято',
-            callback_data='-|-'.join(['predlozka_answ', 'later', str(query.message.chat.id)])))
+        btns = [
+            telebot.types.InlineKeyboardButton(
+                text='Принять',
+                callback_data='-|-'.join(['predlozka_answ', 'ok', str(query.message.chat.id), cmd[1], cmd[2]])),
+            telebot.types.InlineKeyboardButton(
+                text='Отклонить',
+                callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])),
+            telebot.types.InlineKeyboardButton(
+                text='Посмотреть текст',
+                callback_data='-|-'.join(['predlozka_answ', 'text', str(query.message.chat.id)])),
+            telebot.types.InlineKeyboardButton(
+                text='Проверить',
+                callback_data='-|-'.join(['predlozka_answ', 'check', str(query.message.chat.id)]))
+        ]
+        keyboard.add(*btns)
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
@@ -118,6 +123,18 @@ def callback_query_handler(query):
     #
     elif cmd[0] == 'predlozka_answ':
         name = bot_utils.get_audio_name(query.message.audio)
+
+        if cmd[1] == 'text':
+            text = music_api.search_text(name)
+            bot.send_message(query.message.chat.id, text)
+            return
+        elif cmd[1] == 'check':
+            text = music_api.search_text(name)
+            n = bot_utils.check_bad_words(text)
+            bot.answer_callback_query(query.id, text=n)
+            return
+
+
         new_text = 'Заказ: ' + query.message.caption.split(' - ')[1].split(' от')[0] + \
                    ', от ' + bot_utils.get_user_name(query.message.caption_entities[0].user) + \
                    ' - ' + ("✅Принят" if cmd[1] == 'ok' else "❌Отклонен") + \
@@ -140,6 +157,7 @@ def callback_query_handler(query):
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
         elif cmd[1] == 'neok':
             bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_neok'].format(name))
+
 
     #
     # Кнопка назад при выборе времени
@@ -207,7 +225,7 @@ def message_handler(message):
         # Ввод названия песни
         if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
             bot.send_chat_action(message.chat.id, 'upload_audio')
-            audio = datmusic.search(message.text)
+            audio = music_api.search(message.text)
 
             if not audio:
                 bot.send_message(message.chat.id,
@@ -216,7 +234,7 @@ def message_handler(message):
             else:
                 audio = audio[0]
                 try:
-                    audio_file = datmusic.download(audio['download'])
+                    audio_file = music_api.download(audio['download'])
                     bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'], duration=audio['duration'],
                                    reply_markup=bot_utils.keyboard_day())
@@ -325,7 +343,7 @@ def message_handler(message):
 @bot.inline_handler(func=lambda kek: True)
 def query_text(inline_query):
     name = inline_query.query
-    music = datmusic.search(name)
+    music = music_api.search(name)
     if not music:
         return
     articles = []
@@ -344,7 +362,7 @@ def query_text(inline_query):
 
 @bot.message_handler(content_types=['audio'])
 def message_width_audio(message):
-    if message.chat.id != ADMINS_CHAT_ID:
+    if __name__ == '__main__' or message.chat.id != ADMINS_CHAT_ID:
         bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
 
 
