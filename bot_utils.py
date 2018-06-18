@@ -192,7 +192,7 @@ def check_bad_words(text):
     if not answ:
         return "Все ок вродь"
     else:
-        return "Нашел это: ", ' '.join(answ)
+        return "Нашел это: " + ' '.join(answ)
 
 
 
