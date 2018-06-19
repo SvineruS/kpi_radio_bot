@@ -54,7 +54,7 @@ def save_pic_request(message):
 def update(message):
     if message.from_user.id != 185520398:
         return
-    system(r'cmd.exe /k start '+getcwd() + '\\update.bat')
+    system(r'cmd.exe /C start '+getcwd() + '\\update.bat')
 
 
 @bot.message_handler(commands=['ban'])
