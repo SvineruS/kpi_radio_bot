@@ -73,11 +73,10 @@ def ban(message):
     ban_time = str(bot_utils.ban_user(user.id, ban_time))
 
     if ban_time == "0":
-        bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user) + "разбанен")
+        bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user) + "разбанен", parse_mode="HTML")
     else:
         bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user)
-                         + " забанен на " + ban_time + " минут." + reason
-                         , parse_mode="HTML")
+                         + " забанен на " + ban_time + " минут." + reason, parse_mode="HTML")
         bot.send_message(user.id, "Вы были забанены на " + ban_time + " минут." + reason, parse_mode="HTML")
 
 
