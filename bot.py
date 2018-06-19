@@ -69,7 +69,7 @@ def ban(message):
     cmd = message.text.split(' ')
     user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.from_user
     ban_time = int(cmd[1]) if len(cmd) >= 2 else 60 * 24
-    reason = " за " + cmd[2:] if len(cmd) >= 3 else ""
+    reason = " за " + ' '.join(cmd[2:]) if len(cmd) >= 3 else ""
     ban_time = str(bot_utils.ban_user(user.id, ban_time))
 
     if ban_time == 0:
