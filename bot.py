@@ -18,7 +18,7 @@ from datetime import datetime
 from time import strptime, strftime
 from os import listdir
 from random import choice
-
+from subprocess import Popen
 
 if __name__ == '__main__':
     TOKEN = TOKEN_TEST
@@ -53,9 +53,9 @@ def save_pic_request(message):
 
 @bot.message_handler(commands=['update'])
 def update(message):
-    if message.chat.id != 185520398:
+    if message.from_user.id != 185520398:
         return
-#    Popen(r'update.bat', creationflags=CREATE_NEW_CONSOLE)  # TODO
+    Popen(r'update.bat', shell=True)
 
 
 @bot.message_handler(commands=['ban'])
