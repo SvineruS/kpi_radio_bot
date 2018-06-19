@@ -66,9 +66,9 @@ def ban(message):
         bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
         return
 
-    user = message.reply_to_message.caption_entities[0].user.id if message.reply_to_message.audio else message.reply_to_message.from_user.id
+    user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.from_user
     ban_time = message.text.split(' ')
-    ban_time = bot_utils.ban_user(user, ban_time)
+    ban_time = bot_utils.ban_user(user.id, ban_time)
     bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user)
                      + " забанен на " + str(ban_time) + " минут", parse_mode="HTML")
 
