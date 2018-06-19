@@ -93,10 +93,10 @@ def getsent():
 
 
 @app.route("/gettext/<path:name>", methods=['GET', 'POST'])
-def gettext(subpath):
-    if not subpath:
+def gettext(name):
+    if not name:
         return ""
-    return search_text(subpath)
+    return search_text(name)
 
 
 # Process webhook calls
