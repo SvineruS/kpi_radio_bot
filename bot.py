@@ -55,7 +55,7 @@ def save_pic_request(message):
 def update(message):
     if message.from_user.id != 185520398:
         return
-    Popen(r'update.bat',shell=False)
+    Popen(r'cmd.exe /k start update.bat')
 
 
 @bot.message_handler(commands=['ban'])
@@ -66,11 +66,20 @@ def ban(message):
         bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
         return
 
+    cmd = message.text.split(' ')
     user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.from_user
-    ban_time = message.text.split(' ')
-    ban_time = bot_utils.ban_user(user.id, ban_time)
-    bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user)
-                     + " забанен на " + str(ban_time) + " минут", parse_mode="HTML")
+    ban_time = int(cmd[1]) if len(cmd) >= 2 else 60 * 24
+    reason = " за " + cmd[2:] if len(cmd) >= 3 else ""
+    ban_time = str(bot_utils.ban_user(user.id, ban_time))
+
+    if ban_time == 0:
+        bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user) + "разбанен")
+    else:
+        bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user)
+                         + " забанен на " + ban_time + " минут" + reason
+                         , parse_mode="HTML")
+        bot.send_message(user.id, "Вы были забанены на " + ban_time + " минут" + reason, parse_mode="HTML")
+
 
 
 @bot.callback_query_handler(func=lambda c: True)
