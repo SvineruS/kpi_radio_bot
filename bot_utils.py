@@ -205,7 +205,7 @@ def check_bad_words(text):
 def ban_user(id, ban_time):
     ban_time_min = ban_time[1] if len(ban_time) >= 2 else 60 * 24
     ban_time_min = int(ban_time_min)
-    ban_time = int(ban_time * 60 + time())
+    ban_time = int(ban_time_min * 60 + time())
     banned = read_ban()
     banned[id] = ban_time
     write_ban(banned)
