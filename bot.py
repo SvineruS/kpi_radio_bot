@@ -16,9 +16,8 @@ from passwords import *
 
 from datetime import datetime
 from time import strptime, strftime
-from os import listdir
+from os import listdir, startfile, getcwd
 from random import choice
-from subprocess import Popen
 
 if __name__ == '__main__':
     TOKEN = TOKEN_TEST
@@ -55,7 +54,7 @@ def save_pic_request(message):
 def update(message):
     if message.from_user.id != 185520398:
         return
-    Popen(r'cmd.exe /k start update.bat')
+    startfile(r'cmd.exe /k start '+getcwd()+'\\update.bat')
 
 
 @bot.message_handler(commands=['ban'])
