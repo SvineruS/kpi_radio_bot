@@ -95,7 +95,7 @@ def callback_query_handler(query):
     #
     elif cmd[0] == 'predlozka':
 
-        is_ban = bot_utils.chek_ban(query.message.from_user.id)
+        is_ban = bot_utils.chek_ban(query.message.chat.id)
         if is_ban:
             bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " + strftime("%d.%m", is_ban))
             return

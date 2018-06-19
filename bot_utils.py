@@ -212,9 +212,7 @@ def ban_user(id, ban_time):
     return int(ban_time_min)
 
 def chek_ban(id):
-    print(id)
     banned = read_ban()
-    print(banned)
     if id not in banned:
         return False
     if banned[id] < time():

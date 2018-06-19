@@ -96,7 +96,7 @@ def getsent():
 def gettext(name):
     if not name:
         return ""
-    return search_text(name)
+    return "<pre>" + search_text(name)
 
 
 # Process webhook calls
