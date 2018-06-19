@@ -3,15 +3,15 @@
 import hashlib
 import time
 import math
-from flask import Flask, request, redirect, url_for, abort, render_template, current_app, make_response, send_file
+from flask import Flask, request, redirect, url_for, abort, render_template, current_app
 import flask
 from sender import Sender, threads
 from telebot import types
 from config import *
+from passwords import *
 from db import db
 from bot import bot
-from music_api import download
-from io import BytesIO
+from music_api import search_text
 
 app = Flask(__name__)
 
@@ -92,16 +92,11 @@ def getsent():
     return sent
 
 
-@app.route("/music/<path:subpath>", methods=['GET', 'POST'])
-def getmusic(subpath):
+@app.route("/gettext/<path:name>", methods=['GET', 'POST'])
+def gettext(subpath):
     if not subpath:
         return ""
-    t = download(subpath, short=True)
-    if not t:
-        return ""
-
-    byte_io = BytesIO(t.read())
-    return send_file(byte_io, mimetype='audio/mpeg')
+    return search_text(subpath)
 
 
 # Process webhook calls

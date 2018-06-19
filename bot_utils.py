@@ -6,6 +6,8 @@ from telebot import types
 from datetime import datetime
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 from passwords import *
+from time import time
+
 
 CONFIG = {
     'start': '''Привет, это бот РадиоКПИ. 
@@ -174,6 +176,9 @@ def get_break_num():
 
 
 def check_bad_words(text):
+    if 'Ошибка' in text:
+        return text
+
     bad_words = ['пизд',
                  'бля',
                  'хуй', 'хуя', 'хуи', 'хуе',
@@ -193,6 +198,45 @@ def check_bad_words(text):
         return "Все ок вродь"
     else:
         return "Нашел это: " + ' '.join(answ)
+
+
+
+
+def ban_user(id, ban_time):
+    ban_time = ban_time[1] if len(ban_time) >= 2 else 60 * 24
+    banned = read_ban()
+    banned[id] = ban_time * 60 + time()
+    write_ban(banned)
+    return int(ban_time)
+
+def chek_ban(id):
+    banned = read_ban()
+    if id not in banned:
+        return False
+    if banned[id] < time():
+        del banned[id]
+        write_ban(banned)
+        return False
+    return banned[id]
+
+def write_ban(banned):
+    f = open('banned.db', 'w')
+    banned = [str(b) + ' ' + str(banned[b]) for b in banned]
+    f.write('\n'.join(banned))
+    f.close()
+
+def read_ban():
+    try:
+        f = open('banned.db', 'r')
+    except:
+        write_ban({})
+        return {}
+    banned = {}
+    for b in f.readlines():
+        b = b.split(' ')
+        banned[int(b[0])] = int(b[1])
+    f.close()
+    return banned
 
 
 

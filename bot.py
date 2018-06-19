@@ -58,6 +58,20 @@ def update(message):
 #    Popen(r'update.bat', creationflags=CREATE_NEW_CONSOLE)  # TODO
 
 
+@bot.message_handler(commands=['ban'])
+def ban(message):
+    if message.chat.id != ADMINS_CHAT_ID:
+        return
+    if message.reply_to_message is None:
+        bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
+        return
+
+    ban_time = message.text.split(' ')
+    ban_time = bot_utils.ban_user(message.reply_to_message.from_user.id, ban_time)
+    bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(message.reply_to_message.from_user)
+                     + " забанен на " + str(ban_time) + " минут")
+
+
 @bot.callback_query_handler(func=lambda c: True)
 def callback_query_handler(query):
     cmd = query.data.split('-|-')
@@ -79,6 +93,12 @@ def callback_query_handler(query):
     #   cmd[2] = выбранное время
     #
     elif cmd[0] == 'predlozka':
+
+        is_ban = bot_utils.chek_ban(query.message.from_user.id)
+        if is_ban:
+            bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " + strftime("%d.%m", is_ban))
+            return
+
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
         if cmd[1] == '6':
             text += 'днем' if cmd[2] == 0 else 'вечером'  # в воскресенье есть только дневной (0) и вечерний (1) эфир
@@ -99,7 +119,7 @@ def callback_query_handler(query):
                 callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
-                callback_data='-|-'.join(['predlozka_answ', 'text', str(query.message.chat.id)])),
+                url="https://77.47.130.190/gettext/" + bot_utils.get_audio_name(query.message.audio)),
             telebot.types.InlineKeyboardButton(
                 text='Проверить',
                 callback_data='-|-'.join(['predlozka_answ', 'check', str(query.message.chat.id)]))
