@@ -16,7 +16,7 @@ from passwords import *
 
 from datetime import datetime
 from time import strptime, strftime
-from os import listdir, startfile, getcwd
+from os import listdir, system, getcwd
 from random import choice
 
 if __name__ == '__main__':
@@ -54,7 +54,7 @@ def save_pic_request(message):
 def update(message):
     if message.from_user.id != 185520398:
         return
-    startfile(r'cmd.exe /k start '+getcwd()+'\\update.bat')
+    system(r'cmd.exe /k start '+getcwd() + '\\update.bat')
 
 
 @bot.message_handler(commands=['ban'])
