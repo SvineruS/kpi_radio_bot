@@ -97,7 +97,8 @@ def callback_query_handler(query):
 
         is_ban = bot_utils.chek_ban(query.message.chat.id)
         if is_ban:
-            bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " + strftime("%d.%m", is_ban))
+            bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
+                             datetime.fromtimestamp(is_ban).strftime("%d.%m"))
             return
 
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
