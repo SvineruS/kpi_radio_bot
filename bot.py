@@ -206,10 +206,6 @@ def callback_query_handler(query):
             caption='Ну ок(', reply_markup=telebot.types.InlineKeyboardMarkup()
         )
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
-    # Кнопка скрытия текста
-    elif cmd[0] == 'text_delete':
-            bot.delete_message(query.message.chat.id, query.message.message_id)
-            bot.answer_callback_query(query.id)
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_played':

@@ -1,10 +1,10 @@
 import requests
 from json import loads as json_decode
 from bs4 import BeautifulSoup
-
+from urllib.parse import quote
 
 def search(name):
-    url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(name)
+    url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(quote(name))
     try:
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"})
         if s.status_code != 200:
@@ -34,7 +34,7 @@ def download(url, short=False):
 
 
 def search_text(name, attempt2=False):
-    s = requests.get("https://genius.com/api/search/multi?q=" + name)
+    s = requests.get("https://genius.com/api/search/multi?q=" + quote(name))
     if s.status_code != 200:
         return 'Ошибка доступа'
     s = json_decode(s.text)
@@ -50,7 +50,9 @@ def search_text(name, attempt2=False):
         name = name.split('- ')[1]
         return search_text(name, True)
 
+    print(name, s)
     s = s['hits'][0]['result']['url']
+
 
     s = requests.get(s)
     if s.status_code != 200:
