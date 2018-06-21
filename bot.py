@@ -27,6 +27,7 @@ bot = telebot.TeleBot(TOKEN)
 
 bot_me = bot.get_me()
 print('Запускаем ботика..', bot_me)
+bot.send_message(ADMINS_CHAT_ID, 'Я включилсо')
 
 
 @bot.message_handler(commands=['start', 'help', 'song'])
@@ -54,6 +55,7 @@ def save_pic_request(message):
 def update(message):
     if message.from_user.id != 185520398:
         return
+    bot.send_message(message.chat.id, 'Ребутаюсь..')
     system(r'cmd.exe /C start '+getcwd() + '\\update.bat')
 
 
