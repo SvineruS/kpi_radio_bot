@@ -1,11 +1,12 @@
 import flask
+from flask_sslify import SSLify
 from telebot import types
 from config import *
 from bot import bot
 from music_api import search_text
 
 app = flask.Flask(__name__)
-
+sslify = SSLify(app)
 
 @app.route("/gettext/<path:name>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def gettext(name):
@@ -35,5 +36,8 @@ def start():
     # Start flask server
     app.run(host=WEBHOOK_LISTEN,
             port=WEBHOOK_PORT,
-            ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
+            #ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
             threaded=True)
+
+if __name__ == '__main__':
+    start()
