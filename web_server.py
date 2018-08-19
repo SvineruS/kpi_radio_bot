@@ -25,7 +25,7 @@ def download(path):
     if not t:
         return ""
 
-    byte_io = BytesIO(t.read())
+    byte_io = BytesIO(t)
     return flask.send_file(byte_io, mimetype='audio/mpeg')
 
 

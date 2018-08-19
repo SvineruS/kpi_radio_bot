@@ -2,7 +2,7 @@ import requests
 from json import loads as json_decode
 from bs4 import BeautifulSoup
 from urllib.parse import quote
-
+from config import *
 
 def search(name):
     url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(quote(name))
@@ -22,7 +22,7 @@ def search(name):
 
 def download(url, short=False):
     if short:
-        url = 'https://api-2.datmusic.xyz/dl/' + url.replace('.mp3', '')
+        url = 'https://api-2.datmusic.xyz/dl/' + url.replace('.mp3', '') + '/' + BITRATE
     try:
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"}, stream=True)
         if s.status_code != 200:
