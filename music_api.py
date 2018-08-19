@@ -3,6 +3,7 @@ from json import loads as json_decode
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 
+
 def search(name):
     url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(quote(name))
     try:
@@ -50,9 +51,7 @@ def search_text(name, attempt2=False):
         name = name.split('- ')[1]
         return search_text(name, True)
 
-    print(name, s)
     s = s['hits'][0]['result']['url']
-
 
     s = requests.get(s)
     if s.status_code != 200:

@@ -384,7 +384,7 @@ def query_text(inline_query):
     articles = []
     for i in range(min(5, len(music))):
         audio = music[i]
-        link = 'http://svinua.cf/api/music/?download&s=' + '/'.join(audio['download'].split('/')[-2:])
+        link = 'https://kpiradiobot.ga/download/' + '/'.join(audio['download'].split('/')[-2:])
         articles.append(
             telebot.types.InlineQueryResultAudio(i, link,
                                                  performer=audio['artist'],
