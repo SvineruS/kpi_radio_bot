@@ -4,6 +4,8 @@ WEBHOOK_HOST = '77.47.130.190'
 WEBHOOK_PORT = 443  # 443, 80, 88 or 8443 (port need to be 'open')
 WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
 
+WEB_DOMAIN = 'kpiradiobot.ga'
+
 WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
 WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key
 
