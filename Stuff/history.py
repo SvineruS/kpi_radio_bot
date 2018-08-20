@@ -6,7 +6,7 @@ from config import *
 import os.path
 
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'Stuff/history.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), 'history.db')
 
 
 def html():
