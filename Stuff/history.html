@@ -282,7 +282,7 @@ button:hover {
 	
 	function ajax(url, data) {
 		var xmlhttp = new XMLHttpRequest();
-		xmlhttp.open("POST", url, false);
+		xmlhttp.open("POST", 'history/' + url, false);
 		xmlhttp.send(data);
 		if(xmlhttp.status == 200) return xmlhttp.responseText;
 	}
