@@ -38,16 +38,19 @@ def download(path):
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_html():
-    f = open('Stuff/history.html', encoding='UTF-8')
-    m = f.read()
-    f.close()
-    return m
+    return history.html()
 
 
 @app.route("/history/getday", methods=['POST'], host=WEB_DOMAIN)
 def history_get():
     date = flask.request.data.decode('utf-8')
     return history.get(date)
+
+
+@app.route("/history/save", methods=['GET'], host=WEB_DOMAIN)
+def history_save():
+    history.save(flask.request.args)
+    return ''
 
 
 # Process webhook calls

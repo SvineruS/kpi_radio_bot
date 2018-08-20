@@ -1,8 +1,15 @@
 from music_api import radioboss_api
-from time import strptime, mktime
+from time import strptime, mktime, time
 from datetime import datetime
 from bot_utils import get_break_num
 from json import dumps
+
+
+def html():
+    f = open('Stuff/history.html', encoding='UTF-8')
+    m = f.read()
+    f.close()
+    return m
 
 
 def get(date):
@@ -40,3 +47,16 @@ def get(date):
 
     answer = dumps(answer)
     return answer
+
+
+def save(args):
+    print(args)
+    obj = {
+        'artist': args.get('artist'),
+        'title': args.get('title'),
+        'casttitle': args.get('casttitle'),
+        'time_start': time(),
+        'time_stop': time() + args.get('len'),
+        'path': args.get('path'),
+    }
+    print(obj)
