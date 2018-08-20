@@ -11,9 +11,7 @@ def get(date):
     if not playback:
         return
     answer = []
-
-    old_num = 0
-
+    break_num_old = 0
     for track in playback:
         track_datetime = datetime.fromtimestamp(mktime(strptime(track.attrib['STARTTIME'], '%Y-%m-%d %H:%M:%S')))
         if track_datetime.date() < date.date():
@@ -22,14 +20,26 @@ def get(date):
             break
 
         break_num_curr = get_break_num(track_datetime)
-        if break_num_curr != 0 and break_num_curr != old_num:
-            answer.append({'track': False, 'title': 'newnum' + str(break_num_curr)})
-            old_num = break_num_curr
+        if break_num_curr != 0 and break_num_curr != break_num_old:
+            break_num_old = break_num_curr
+
+        time_start = mktime(track_datetime.timetuple())
+        time_stop = strptime(track.attrib['DURATION'], '%M:%S')
+        time_stop = time_start + (time_stop.tm_min*60+time_stop.tm_sec)
+
+        if not track.attrib['ARTIST'] and not track.attrib['TITLE']:
+            track.attrib['TITLE'] = track.attrib['CASTTITLE']
 
         answer.append({
-            'track': track.attrib['CASTTITLE'],
-            'time': track_datetime.strftime("%H:%M")
+            'artist': track.attrib['ARTIST'],
+            'title': track.attrib['TITLE'],
+            'time_start': time_start,
+            'time_stop': time_stop,
+            'para_num': break_num_old if break_num_curr == 0 else break_num_curr
         })
 
     answer = dumps(answer)
     return answer
+
+
+print(get(1534723200))

@@ -1,98 +1,291 @@
-<input id="DOM_date" required
-       onchange="search()"
-       type="date"
-       min="2018-06-07T00:00"
-       max="2018-06-14T00:00">
+<style>
+html {
+	position: relative;
+	min-height: 100%;
+}
+body {
+	background: #eee;
+	font-family: helvetica, serif;
+	font-size: 13px;
+	margin: 0; padding: 0;
+	margin-bottom: 60px;
+	color: #555;
+	min-width: 400px;
+}
 
-<button onclick="search()">
-    Поиск
-</button>
+.header {
+	padding: 15px 20px;
+	background: #565fa2;
+	color: white;
+	font-size: 20px;
+	margin-bottom: 20px;
+}
 
-<div id="DOM_songs">
+.main {
+	margin: 0 auto;
+	padding: 0 2%;
+	text-align: center;
+}
+
+
+
+.input {
+	margin-top: 5px;
+	font-size: 1.2em;
+}
+.input-item {
+	width: 50%;
+	margin: -2px;
+	height: 50px;
+	display: inline-block !important;
+	font-size: 1.1em;
+}
+#DOM_next_day_btn {
+	width: 100%;
+	padding: 20px;
+	margin-top: 5px;
+	font-size: 1.2em;
+	font-weight: bold;
+	visibility: hidden;
+}
+
+
+
+.songs {
+	margin-top: 20px;
+}
+
+.item {
+	position: relative;
+	display: block;
+	padding: 10px 15px;
+	margin-bottom: -1px;
+	background-color: #ffffff;
+	border: 1px solid #ecf0f1;
+}
+
+.splitter {
+	margin-top: 18px;
+    background: #565fa2;
+    color: white;
+	border-radius: 5px 5px 0 0;
+}
+.splitter-day {
+    font-weight: bold;
+    margin-top: 25px;
+	border-radius: 5px;
+}
+
+
+
+.time {
+	float: left;
+	padding: 3px 7px;
+	font-family: DaysRegular, Arial, "Helvetica CY", "Nimbus Sans L", sans-serif;
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	background-color: #e5e3ff;
+	border-radius: 5px;
+}
+
+.casttitle {
+
+}
+
+.artist {
+	font-weight: bold;
+	margin-right: 1%;
+}
+
+.title {
+	margin-left: 1%;
+}
+
+
+.play {
+	padding: 3px 7px;
+	font-size: 13px;
+	font-weight: bold;
+	color: #ffffff;
+	background-color: #2c3e50;
+	border-radius: 10px;
+	float: right;
+	line-height: 1;
+}
+
+
+
+.foot {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  line-height: 40px;
+}
+
+
+button:hover {
+	background-color: #c6c8de;
+}
+.rotate {	animation: spin 1s linear 0s infinite; display: inline-block;} @keyframes spin { 	from { transform:rotate(0deg); } 	to { transform:rotate(360deg); } }
+
+.para_num-1 {background: #4fc3f7;}
+.para_num-2 {background: #29b6f6;}
+.para_num-3 {background: #03a9f4;}
+.para_num-4 {background: #039be5;}
+.para_num-5 {background: #6a76cc;}
+
+</style>
+
+
+<body>
+<div class="header">KPIRADIOBOT</div>
+<div class="main">
+	<div class="input">
+		<input class="item input-item" id="DOM_date" required onchange="search()" type="date" min="2018-06-07T00:00">
+		<button class="item input-item" onclick="search()" style="top: 1px;">Поиск 🔎</button>
+	</div>
+	<div class="songs" >
+		<div id="DOM_songs"></div>
+		<button class="item" onclick="search(true)" id="DOM_next_day_btn">Дальше</button>
+	</div>
 </div>
 
-<button onclick="search(true)"
-        id="DOM_next_day_btn"
-        style="visibility: hidden;">
-    Дальше
-</button>
+
+
+<div class="foot"><marquee direction="right">
+<span class="rotate">卐</span>
+<a href='https://t.me/svinerus'>©svinerus</a>
+<span class="rotate">卐</span>
+</marquee></div>
+
+
+
+</body>
+
+
 
 <script>
-    DOM_date = document.getElementById('DOM_date')
-    DOM_songs = document.getElementById('DOM_songs')
-    DOM_next_day_btn = document.getElementById('DOM_next_day_btn')
-    var Next_day
-
-    init()
-    function init() {
-        today = date_yyyymmdd(new Date())
-        DOM_date.value = today
-        DOM_date.max = today
+	DOM_date = document.getElementById('DOM_date')
+	DOM_songs = document.getElementById('DOM_songs')
+	DOM_next_day_btn = document.getElementById('DOM_next_day_btn')
+	var Curr_day
+	var Next_day
+	old_para_num = 0
+	
+    date_format = {
+	  weekday: 'long',
+      month: 'long',
+      day: 'numeric',
     }
 
-    function search(nextday=false) {
-        if (!nextday) {
-            date = DOM_date.value
-            if (date == "") {
-                alert('Введите дату')
-                return
-            }
-            date = new Date(date)
-            Next_day = new Date(date.getTime() + 1000*60*60*24)
-        }
-        else {
-            date = Next_day
-        }
+	
+	init()
+	function init() {
+		today = date_yyyymmdd(new Date())
+		DOM_date.value = today
+		DOM_date.max = today
+		search()
+	}
 
-        date = date_yyyymmdd(date)
-        res = ajax('getday', date)
-        res = JSON.parse(res)
+	function search(nextday=false) {
+		if (!nextday) {
+			date = DOM_date.value
+			if (date == "") {
+				alert('Введите дату')
+				return
+			}
+			date = new Date(date)
+			Next_day = new Date(date.getTime() - 1000*60*60*24)
+		}
+		else {
+			date = Next_day
+		}
 
-        tableInsert(res)
+		res = ajax('getday', date_yyyymmdd(date))
+		res = JSON.parse(res)
+		tableRemove()
+		tableInsert(res, date)
+	}
+
+
+
+	function tableInsert(res, date) {
+		Curr_day = date
+		DOM_next_day_btn.style.visibility = 'visible';
+		full_html = getSongItemSplitter(true, +date)
+		for (var i=0; i<res.length; i++) {
+			track = res[i]
+			html = getSongItem(track)
+			full_html += html
+		}
+		DOM_songs.innerHTML += full_html
+
+
+	}
+
+	function getSongItem(item) {
+        html = ''
+
+        if (item.para_num != old_para_num) {
+			old_para_num = item.para_num
+            html += getSongItemSplitter(false, item.para_num)
+		}
+	    html += "<div class='item track'>\
+		<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span> \
+		<span class='casttitle'> \
+			<span class='artist'>"+item.artist+"</span> \
+			<span class='title'>"+item.title+"</span> \
+		</span> \
+		<span class='play'>▶</span> \
+		</div>"
+
+		return html
+    }
+
+    function getSongItemSplitter(isDay, data) {
+		if (isDay) {
+		    html = new Date(data).toLocaleString("ru", date_format)
+		    return "<div class='item splitter splitter-day'>"+html+"</div>"
+		}
+		if (Curr_day.getDay() == 0) // вс
+			if (data == 1)
+				html = 'Дневной эфир'
+			else {
+				html = 'Вечерний эфир'
+				data = 5
+			}
+		else {
+			if (data == 5) html = 'Вечерний эфир'
+			else html = 'После ' + data + ' пары'
+		} 
+		
+		return "<div class='item splitter para_num-"+ data +"'>"+html+"</div>"
     }
 
 
 
-    function tableInsert(res) {
-        DOM_next_day_btn.style.visibility = 'visible';
-        full_html = ''
-        for (var i=0; i<res.length; i++) {
-            track = res[i]
-            html = getSongItem(track)
-            full_html += html
-        }
-        DOM_songs.innerHTML += full_html
+	function tableRemove() {
+		DOM_next_day_btn.style.visibility = 'hidden';
+		DOM_songs.innerHTML = '';
+	}
 
-
-    }
-
-    function getSongItem(item) {
-        if (item.track)
-            return "<div class='track'>\
-            <div class='title'>"+item.title+"</div>\
-            <div class='time'>"+item.time+"</div>\
-            </div>"
-        else
-            return "<div class='newpara'>\
-                <div class='title'>"+item.title+"</div>\
-                </div>"
-    }
-
-
-    function tableRemove() {
-        DOM_next_day_btn.style.visibility = 'hidden';
-        DOM_songs.innerHTML = '';
-    }
-
-    function date_yyyymmdd(date) {
-        return date.toISOString().substring(0, 10)
-    }
-
-    function ajax(url, data) {
-        return '[{"track": false, "title": "newnum5"}, {"track": "Her - Five Minutes", "time": "21:57"}, {"track": "None - None", "time": "21:53"}, {"track": "Jamala (\u0414\u0436\u0430\u043c\u0430\u043b\u0430) - \u0417\u0430\u043f\u043b\u0443\u0442\u0430\u043b\u0430\u0441\u044c (zaycev.net)", "time": "21:48"}, {"track": "Nat King Cole - Quizas, Quizas, Quizas (Perhaps, Perhaps, Perhaps)", "time": "21:45"}, {"track": "BLOOMS CORDA - kudy vse pishlo", "time": "21:42"}, {"track": "Epolets - \u0426\u0432\u0435\u0442\u0438", "time": "21:39"}, {"track": "animal-dzhaz - etazhi", "time": "21:35"}, {"track": "Muse - Supermassive Black Hole", "time": "21:31"}, {"track": "Crown The Empire - Lead Me Out Of The Dark", "time": "21:28"}, {"track": "Lou Doillon - Where To Start", "time": "21:26"}, {"track": "The XX - Crystalized (Slow Motion Booty)", "time": "21:20"}, {"track": "\u0425\u043e\u0440\u043e\u0448\u043e \u0442\u0430\u043c \u0433\u0434\u0435 \u043d\u0430\u0441 \u043d\u0435\u0442 - in heaven (everything is fine)", "time": "21:18"}, {"track": "Deep Red Wood - \u041e\u043a\u0435\u0430\u043d \u0438 \u0437\u0432\u0435\u0437\u0434\u0430", "time": "21:14"}, {"track": "Cream - Im So Glad", "time": "21:10"}, {"track": "ALEKSEEV - Forever (Eurovision version)", "time": "21:07"}, {"track": "Plan B - Prayin", "time": "21:03"}, {"track": "Cary Brothers - Ride (Album Version)", "time": "21:00"}, {"track": "Ouravenue - Forever In My Mind", "time": "20:56"}, {"track": "Pink Floyd - Two Suns in the Sunset", "time": "20:51"}, {"track": "Ed Sheeran - All Of The Stars", "time": "20:47"}, {"track": "\u0411\u0415\u0417 \u041e\u0411\u041c\u0415\u0416\u0415\u041d\u042c - 5 \u0445\u0432\u0438\u043b\u0438\u043d", "time": "20:43"}, {"track": "\u041e\u043a\u0435\u0430\u043d \u0415\u043b\u044c\u0437\u0438 - \u041d\u0430 \u041d\u0435\u0431\u0456", "time": "20:40"}, {"track": "Hibou - Sunder", "time": "20:37"}, {"track": "ed-sheeran - happier", "time": "20:33"}, {"track": "Sia - Im in here (alternate version)", "time": "20:30"}, {"track": "Gorillaz - Clint Eastwood", "time": "20:25"}, {"track": "06 - a", "time": "20:21"}, {"track": "Sia - Chandelier (zaycev.net)", "time": "20:17"}, {"track": "Dakh Daughters - \u0412\u0456\u0437\u044c\u043c\u0438", "time": "20:13"}, {"track": "\u0410\u0440\u0442\u0451\u043c \u041f\u0438\u0432\u043e\u0432\u0430\u0440\u043e\u0432 - \u041c\u043e\u044f \u041d\u0456\u0447", "time": "20:09"}, {"track": "Vivienne Mort - \u0413\u0430\u043b\u043e", "time": "20:05"}, {"track": "Aerosmit - Crazy", "time": "20:00"}, {"track": "Bi6CIVm3TDRL.128", "time": "19:58"}, {"track": "Jamala - Youre Made of Love", "time": "19:54"}, {"track": "Queen - Bohemian Rhapsody", "time": "19:48"}, {"track": "BLOOMS CORDA - udam scho naspravdi", "time": "19:44"}, {"track": "\u041d\u0435\u0440\u0432\u044b - \u042f \u0440\u0430\u0437\u0440\u044b\u0432\u0430\u044e \u043d\u0435\u0440\u0432\u044b", "time": "19:41"}, {"track": "Marian Hill - Down", "time": "19:38"}, {"track": "\u0411\u0435\u0437 \u041e\u0431\u043c\u0435\u0436\u0435\u043d\u044c - \u0422\u0432\u043e\u0457 \u041e\u0447\u0456", "time": "19:34"}, {"track": "Radiohead - I Will", "time": "19:30"}, {"track": "Of Monsters And Men - Your Bones", "time": "19:26"}, {"track": "mv-iu-feat-g-dragon - palette", "time": "19:22"}, {"track": "The Hardkiss - \u0416\u0443\u0440\u0430\u0432\u043b\u0456", "time": "19:20"}, {"track": "Three Days Grace - Life Starts Now", "time": "19:17"}, {"track": "Fleetwood Mac - Landslide", "time": "19:13"}, {"track": "\u0411\u0440\u0430\u0442\u0438 \u0413\u0430\u0434\u044e\u043a\u0456\u043d\u0438 - \u041c\u0438 \u0445\u043e\u0434\u0438\u043b\u0438, \u0434\u0438\u043b\u0438, \u0434\u0438\u043b\u0438", "time": "19:07"}, {"track": "Band Of Horses - The Funeral", "time": "19:07"}, {"track": "Vivienne Mort - \u042f \u0456 \u0442\u0430\u043a \u043e\u0434\u043d\u0430", "time": "16:38"}, {"track": "5-nizza - 15-ushedshim-slishkom-rano", "time": "16:35"}, {"track": "Calvin Harris - Summer", "time": "16:31"}, {"track": "lp - muddy-waters", "time": "16:27"}, {"track": "BONES - 15. BlackMold", "time": "16:26"}, {"track": "Andrew - Rai feat Alloise Who I Am (Original Mix)(MusVid.net)", "time": "16:20"}, {"track": "Ben (LOncle Soul) - Seven Nation Army", "time": "16:17"}, {"track": "OKEAN ELZY - Bil&#039;she dlya nas", "time": "16:14"}, {"track": "nervy - volshebnaya", "time": "16:11"}, {"track": false, "title": "newnum4"}, {"track": "\u0424\u0406\u041e\u041b\u0415\u0422 - \u0412\u0430\u0433\u043e\u043c\u0456 \u0441\u043b\u043e\u0432\u0430 (feat \u0421\u041f)", "time": "16:07"}, {"track": "\u041e\u0440\u043a\u0435\u0441\u0442\u0440 \u0427\u0435 - \u0427\u0430\u0441 \u043f\u0440\u0430\u0446\u044e\u0454 \u043d\u0430 \u043c\u0435\u043d\u0435", "time": "16:02"}, {"track": "Dexys Midnight Runners - Come On Eileen", "time": "15:59"}, {"track": "Avicii - Hey Brother", "time": "15:53"}, {"track": "jypentertainment", "time": "15:50"}, {"track": "First Aid Kit - Wolf", "time": "15:46"}, {"track": "The Lovin Spoonful - Daydream", "time": "15:44"}, {"track": "MamaRika - \u0425\u043c\u0430\u0440\u043d\u043e", "time": "15:40"}, {"track": "ed-sheeran - galway-girl-martin-jensen-remix", "time": "15:37"}, {"track": "Illaria - \u0414\u043e\u043b\u0438\u043d\u043e\u044e", "time": "15:34"}, {"track": "Glenn Miller - In The Mood (\u043c\u043e\u044f \u043b\u044e\u0431\u0438\u043c\u0435\u0439\u0448\u0430\u044f \u043c\u0435\u043b\u043e\u0434\u0438\u044f \u043f\u0440\u043e\u0441\u0442\u043e \u0448\u0435\u0434\u0435\u0432\u0440)", "time": "15:30"}, {"track": "Epolets - Be mine", "time": "15:27"}, {"track": "Vivienne Mort - \u0415\u043a\u0440\u0430\u043d", "time": "15:26"}, {"track": "Gorgon City feat. Katy Menditta - Imagination", "time": "15:20"}, {"track": "San Cisco - 505", "time": "15:16"}, {"track": "Piano\u0431\u043e\u0439 - \u0428\u0430\u043c\u043f\u0430\u043d\u0441\u044c\u043a\u0456 \u041e\u0447\u0456 (zaycev.net)", "time": "15:12"}, {"track": "\u0424\u043b\u0430\u0439zZz\u0430 - \u0420\u0430\u0434\u0438\u0432\u043e", "time": "15:08"}, {"track": "antit - la-ti-mo-nove-chudo", "time": "15:05"}, {"track": "5nizza - \u041d\u0435 \u041a\u0438\u043d\u043e", "time": "15:02"}, {"track": "the-gitas - ne-movchy", "time": "14:58"}, {"track": "sonya-kay - zoryaniy-saundtrek", "time": "14:54"}, {"track": "Mr. Probz - Praying To A God", "time": "14:50"}, {"track": "Felix Jaehn - Hot2Touch", "time": "14:47"}, {"track": "\u0422\u0430\u0440\u0442\u0430\u043a - \u042f \u043d\u0435 \u0437\u043d\u0430\u044e", "time": "14:44"}, {"track": "wave - vnochi", "time": "14:41"}, {"track": "\u0424\u0456\u043e\u043b\u0435\u0442 - \u041a\u043e\u0445\u0430\u043d\u0430 ((Bitmp3.Net))", "time": "14:37"}, {"track": "David Guetta, Martin Garrix and Brooks - Like I Do", "time": "14:34"}, {"track": "The Elephants - The Migrant", "time": "14:31"}, {"track": "Epolets - \u0420\u0430\u0434\u0438\u043e", "time": "14:28"}, {"track": "onuka - zavtra", "time": "14:23"}, {"track": "vremya-i-steklo - troll", "time": "14:20"}, {"track": "The Beatles - Good Morning, Good Morning", "time": "14:17"}, {"track": "biWVoyz57zqV.128 (1)", "time": "14:13"}, {"track": false, "title": "newnum3"}, {"track": "Rise Against - Savior", "time": "14:09"}, {"track": "okean-elzi - ne-pitay", "time": "14:07"}, {"track": "Oasis - Champagne Supernova (Remastered)", "time": "14:00"}, {"track": "Lorde - Royals", "time": "13:56"}, {"track": "The Weeknd - Live For (feat. Drake)", "time": "13:53"}, {"track": "\u0424\u043b\u0430\u0439zZz\u0430 feat \u041c\u043e\u0442\u043e\u0440\u043e\u043b\u043b\u0430 - \u0411\u0435\u0440\u0435\u0437\u043d\u0435\u0432\u0438\u0439 \u041a\u0456\u0442", "time": "13:49"}, {"track": "Maroon 5 - Sunday Morning", "time": "13:45"}, {"track": "Loma - Joy", "time": "13:42"}, {"track": "Vivienne Mort - \u0412\u0447\u043e\u0440\u0430", "time": "13:41"}, {"track": "Calvin Harris - My Way vk.com/vkMyz", "time": "13:38"}, {"track": "Gnarls Barkley - Crazy", "time": "13:35"}, {"track": "\u041e\u041d\u0423\u041a\u0410 / ONUKA - \u0417\u0430\u0432\u0442\u0440\u0430 / Zavtra #radiorukop", "time": "13:30"}]'
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("POST", url, false);
-        xmlhttp.send(data);
-        if(xmlhttp.status == 200) return xmlhttp.responseText;
-    }
+	function date_yyyymmdd(date) {
+		return date.toISOString().substring(0, 10)
+	}
+	function date_hhmm(date) {
+		s = new Date(date*1000).toLocaleTimeString().substring(0, 5)
+		if (s[4] == ':') s = '0' + s.substring(0, 4)
+		return s
+	}
+	
+	
+	function ajax(url, data) {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("POST", url, false);
+		xmlhttp.send(data);
+		if(xmlhttp.status == 200) return xmlhttp.responseText;
+	}
 </script>
+
+
