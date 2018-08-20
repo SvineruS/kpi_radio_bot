@@ -33,6 +33,3 @@ def get(date):
 
     answer = dumps(answer)
     return answer
-
-print(mktime(strptime('2018-08-20', '%Y-%m-%d')))
-print(get(1534636800))
