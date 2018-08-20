@@ -3,7 +3,7 @@
 # Хочу оставить большой комментарий типа я крутой программист.
 # Модуль бота кпи радио by Владислав Свинкин 2к!8 t.me/svinerus
 # Новый модуль bot_utils.py - с константами, текстами и кучкой функций
-# Все, что не нужно выкладывать в гитхаб в passwords.py
+# Все, что не нужно выкладывать в гитхаб в config.py
 # Токен и чат админов там!!!!
 
 
@@ -16,7 +16,6 @@ import ban
 from config import *
 
 from datetime import datetime
-from time import strptime, strftime
 from os import listdir, system, getcwd
 from random import choice
 
@@ -33,7 +32,7 @@ bot.send_message(ADMINS_CHAT_ID, 'Я включилсо')
 
 
 @bot.message_handler(commands=['start', 'help', 'song'])
-def start(message):
+def start_handler(message):
     db.add(message.chat.id)
     if message.chat.id < 0:
         return
@@ -54,7 +53,7 @@ def save_pic_request(message):
 
 
 @bot.message_handler(commands=['update'])
-def update(message):
+def update_handler(message):
     if message.from_user.id != 185520398:
         return
     bot.send_message(message.chat.id, 'Ребутаюсь..')
@@ -62,7 +61,7 @@ def update(message):
 
 
 @bot.message_handler(commands=['ban'])
-def ban(message):
+def ban_handler(message):
     if message.chat.id != ADMINS_CHAT_ID:
         return
     if message.reply_to_message is None:
@@ -284,39 +283,6 @@ def message_handler(message):
         if message.reply_to_message.text == bot_utils.CONFIG['feedback']:
             bot.send_message(message.chat.id, bot_utils.CONFIG['feedback_thanks'], reply_markup=bot_utils.keyboard_start())
             bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-
-        # Выбор времени для поиска песни по времени
-        if message.reply_to_message.text == bot_utils.CONFIG['what_played_choose_time']:
-            try:
-                dt = strptime(message.text, '%H:%M')
-                user_time = dt.tm_hour*60+dt.tm_min
-            except:
-                bot.send_message(message.chat.id, "Похоже, что вы неправильно написали время :)")
-                bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
-                return
-            
-            playback = music_api.radioboss_api(action='getlastplayed')
-            if playback:
-                text = ''
-                old_day = 0
-                try:
-                    for i in range(min(100, len(playback))):
-                        track = playback[i].attrib
-                        dt = strptime(track['STARTTIME'], '%Y-%m-%d %H:%M:%S')
-                        time = dt.tm_hour * 60 + dt.tm_min
-                        
-                        if abs(time - user_time) < 10:
-                            if dt.tm_mday != old_day:
-                                text += "\n📅{0}".format(strftime("%d.%m", dt))
-                                old_day = dt.tm_mday
-                            text += "\n🕓{0}: {1}".format(strftime("%H:%M", dt), track['CASTTITLE'])
-                    if text:
-                        bot.send_message(message.chat.id, text)
-                    else:
-                        bot.send_message(message.chat.id, 'Видимо, в это время ничего не играло')
-                except Exception as e:
-                    print(e)
-            bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
 
         return
 

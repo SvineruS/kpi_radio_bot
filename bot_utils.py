@@ -145,9 +145,11 @@ def save_file(url, to):
         print('Error: download!', e)
 
 
-def get_break_num():
+def get_break_num(time=None):
     day = datetime.today().weekday()
-    time = datetime.now().hour * 60 + datetime.now().minute
+    if not time:
+        time = datetime.now()
+    time = time.hour * 60 + time.minute
 
     if time > 22*60 or time < 10*60+5:
         return 0
@@ -169,6 +171,7 @@ def get_break_num():
         if 0 < time - (10*60+5 + i*115) < 18:  # сдвиг на 2 минуты для удобства
             return i+1
 
+    #Пара
     return 0
 
 

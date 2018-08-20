@@ -1,5 +1,6 @@
 import flask
 import music_api
+from Stuff import history
 from flask_sslify import SSLify
 from telebot import types
 from config import *
@@ -41,6 +42,12 @@ def history():
     m = f.read()
     f.close()
     return m
+
+
+@app.route("/history/get", methods=['POST'], host=WEB_DOMAIN)
+def history_get():
+    date = flask.request.data.decode('utf-8')
+    return history.get(date)
 
 
 # Process webhook calls
