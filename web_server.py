@@ -37,7 +37,7 @@ def download(path):
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def history():
+def history_html():
     f = open('Stuff/history.html', encoding='UTF-8')
     m = f.read()
     f.close()
