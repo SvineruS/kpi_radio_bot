@@ -1,14 +1,12 @@
 import flask
 import music_api
 from Stuff import history
-from flask_sslify import SSLify
 from telebot import types
 from config import *
 from bot import bot
 from threading import Thread
 
 app = flask.Flask(__name__)
-sslify = SSLify(app)
 
 
 @app.route("/gettext/<path:name>", methods=['GET', 'POST'], host=WEB_DOMAIN)
