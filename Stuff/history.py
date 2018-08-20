@@ -40,6 +40,3 @@ def get(date):
 
     answer = dumps(answer)
     return answer
-
-
-print(get(1534723200))
