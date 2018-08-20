@@ -47,8 +47,9 @@ def history_get():
     return history.get(date)
 
 
-@app.route("/history/save", methods=['GET'], host=WEB_DOMAIN)
+@app.route("/history/save", methods=['GET'])
 def history_save():
+    # https://WEBHOOK_LISTEN:WEBHOOK_PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     history.save(flask.request.args)
     return ''
 

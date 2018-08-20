@@ -1,8 +1,12 @@
-from music_api import radioboss_api
-from time import strptime, mktime, time
+from time import time
 from datetime import datetime
 from bot_utils import get_break_num
-from json import dumps
+from json import dumps, loads
+from config import *
+import os.path
+
+
+DB_PATH = os.path.join(os.path.dirname(__file__), 'Stuff/history.db')
 
 
 def html():
@@ -14,34 +18,26 @@ def html():
 
 def get(date):
     date = datetime.fromtimestamp(int(date))
-    playback = radioboss_api(action='getlastplayed')
-    if not playback:
-        return
+    key = date .date()
+    history = read()
+    if key not in history:
+        return []
+
     answer = []
     break_num_old = 0
-    for track in playback:
-        track_datetime = datetime.fromtimestamp(mktime(strptime(track.attrib['STARTTIME'], '%Y-%m-%d %H:%M:%S')))
-        if track_datetime.date() < date.date():
-            continue
-        if track_datetime.date() > date.date():
-            break
-
-        break_num_curr = get_break_num(track_datetime)
+    for track in history:
+        break_num_curr = get_break_num(datetime.fromtimestamp(track['time_start']))
         if break_num_curr != 0 and break_num_curr != break_num_old:
             break_num_old = break_num_curr
-
-        time_start = mktime(track_datetime.timetuple())
-        time_stop = strptime(track.attrib['DURATION'], '%M:%S')
-        time_stop = time_start + (time_stop.tm_min*60+time_stop.tm_sec)
 
         if not track.attrib['ARTIST'] and not track.attrib['TITLE']:
             track.attrib['TITLE'] = track.attrib['CASTTITLE']
 
         answer.append({
-            'artist': track.attrib['ARTIST'],
-            'title': track.attrib['TITLE'],
-            'time_start': time_start,
-            'time_stop': time_stop,
+            'artist': track['artist'],
+            'title': track['title'],
+            'time_start': track['time_start'],
+            'time_stop': track['time_stop'],
             'para_num': break_num_old if break_num_curr == 0 else break_num_curr
         })
 
@@ -50,13 +46,37 @@ def get(date):
 
 
 def save(args):
-    print(args)
+    if args.get('pass') != str(list(RADIOBOSS_DATA)[2]):
+        return 'wrong pass'
     obj = {
         'artist': args.get('artist'),
         'title': args.get('title'),
         'casttitle': args.get('casttitle'),
         'time_start': time(),
-        'time_stop': time() + args.get('len'),
+        'time_stop': time() + int(args.get('len')),
         'path': args.get('path'),
     }
-    print(obj)
+    key = datetime.today().date()
+    history = read()
+    if key not in history:
+        history[key] = []
+    history[key].append(obj)
+    write(history)
+
+
+def write(history):
+    history = dumps(history)
+    f = open(DB_PATH, 'w')
+    f.write(history)
+    f.close()
+
+
+def read():
+    try:
+        f = open(DB_PATH, 'r')
+    except:
+        write({})
+        return {}
+    history = loads(f.read())
+    f.close()
+    return history
