@@ -3,6 +3,9 @@ from json import loads as json_decode
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from config import *
+import xml.etree.ElementTree as Etree  # для апи радиобосса
+
+
 
 def search(name):
     url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(quote(name))
@@ -61,3 +64,22 @@ def search_text(name, attempt2=False):
     t = t.find("div", class_="lyrics")
     t = t.get_text()
     return t
+
+
+def radioboss_api(**kwargs):
+    url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
+    for key in kwargs:
+        url += '&{0}={1}'.format(key, kwargs[key])
+    t = 'Еще даже не подключился к радиобоссу а уже эксепшены(('
+    try:
+        t = requests.get(url)
+        t.encoding = 'utf-8'
+        t = t.text
+        if not t:
+            return False
+        if t == 'OK':
+            return True
+        return Etree.fromstring(t)
+    except Exception as e:
+        print('Error! Radioboss api! ', e, t)
+        return False

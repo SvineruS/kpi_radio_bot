@@ -4,9 +4,6 @@ import os
 import requests
 from telebot import types
 from datetime import datetime
-import xml.etree.ElementTree as Etree  # для апи радиобосса
-from passwords import *
-from time import time
 
 
 CONFIG = {
@@ -200,63 +197,3 @@ def check_bad_words(text):
         return "Все ок вродь"
     else:
         return "Нашел это: " + ' '.join(answ)
-
-
-
-
-def ban_user(id, ban_time_min):
-    ban_time = int(ban_time_min * 60 + time())
-    banned = read_ban()
-    banned[id] = ban_time
-    write_ban(banned)
-    return int(ban_time_min)
-
-def chek_ban(id):
-    banned = read_ban()
-    if id not in banned:
-        return False
-    if banned[id] < time():
-        del banned[id]
-        write_ban(banned)
-        return False
-    return banned[id]
-
-def write_ban(banned):
-    f = open('banned.db', 'w')
-    banned = [str(b) + ' ' + str(banned[b]) for b in banned]
-    f.write('\n'.join(banned))
-    f.close()
-
-def read_ban():
-    try:
-        f = open('banned.db', 'r')
-    except:
-        write_ban({})
-        return {}
-    banned = {}
-    for b in f.readlines():
-        b = b.split(' ')
-        banned[int(b[0])] = int(b[1])
-    f.close()
-    return banned
-
-
-
-# почему бы и нет
-def radioboss_api(**kwargs):
-    url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
-    for key in kwargs:
-        url += '&{0}={1}'.format(key, kwargs[key])
-    t = 'Еще даже не подключился к радиобоссу а уже эксепшены(('
-    try:
-        t = requests.get(url)
-        t.encoding = 'utf-8'
-        t = t.text
-        if not t:
-            return False
-        if t == 'OK':
-            return True
-        return Etree.fromstring(t)
-    except Exception as e:
-        print('Error! Radioboss api! ', e, t)
-        return False

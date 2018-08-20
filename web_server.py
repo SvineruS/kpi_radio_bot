@@ -4,7 +4,7 @@ from flask_sslify import SSLify
 from telebot import types
 from config import *
 from bot import bot
-from io import BytesIO
+
 
 app = flask.Flask(__name__)
 sslify = SSLify(app)
@@ -31,8 +31,16 @@ def download(path):
     resp.headers['Content-Type'] = 'audio/mpeg'
     resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
     resp.headers['Cache-Control'] = 'no-cache'
-    resp.headers['Content-length'] = len(t.data)
+    resp.headers['Content-Length'] = len(t.data)
     return resp
+
+
+@app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def history():
+    f = open('Stuff/history.html')
+    m = f.read()
+    f.close()
+    return m
 
 
 # Process webhook calls

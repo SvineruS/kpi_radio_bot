@@ -12,12 +12,14 @@ import telebot
 import music_api
 import bot_utils
 import db
+import ban
 from passwords import *
 
 from datetime import datetime
 from time import strptime, strftime
 from os import listdir, system, getcwd
 from random import choice
+
 
 if __name__ == '__main__':
     TOKEN = TOKEN_TEST
@@ -71,7 +73,7 @@ def ban(message):
     user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.from_user
     ban_time = int(cmd[1]) if len(cmd) >= 2 else 60 * 24
     reason = " Причина: " + ' '.join(cmd[2:]) if len(cmd) >= 3 else ""
-    ban_time = str(bot_utils.ban_user(user.id, ban_time))
+    ban_time = str(ban.ban_user(user.id, ban_time))
 
     if ban_time == "0":
         bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user) + " разбанен", parse_mode="HTML")
@@ -79,7 +81,6 @@ def ban(message):
         bot.send_message(message.chat.id, "Пользователь " + bot_utils.get_user_name(user)
                          + " забанен на " + ban_time + " минут." + reason, parse_mode="HTML")
         bot.send_message(user.id, "Вы были забанены на " + ban_time + " минут." + reason, parse_mode="HTML")
-
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -104,7 +105,7 @@ def callback_query_handler(query):
     #
     elif cmd[0] == 'predlozka':
 
-        is_ban = bot_utils.chek_ban(query.message.chat.id)
+        is_ban = ban.chek_ban(query.message.chat.id)
         if is_ban:
             bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
                              datetime.fromtimestamp(is_ban).strftime("%d.%m"))
@@ -186,7 +187,7 @@ def callback_query_handler(query):
             bot_utils.save_file(url, to)
 
             if int(cmd[3]) == datetime.today().weekday() and int(cmd[4]) == bot_utils.get_break_num():
-                bot_utils.radioboss_api(action='inserttrack', filename=to, pos=-2)
+                music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok_next'].format(name))
             else:
                 bot.send_message(int(cmd[2]), bot_utils.CONFIG['predlozka_ok'].format(name))
@@ -212,7 +213,7 @@ def callback_query_handler(query):
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_played':
         bot.answer_callback_query(callback_query_id=query.id)
-        playback = bot_utils.radioboss_api(action='getlastplayed')
+        playback = music_api.radioboss_api(action='getlastplayed')
         if playback:
             text = ''
             try:
@@ -294,7 +295,7 @@ def message_handler(message):
                 bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())        
                 return
             
-            playback = bot_utils.radioboss_api(action='getlastplayed')
+            playback = music_api.radioboss_api(action='getlastplayed')
             if playback:
                 text = ''
                 old_day = 0
@@ -330,7 +331,7 @@ def message_handler(message):
         keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
                  telebot.types.InlineKeyboardButton(text='Поиск песни по времени', callback_data='song_played_time')])
 
-        playback = bot_utils.radioboss_api(action='playbackinfo')
+        playback = music_api.radioboss_api(action='playbackinfo')
         if playback:
             try:
                 if playback[3].attrib['state'] == 'stop':

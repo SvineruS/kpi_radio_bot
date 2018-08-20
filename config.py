@@ -8,8 +8,8 @@ WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
 
 WEB_DOMAIN = 'kpiradiobot.ga'
 
-WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
-WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key
+WEBHOOK_SSL_CERT = '.Stuff/webhook_cert.pem'  # Path to the ssl certificate
+WEBHOOK_SSL_PRIV = '.Stuff/webhook_pkey.pem'  # Path to the ssl private key
 
 # Quick'n'dirty SSL certificate generation:
 #
