@@ -170,7 +170,6 @@ button:hover {
 	DOM_songs = document.getElementById('DOM_songs')
 	DOM_next_day_btn = document.getElementById('DOM_next_day_btn')
 	var Curr_day
-	var Next_day
 	old_para_num = 0
 	
     date_format = {
@@ -196,25 +195,24 @@ button:hover {
 				return
 			}
 			date = new Date(date)
-			Next_day = new Date(date.getTime() - 1000*60*60*24)
 			tableRemove()
 		}
-		else {
-			date = Next_day
-		}
-
+		else 
+			date = new Date(date.getTime() - 1000*60*60*24)
+		
+		Curr_day = date
+		
 		res = ajax('getday', +date/1000)
 		res = JSON.parse(res)
 
-		tableInsert(res, date)
+		tableInsert(res)
 	}
 
 
 
-	function tableInsert(res, date) {
-		Curr_day = date
+	function tableInsert(res) {
 		DOM_next_day_btn.style.visibility = 'visible';
-		full_html = getSongItemSplitter(true, +date)
+		full_html = getSongItemSplitter(true, +Curr_day)
 		for (var i=0; i<res.length; i++) {
 			track = res[i]
 			html = getSongItem(track)
