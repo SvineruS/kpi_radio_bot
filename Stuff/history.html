@@ -202,7 +202,7 @@ button:hover {
 			date = Next_day
 		}
 
-		res = ajax('getday', date_yyyymmdd(date))
+		res = ajax('getday', +date/1000)
 		res = JSON.parse(res)
 		tableRemove()
 		tableInsert(res, date)
