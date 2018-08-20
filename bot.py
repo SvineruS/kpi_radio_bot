@@ -28,7 +28,7 @@ bot = telebot.TeleBot(TOKEN)
 
 bot_me = bot.get_me()
 print('Запускаем ботика..', bot_me)
-bot.send_message(ADMINS_CHAT_ID, 'Я включилсо')
+#bot.send_message(ADMINS_CHAT_ID, 'Я включилсо')
 
 
 @bot.message_handler(commands=['start', 'help', 'song'])

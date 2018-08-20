@@ -5,7 +5,7 @@ from flask_sslify import SSLify
 from telebot import types
 from config import *
 from bot import bot
-
+from threading import Thread
 
 app = flask.Flask(__name__)
 sslify = SSLify(app)
@@ -73,7 +73,16 @@ def start():
     bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                     certificate=open(WEBHOOK_SSL_CERT, 'r'))
     # Start flask server
-    app.run(host=WEBHOOK_LISTEN,
-            port=WEBHOOK_PORT,
-            ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
-            threaded=True)
+    https = lambda: app.run(host=WEBHOOK_LISTEN,
+                            port=WEBHOOK_PORT,
+                            ssl_context=(WEBHOOK_SSL_CERT, WEBHOOK_SSL_PRIV),
+                            threaded=True)
+
+    http = lambda: app.run(host=WEBHOOK_LISTEN,
+                           port=80,
+                           threaded=True)
+
+    Thread(target=https).start()
+    Thread(target=http).start()
+
+    print('lel')
