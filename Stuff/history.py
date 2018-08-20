@@ -6,7 +6,7 @@ from json import dumps
 
 
 def get(date):
-    date = datetime.fromtimestamp(date)
+    date = datetime.fromtimestamp(int(date))
     playback = radioboss_api(action='getlastplayed')
     if not playback:
         return
