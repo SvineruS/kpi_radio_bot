@@ -1,6 +1,6 @@
 from passwords import *
 
-BITRATE = 192
+BITRATE = 192  # 64 / 128 / 192 / '' - original
 
 WEBHOOK_HOST = '77.47.130.190'
 WEBHOOK_PORT = 443  # 443, 80, 88 or 8443 (port need to be 'open')

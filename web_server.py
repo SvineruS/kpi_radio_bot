@@ -25,8 +25,14 @@ def download(path):
     if not t:
         return ""
 
-    byte_io = BytesIO(t)
-    return flask.send_file(byte_io, mimetype='audio/mpeg')
+    resp = flask.make_response(t.data)
+
+    resp.headers['Content-Transfer-Encoding'] = 'binary'
+    resp.headers['Content-Type'] = 'audio/mpeg'
+    resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Content-length'] = len(t.data)
+    return resp
 
 
 # Process webhook calls
