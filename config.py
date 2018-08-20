@@ -1,4 +1,19 @@
-from passwords import *
+TOKEN = '407361877:AAFJOQmyI1j9arePtKeEOHGaU_uniKpcWHA'
+TOKEN_TEST = '504692764:AAFJIGBkxjQnhiX6E_C0Yr-5JYpWXwJCEK8'  #svin_test_bot
+
+
+# Чат с модерами
+ADMINS_CHAT_ID = -1001147941242
+#ADMINS_CHAT_ID = 185520398
+
+# ip, port, password.   Узнать в радиобоссе->настройки->api :)
+#RADIOBOSS_DATA = ('127.0.0.1', 9000, '1')
+RADIOBOSS_DATA = ('77.47.130.190', 9000, '1')  # для дебага извне
+
+
+DB_URL = "mongodb://user:123456@ds151048.mlab.com:51048/ripll"
+
+
 
 BITRATE = 192  # 64 / 128 / 192 / '' - original
 
@@ -21,3 +36,4 @@ WEBHOOK_SSL_PRIV = 'Stuff/webhook_pkey.pem'  # Path to the ssl private key
 
 WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
 WEBHOOK_URL_PATH = "/%s/" % TOKEN
+

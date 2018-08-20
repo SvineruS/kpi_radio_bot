@@ -13,7 +13,7 @@ import music_api
 import bot_utils
 import db
 import ban
-from passwords import *
+from config import *
 
 from datetime import datetime
 from time import strptime, strftime

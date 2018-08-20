@@ -6,7 +6,6 @@ from config import *
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 
 
-
 def search(name):
     url = "https://api-2.datmusic.xyz/search?q={0}&page=0".format(quote(name))
     try:
