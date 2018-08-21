@@ -1,4 +1,4 @@
-from time import time
+from time import time, mktime
 from datetime import datetime
 from bot_utils import get_break_num
 from json import dumps, loads
@@ -18,7 +18,7 @@ def html():
 
 def get(date):
     date = datetime.fromtimestamp(int(date))
-    key = date .date()
+    key = date2stamp(date)
     history = read()
     answer = []
 
@@ -26,7 +26,7 @@ def get(date):
         return dumps(answer)
 
     break_num_old = 0
-    for track in history:
+    for track in history[key]:
         break_num_curr = get_break_num(datetime.fromtimestamp(track['time_start']))
         if break_num_curr != 0 and break_num_curr != break_num_old:
             break_num_old = break_num_curr
@@ -57,12 +57,16 @@ def save(args):
         'time_stop': time() + int(args.get('len')),
         'path': args.get('path'),
     }
-    key = datetime.today().date()
+    key = date2stamp(datetime.today())
     history = read()
     if key not in history:
         history[key] = []
     history[key].append(obj)
     write(history)
+
+
+def date2stamp(date):
+    return int(mktime(date.date().timeturple()))
 
 
 def write(history):
