@@ -14,15 +14,86 @@ body {
 }
 
 .header {
+	position: fixed;
+	top: 0;
+	width: 100%;
 	padding: 15px 20px;
 	background: #565fa2;
 	color: white;
+	z-index: 1;
+}
+
+.sitename {
 	font-size: 20px;
-	margin-bottom: 20px;
+	text-decoration: none;
+	color: white;
+}
+.sitename a:visited {color: white;}
+
+.player {
+	background: rgba(20, 20, 20, 0.3);
+	font-size: 15px;
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    right: 60px;
+    left: 200px;
+	padding: 8px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+.player-pause {
+	position: absolute;
+	margin-top: -2px;
+	cursor: pointer;
+}
+.player-title {
+	display: inline-block;
+	position: absolute;
+	right: 100px;
+    left: 50px;
+	margin-left: 5%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.player-time, .player-volume_wrap {
+	float: right;
+}
+
+.player-progress {
+	position: absolute;
+	top: 0; left: 0;
+	background: #343858;
+	height: 100%;
+	width: 0%;
+	z-index: -1;
+	border-radius: 5px;
+	animation-duration: 1s;
+}
+
+.player-volume {
+	appearance: none;
+	-webkit-appearance: none;
+	transform: rotate(270deg);
+	outline: none;
+	width: 33px;
+	height: 100%;
+	margin: 0px;
+	background: #343858;
+	cursor: pointer;
+}
+.player-volume::-webkit-slider-thumb {
+	-webkit-appearance: none;
+    width: 10px;
+    height: 100%;
+	background-color: #565fa2;
+	border: solid black 0.5px;
 }
 
 .main {
 	margin: 0 auto;
+	margin-top: 75px;
 	padding: 0 2%;
 	text-align: center;
 }
@@ -46,7 +117,6 @@ body {
 	margin-top: 5px;
 	font-size: 1.2em;
 	font-weight: bold;
-	visibility: hidden;
 }
 
 
@@ -62,6 +132,10 @@ body {
 	margin-bottom: -1px;
 	background-color: #ffffff;
 	border: 1px solid #ecf0f1;
+}
+
+.item-playing {
+	background-color: #cacbf8;
 }
 
 .splitter {
@@ -80,6 +154,7 @@ body {
 
 .time {
 	float: left;
+	margin-top: -3px;
 	padding: 3px 7px;
 	font-family: DaysRegular, Arial, "Helvetica CY", "Nimbus Sans L", sans-serif;
 	font-size: 13px;
@@ -103,7 +178,7 @@ body {
 }
 
 
-.play {
+.play-btn {
 	padding: 3px 7px;
 	font-size: 13px;
 	font-weight: bold;
@@ -112,8 +187,14 @@ body {
 	border-radius: 10px;
 	float: right;
 	line-height: 1;
+	cursor: pointer;
 }
-
+.play:before {
+	content: '▶';
+}
+.pause:before {
+	content: '❚❚';
+}
 
 
 .foot {
@@ -122,11 +203,12 @@ body {
   width: 100%;
   line-height: 40px;
 }
+.foot a:visited {color: black;}
 
+.hidden {visibility: hidden;}
+button:hover {background-color: #c6c8de;}
+a:link, a:visited, a:active { text-decoration: none; }
 
-button:hover {
-	background-color: #c6c8de;
-}
 .rotate {	animation: spin 1s linear 0s infinite; display: inline-block;} @keyframes spin { 	from { transform:rotate(0deg); } 	to { transform:rotate(360deg); } }
 
 .para_num-1 {background: #4fc3f7;}
@@ -139,18 +221,28 @@ button:hover {
 
 
 <body>
-<div class="header">KPIRADIOBOT</div>
+<audio id="player" ontimeupdate="playerUpdateProgress()" 
+	   onpause="playerOnPause()" onplay="playerOnPlay()"></audio>
+<div class="header">
+	<span class="sitename"><a href="http://t.me/kpiradio_bot">KPIRADIOBOT</a></span>
+	<div id="DOMplayer" class="player hidden" onclick="playerProgress(event, this)">
+		<div class="player-progress" id="playerprogressbar"></div>
+		<span class="player-pause play" id="playerpause" onclick="playerPlayPause()"></span>
+		<span class="player-title" id="playertitle">Lol - kek</span>
+		<span class="player-volume_wrap"><input type="range" class="player-volume" oninput="playerVolume(this.value)"></span>
+		<span class="player-time" id="playertime">14:88</span>
+	</div>
+</div>
 <div class="main">
 	<div class="input">
-		<input class="item input-item" id="DOM_date" required onchange="search()" type="date" min="2018-06-07T00:00">
+		<input class="item input-item" id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
 		<button class="item input-item" onclick="search()" style="top: 1px;">Поиск 🔎</button>
 	</div>
 	<div class="songs" >
 		<div id="DOM_songs"></div>
-		<button class="item" onclick="search(true)" id="DOM_next_day_btn">Дальше</button>
+		<button class="item hidden" onclick="search(true)" id="DOM_next_day_btn">Дальше</button>
 	</div>
 </div>
-
 
 
 <div class="foot"><marquee direction="right">
@@ -169,6 +261,14 @@ button:hover {
 	DOM_date = document.getElementById('DOM_date')
 	DOM_songs = document.getElementById('DOM_songs')
 	DOM_next_day_btn = document.getElementById('DOM_next_day_btn')
+
+	DOM_player = document.getElementById('DOMplayer')
+	DOM_player_progressbar = document.getElementById('playerprogressbar')
+	DOM_player_btn = document.getElementById('playerpause')
+	DOM_player_time = document.getElementById('playertime')
+	DOM_player_title = document.getElementById('playertitle')
+	
+	var Curr_item_playing
 	var Curr_day
 	old_para_num = 0
 	
@@ -184,6 +284,7 @@ button:hover {
 		today = date_yyyymmdd(new Date())
 		DOM_date.value = today
 		DOM_date.max = today
+		player.volume = 0.5
 		search()
 	}
 
@@ -211,7 +312,7 @@ button:hover {
 
 
 	function tableInsert(res) {
-		DOM_next_day_btn.style.visibility = 'visible';
+		DOM_next_day_btn.classList.remove('hidden')
 		full_html = getSongItemSplitter(true, +Curr_day)
 		for (var i=0; i<res.length; i++) {
 			track = res[i]
@@ -230,14 +331,14 @@ button:hover {
 			old_para_num = item.para_num
             html += getSongItemSplitter(false, item.para_num)
 		}
-	    html += "<div class='item track'>\
-		<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span> \
-		<span class='casttitle'> \
-			<span class='artist'>"+item.artist+"</span> \
-			<span class='title'>"+item.title+"</span> \
-		</span> \
-		<span class='play'>▶</span> \
-		</div>"
+	    html += "<div class='item track'>" +
+		"<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span>" +
+		"<span class='casttitle'>" +
+			"<span class='artist'>"+item.artist+"</span>" +
+			"<span class='title'>"+item.title+"</span>" +
+		"</span>" +
+		"<span class='play-btn play' onclick=\"play('"+ item.path +"', '"+ item.artist +" - "+ item.title +"', this)\"></span>" +
+		"</div>"
 
 		return html
     }
@@ -262,10 +363,65 @@ button:hover {
 		return "<div class='item splitter para_num-"+ data +"'>"+html+"</div>"
     }
 
+	
+	function play(path, title, element) {
+		DOMplayer.classList.remove('hidden')
+		if (!element.classList.contains('pause')) { //play
+			if (Curr_item_playing) {
+				playerOnPause()
+				Curr_item_playing.classList.remove('item-playing')
+			}
+			Curr_item_playing = element.parentElement
+			Curr_item_playing.classList.add('item-playing')
+			player.src = 'play/' + path
+			DOM_player_title.innerHTML = title			
+			playerUpdateProgress()
+			playerPlayPause(true)
+		} else {								  //pause
+			playerPlayPause(false)
+		}		
+	}
+	
+	function playerVolume(volume) {
+		player.volume = volume / 100
+	}
 
+	function playerProgress(event, bar) {
+		if (!player.duration) return;
+		progress = event.layerX / bar.clientWidth
+		player.currentTime = player.duration * progress
+		playerUpdateProgress() 
+	}
 
+	function playerPlayPause(state=undefined) {
+		if (state === undefined) {
+			if (player.paused) player.play()
+			else player.pause()
+			event.stopPropagation();
+		} else {
+			if (state) player.play()
+			else player.pause()
+		}
+	}
+
+	function playerUpdateProgress() {
+		DOM_player_progressbar.style.width = player.currentTime/player.duration*100 + '%'
+	}
+
+	function playerOnPause() {
+		DOM_player_btn.classList.remove('pause')
+		if (Curr_item_playing)
+			Curr_item_playing.getElementsByClassName('play-btn')[0].classList.remove('pause')
+	}
+	
+	function playerOnPlay() {
+		DOM_player_btn.classList.add('pause')
+		if (Curr_item_playing)
+			Curr_item_playing.getElementsByClassName('play-btn')[0].classList.add('pause')
+	}
+	
+	
 	function tableRemove() {
-		DOM_next_day_btn.style.visibility = 'hidden';
 		DOM_songs.innerHTML = '';
 	}
 
@@ -280,6 +436,7 @@ button:hover {
 	
 	
 	function ajax(url, data) {
+return '[{"artist": "The George Baker Selection", "title": "Little Green Bag", "time_start": 1534788311.0, "time_stop": 1534788503.0, "para_num": 5}, {"artist": "Duke Dumont", "title": "Ocean Drive https://vk.com/maks.skam", "time_start": 1534788108.0, "time_stop": 1534788314.0, "para_num": 5}, {"artist": "", "title": "The Hardkiss - Prirva", "time_start": 1534787938.0, "time_stop": 1534788112.0, "para_num": 5}, {"artist": "", "title": "Girl You Be a Woman Soon", "time_start": 1534787748.0, "time_stop": 1534787948.0, "para_num": 5}, {"artist": "Hibou", "title": "Sunder", "time_start": 1534787555.0, "time_stop": 1534787755.0, "para_num": 5}, {"artist": "nirvana", "title": "oh , my", "time_start": 1534787376.0, "time_stop": 1534787557.0, "para_num": 5}, {"artist": "", "title": "ed-sheeran - kiss-me", "time_start": 1534787113.0, "time_stop": 1534787393.0, "para_num": 5}, {"artist": "\u0411\u0443\u043c\u0431\u043e\u043a\u0441", "title": "", "time_start": 1534786852.0, "time_stop": 1534787114.0, "para_num": 5}, {"artist": "David Sylvian", "title": "September", "time_start": 1534786784.0, "time_stop": 1534786861.0, "para_num": 5}, {"artist": "George Ezra", "title": "Paradise", "time_start": 1534786566.0, "time_stop": 1534786788.0, "para_num": 5}, {"artist": "Kaleo", "title": "No Good", "time_start": 1534786336.0, "time_stop": 1534786572.0, "para_num": 5}, {"artist": "Nirvana", "title": "Where did you sleep last night (zvukoff.ru)", "time_start": 1534786036.0, "time_stop": 1534786342.0, "para_num": 5}, {"artist": "\u041f\u043b\u0430\u0447 \u0404\u0440\u0435\u043ci\u0457", "title": "\u0422\u0438 \u0432\u0442\u0440\u0435\u0442\u0454 \u0446\u044c\u043e\u0433\u043e \u043bi\u0442\u0430 \u0437\u0430\u0446\u0432\u0456\u0442\u0435\u0448 [www.mp3-online.com.ua]", "time_start": 1534785830.0, "time_stop": 1534786042.0, "para_num": 5}, {"artist": "Ben E King", "title": "Stand By Me", "time_start": 1534785656.0, "time_stop": 1534785835.0, "para_num": 5}, {"artist": "Charlie Puth", "title": "We Dont Talk Anymore", "time_start": 1534785445.0, "time_stop": 1534785662.0, "para_num": 5}, {"artist": "Bob Dylan", "title": "Knocking On Heavens Door", "time_start": 1534785303.0, "time_stop": 1534785454.0, "para_num": 5}, {"artist": "Joan Osborne", "title": "One Of Us", "time_start": 1534785005.0, "time_stop": 1534785308.0, "para_num": 5}, {"artist": "", "title": "bez-obmezhen - hochesh", "time_start": 1534784790.0, "time_stop": 1534785011.0, "para_num": 5}, {"artist": "Constantine", "title": "\u041a\u0440\u043e\u0432\u043e\u0436\u0430\u0434\u043d\u043e\u0441\u0442\u044c", "time_start": 1534784523.0, "time_stop": 1534784795.0, "para_num": 5}, {"artist": "Sam Smith", "title": "Stay With Me", "time_start": 1534784355.0, "time_stop": 1534784527.0, "para_num": 5}, {"artist": "Jamala", "title": "Youre Made of Love", "time_start": 1534784123.0, "time_stop": 1534784361.0, "para_num": 5}, {"artist": "", "title": "5nizza - I believe in you", "time_start": 1534783961.0, "time_stop": 1534784127.0, "para_num": 5}, {"artist": "Ramriddlz", "title": "Pop Rocks", "time_start": 1534783746.0, "time_stop": 1534783968.0, "para_num": 5}, {"artist": "Ed Sheeran", "title": "Dont", "time_start": 1534783533.0, "time_stop": 1534783749.0, "para_num": 5}, {"artist": "The Beatles", "title": "Good Day Sunshine", "time_start": 1534783410.0, "time_stop": 1534783539.0, "para_num": 5}, {"artist": "", "title": "\u041d\u0435\u0436\u043d\u043e\u0441\u0442\u044c - \u041d\u0435\u0436\u043d\u043e\u0441\u0442\u044c", "time_start": 1534783149.0, "time_stop": 1534783421.0, "para_num": 5}, {"artist": "", "title": "mv-iu-feat-g-dragon - palette", "time_start": 1534782936.0, "time_stop": 1534783154.0, "para_num": 5}, {"artist": "Jamala (\u0414\u0436\u0430\u043c\u0430\u043b\u0430)", "title": "\u0427\u043e\u043c\u0443 \u041a\u0432\u0456\u0442\u0438 \u041c\u0430\u044e\u0442\u044c \u041e\u0447\u0456", "time_start": 1534782715.0, "time_stop": 1534782942.0, "para_num": 5}, {"artist": "First Aid Kit", "title": "Wolf", "time_start": 1534782497.0, "time_stop": 1534782718.0, "para_num": 5}, {"artist": "Queen", "title": "Bohemian Rhapsody", "time_start": 1534782163.0, "time_stop": 1534782517.0, "para_num": 5}, {"artist": "\u0410\u0440\u0441\u0435\u043d \u041c\u0456\u0440\u0437\u043e\u044f\u043d", "title": "\u041f\u043e\u0446\u0456\u043b\u0443\u0439 \u043c\u0435\u043d\u0435", "time_start": 1534781945.0, "time_stop": 1534782168.0, "para_num": 5}, {"artist": "Her", "title": "Five Minutes", "time_start": 1534781784.0, "time_stop": 1534781953.0, "para_num": 5}, {"artist": "The Beatles", "title": "Im Down", "time_start": 1534781642.0, "time_stop": 1534781793.0, "para_num": 5}, {"artist": "\u0411\u0443\u043c\u0431\u043e\u043a\u0441", "title": "\u041e\u0434\u043d\u0430", "time_start": 1534781376.0, "time_stop": 1534781648.0, "para_num": 5}, {"artist": "Nneka", "title": "Heartbeat (Chase & Status We Just Bought A Guitar Remix)", "time_start": 1534781144.0, "time_stop": 1534781380.0, "para_num": 5}, {"artist": "David Duchovny", "title": "Half Life", "time_start": 1534780840.0, "time_stop": 1534781148.0, "para_num": 5}, {"artist": "intouch", "title": "Pride", "time_start": 1534780610.0, "time_stop": 1534780848.0, "para_num": 5}, {"artist": "Ed Sheeran", "title": "Firefly", "time_start": 1534780360.0, "time_stop": 1534780616.0, "para_num": 5}, {"artist": "Pink Floyd", "title": "Green Is The Colour", "time_start": 1534780190.0, "time_stop": 1534780368.0, "para_num": 5}, {"artist": "BLOOMS CORDA", "title": "zoloto Reinu", "time_start": 1534780037.0, "time_stop": 1534780194.0, "para_num": 5}, {"artist": "", "title": "Key Clarkson - Because of you", "time_start": 1534779825.0, "time_stop": 1534780044.0, "para_num": 5}, {"artist": "Birdy", "title": "Strange Birds", "time_start": 1534779649.0, "time_stop": 1534779833.0, "para_num": 5}, {"artist": "\u0411\u0443\u043c\u0431\u043e\u043a\u0441", "title": "\u041a\u0432\u0456\u0442\u0438 \u0432 \u0432\u043e\u043b\u043e\u0441\u0441\u0456", "time_start": 1534779415.0, "time_stop": 1534779653.0, "para_num": 5}, {"artist": "\u0412\u043e\u0441\u044c\u043c\u0438\u0439 \u0434\u0435\u043d\u044c", "title": "\u041a\u0440\u0438\u0447\u0430\u0442\u0438", "time_start": 1534779153.0, "time_stop": 1534779424.0, "para_num": 5}, {"artist": "\u041e\u0440\u043a\u0435\u0441\u0442\u0440 \u0427\u0435", "title": "\u0413\u043e\u0440\u043e\u0434", "time_start": 1534778877.0, "time_stop": 1534779157.0, "para_num": 5}, {"artist": "The XX", "title": "Fiction", "time_start": 1534778710.0, "time_stop": 1534778886.0, "para_num": 5}, {"artist": "Angels & Airwaves", "title": "Anomaly", "time_start": 1534778546.0, "time_stop": 1534778718.0, "para_num": 5}, {"artist": "Leroy", "title": "Good Time", "time_start": 1534778347.0, "time_stop": 1534778556.0, "para_num": 5}, {"artist": "Nickelback", "title": "Someday", "time_start": 1534778144.0, "time_stop": 1534778350.0, "para_num": 5}, {"artist": "Artic Monkeys", "title": "When The Sun Goes Down", "time_start": 1534777951.0, "time_stop": 1534778151.0, "para_num": 5}, {"artist": "\u0410\u0440\u043a\u0430\u0434\u0456\u0439 \u0412\u043e\u0439\u0442\u044e\u043a", "title": "\u0412\u043e\u043d\u0430 (zaycev.net)", "time_start": 1534777735.0, "time_stop": 1534777960.0, "para_num": 5}, {"artist": "Birdy", "title": "People Help The People", "time_start": 1534777492.0, "time_stop": 1534777746.0, "para_num": 5}, {"artist": "\u0411\u0443\u043c\u0431\u043e\u043a\u0441", "title": "\u041d\u0430\u043e\u0434\u0438\u043d\u0446\u0456 (zvukoff.ru)", "time_start": 1534777246.0, "time_stop": 1534777496.0, "para_num": 5}, {"artist": "Yes", "title": "Mood For A Day", "time_start": 1534777076.0, "time_stop": 1534777258.0, "para_num": 5}, {"artist": "Jamala, \u0410\u043d\u0434\u0440\u0456\u0439 \u0425\u043b\u0438\u0432\u043d\u044e\u043a", "title": "\u0417\u043b\u0438\u0432\u0430", "time_start": 1534776734.0, "time_stop": 1534777080.0, "para_num": 5}, {"artist": "Moglii", "title": "Moglii - Away From Me", "time_start": 1534776610.0, "time_stop": 1534776742.0, "para_num": 5}, {"artist": "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u0439 \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c", "title": "\u0414\u043e\u0440\u043e\u0436\u043a\u0430 2", "time_start": 1534776377.0, "time_stop": 1534776615.0, "para_num": 5}, {"artist": "Justin Biber", "title": "Love Yourself", "time_start": 1534776149.0, "time_stop": 1534776382.0, "para_num": 5}, {"artist": "\u041e\u0434\u0438\u043d \u0432 \u043a\u0430\u043d\u043e\u0454", "title": "\u041f\u043e\u043e\u0431\u0456\u0446\u044f\u0439 \u043c\u0435\u043d\u0456", "time_start": 1534775841.0, "time_stop": 1534776159.0, "para_num": 5}, {"artist": "Five For Fighting", "title": "Easy Tonight", "time_start": 1534775596.0, "time_stop": 1534775846.0, "para_num": 5}, {"artist": "BLOOMS CORDA", "title": "kudy vse pishlo", "time_start": 1534775416.0, "time_stop": 1534775607.0, "para_num": 5}, {"artist": "HAEVN", "title": "Finding Out More", "time_start": 1534775220.0, "time_stop": 1534775426.0, "para_num": 5}, {"artist": "5nizza (SunSay)", "title": "\u0412\u0441\u0435 \u0440\u0430\u0432\u043d\u043e", "time_start": 1534775037.0, "time_stop": 1534775223.0, "para_num": 5}, {"artist": "\u0410\u043d\u0442\u0438\u0442\u0456\u043b\u0430", "title": "\u0412\u0438\u0431\u0438\u0440\u0430\u0439", "time_start": 1534774852.0, "time_stop": 1534775040.0, "para_num": 5}, {"artist": "Joy Division", "title": "", "time_start": 1534774556.0, "time_stop": 1534774860.0, "para_num": 5}, {"artist": "", "title": "\u0414\u0436\u0430\u043c\u0430\u043b\u0430 \u2013 \u0428\u043b\u044f\u0445 \u0434\u043e\u0434\u043e\u043c\u0443", "time_start": 1534774293.0, "time_stop": 1534774559.0, "para_num": 5}, {"artist": "Fleetwood Mac", "title": "Landslide", "time_start": 1534774100.0, "time_stop": 1534774296.0, "para_num": 5}, {"artist": "", "title": "Boney M. - Sunny1", "time_start": 1534773887.0, "time_stop": 1534774102.0, "para_num": 5}, {"artist": "Old Man Canyon", "title": "Tomorrow Man", "time_start": 1534773642.0, "time_stop": 1534773894.0, "para_num": 5}, {"artist": "", "title": "11 \u0414\u043e\u0440\u043e\u0436\u043a\u0430 11", "time_start": 1534773382.0, "time_stop": 1534773652.0, "para_num": 5}, {"artist": "", "title": "Aha - Velvet(MusVid.net)", "time_start": 1534773128.0, "time_stop": 1534773387.0, "para_num": 5}, {"artist": "Muse", "title": "Feeling Good", "time_start": 1534772937.0, "time_stop": 1534773136.0, "para_num": 5}, {"artist": "Jamala (\u0414\u0436\u0430\u043c\u0430\u043b\u0430)", "title": "\u041b\u044e\u0431\u0438\u0442\u0438", "time_start": 1534772670.0, "time_stop": 1534772940.0, "para_num": 5}, {"artist": "\u041d\u0435\u0440\u0432\u044b", "title": "\u0420\u0430\u0434\u0438\u043e\u0432\u043e\u043b\u043d\u0430", "time_start": 1534772461.0, "time_stop": 1534772676.0, "para_num": 5}, {"artist": "", "title": "day-wave - you", "time_start": 1534772298.0, "time_stop": 1534772465.0, "para_num": 5}, {"artist": "", "title": "Fever The Ghost - SOURCE (official music video) (1)", "time_start": 1534772055.0, "time_stop": 1534772304.0, "para_num": 5}, {"artist": "Aister", "title": "Somewhere On Fuerton", "time_start": 1534771900.0, "time_stop": 1534772059.0, "para_num": 5}, {"artist": "", "title": "\u0414\u043e\u0440\u043d - \u0421\u0442\u044b\u0446\u043c\u0435\u043d", "time_start": 1534771663.0, "time_stop": 1534771904.0, "para_num": 5}, {"artist": "Avicil", "title": "Wake Me Up", "time_start": 1534771424.0, "time_stop": 1534771669.0, "para_num": 5}, {"artist": "Naughty Boy", "title": "La La La (feat. Sam Smith)", "time_start": 1534771210.0, "time_stop": 1534771430.0, "para_num": 5}, {"artist": "", "title": "ed-sheeran - castle-on-the-hi", "time_start": 1534770953.0, "time_stop": 1534771214.0, "para_num": 5}, {"artist": "", "title": "placebo - every-you-every-me", "time_start": 1534770744.0, "time_stop": 1534770958.0, "para_num": 5}, {"artist": "The Elephants", "title": "Nothing But Clues", "time_start": 1534770484.0, "time_stop": 1534770748.0, "para_num": 5}, {"artist": "Goriaz", "title": "Kids With Guns", "time_start": 1534770308.0, "time_stop": 1534770530.0, "para_num": 4}, {"artist": "", "title": "the-maneken - stop", "time_start": 1534770069.0, "time_stop": 1534770315.0, "para_num": 4}, {"artist": "", "title": "kissvk.com - Dean-21", "time_start": 1534769869.0, "time_stop": 1534770076.0, "para_num": 4}, {"artist": "BONES", "title": "15. BlackMold", "time_start": 1534769756.0, "time_stop": 1534769879.0, "para_num": 4}, {"artist": "Creedence Clearwater Revival", "title": "Bad Moon Rising", "time_start": 1534769623.0, "time_stop": 1534769764.0, "para_num": 4}, {"artist": "", "title": "5-nizza - 15-ushedshim-slishkom-rano", "time_start": 1534769418.0, "time_stop": 1534769626.0, "para_num": 4}, {"artist": "", "title": "onuka - strum", "time_start": 1534769138.0, "time_stop": 1534769421.0, "para_num": 4}, {"artist": "Caesars Palace", "title": "Jerk It Out", "time_start": 1534768945.0, "time_stop": 1534769143.0, "para_num": 4}, {"artist": "", "title": "sergey-babkin - de-bi-ya", "time_start": 1534768738.0, "time_stop": 1534768949.0, "para_num": 4}, {"artist": "Kygo feat. Conrad", "title": "Firestone", "time_start": 1534768539.0, "time_stop": 1534768744.0, "para_num": 4}, {"artist": "\u0411\u0430\u0431\u043a\u0438\u043d", "title": "\u0414\u0435 \u0411\u0438 \u042f", "time_start": 1534768331.0, "time_stop": 1534768542.0, "para_num": 4}, {"artist": "", "title": "varta - chekaj (mp3CC.biz)", "time_start": 1534768119.0, "time_stop": 1534768340.0, "para_num": 4}, {"artist": "The Elephants", "title": "Molehis", "time_start": 1534767837.0, "time_stop": 1534768141.0, "para_num": 4}, {"artist": "Vivienne Mort", "title": "\u0414\u0443\u043c\u0430\u044e \u043f\u0440\u043e \u0442\u0435\u0431\u0435", "time_start": 1534767661.0, "time_stop": 1534767843.0, "para_num": 4}, {"artist": "", "title": "\u041f\u0438\u0430\u043d\u043e\u0431\u043e\u0439\u0413\u043e\u0440\u044f \u0447\u0443\u0442\u044c \u0441\u043b\u044b\u0448\u043d\u043e.mp3", "time_start": 1534767443.0, "time_stop": 1534767664.0, "para_num": 4}, {"artist": "", "title": "nervy - volshebnaya", "time_start": 1534767246.0, "time_stop": 1534767453.0, "para_num": 4}, {"artist": "", "title": "onuka - animal", "time_start": 1534766982.0, "time_stop": 1534767249.0, "para_num": 4}, {"artist": "\u0417\u0430\u0445\u0430\u0440", "title": "\u0410 \u0432\u043e\u043d\u0430", "time_start": 1534766805.0, "time_stop": 1534766987.0, "para_num": 4}]';
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.open("POST", 'history/' + url, false);
 		xmlhttp.send(data);

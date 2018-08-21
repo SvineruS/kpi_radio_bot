@@ -39,7 +39,8 @@ def get(date):
             'title': track['title'],
             'time_start': track['time_start'],
             'time_stop': track['time_stop'],
-            'para_num': break_num_old if break_num_curr == 0 else break_num_curr
+            'para_num': break_num_old if break_num_curr == 0 else break_num_curr,
+            'path': key + '/' + track['time_start']
         })
 
     answer = dumps(answer)
@@ -63,6 +64,17 @@ def save(args):
         history[key] = []
     history[key].append(obj)
     write(history)
+
+
+def play(path):
+    key, time = path.split('/')
+    history = read()
+    for track in history[key]:
+        if track['time_start'] == time:
+            f = open(track['path'], 'rb')
+            bytes = f.read()
+            f.close()
+            return bytes
 
 
 def date2stamp(date):

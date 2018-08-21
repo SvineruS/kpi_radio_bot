@@ -45,6 +45,11 @@ def history_save():
     return ''
 
 
+@app.route("/history/play/<path:path>", methods=['GET'], host=WEB_DOMAIN)
+def history_play(path):
+    return echo_audio_file(history.play(path))
+
+
 def echo_audio_file(bytes):
     resp = flask.make_response(bytes)
     resp.headers['Content-Transfer-Encoding'] = 'binary'
@@ -53,6 +58,7 @@ def echo_audio_file(bytes):
     resp.headers['Cache-Control'] = 'no-cache'
     resp.headers['Content-Length'] = len(bytes)
     return resp
+
 
 # Process webhook calls
 @app.route(WEBHOOK_URL_PATH, methods=['POST'])
