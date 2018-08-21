@@ -295,7 +295,7 @@ def message_handler(message):
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
-                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', callback_data='song_played_time')])
+                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://'+WEB_DOMAIN+'/history')])
 
         playback = music_api.radioboss_api(action='playbackinfo')
         if playback:
@@ -351,7 +351,7 @@ def query_text(inline_query):
     articles = []
     for i in range(min(5, len(music))):
         audio = music[i]
-        link = 'https://kpiradiobot.ga/download/' + '/'.join(audio['download'].split('/')[-2:])
+        link = 'http://'+WEB_DOMAIN+'/download/' + '/'.join(audio['download'].split('/')[-2:])
         articles.append(
             telebot.types.InlineQueryResultAudio(i, link,
                                                  performer=audio['artist'],
