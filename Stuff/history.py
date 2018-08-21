@@ -31,8 +31,8 @@ def get(date):
         if break_num_curr != 0 and break_num_curr != break_num_old:
             break_num_old = break_num_curr
 
-        if not track.attrib['ARTIST'] and not track.attrib['TITLE']:
-            track.attrib['TITLE'] = track.attrib['CASTTITLE']
+        if not track['artist'] and not track['title']:
+            track['title'] = track['casttitle']
 
         answer.append({
             'artist': track['artist'],
