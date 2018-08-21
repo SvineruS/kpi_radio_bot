@@ -18,7 +18,7 @@ def html():
 
 def get(date):
     date = datetime.fromtimestamp(int(date))
-    key = date2stamp(date)
+    key = str(date2stamp(date))
     history = read()
     answer = []
 
@@ -53,11 +53,11 @@ def save(args):
         'artist': args.get('artist'),
         'title': args.get('title'),
         'casttitle': args.get('casttitle'),
-        'time_start': time(),
-        'time_stop': time() + int(args.get('len')),
+        'time_start': int(time()),
+        'time_stop': int(time()) + int(args.get('len')),
         'path': args.get('path'),
     }
-    key = date2stamp(datetime.today())
+    key = str(date2stamp(datetime.today()))
     history = read()
     if key not in history:
         history[key] = []
