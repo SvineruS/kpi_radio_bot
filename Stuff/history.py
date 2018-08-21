@@ -69,7 +69,7 @@ def play(path):
     key = stamp2key(path)
     history = read()
     for track in history[key]:
-        if str(track['time_start']) == time:
+        if str(track['time_start']) == path:
             f = open(track['path'], 'rb')
             bytes = f.read()
             f.close()
