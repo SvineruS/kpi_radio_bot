@@ -40,6 +40,7 @@ def history_html():
 @app.route("/history/getday", methods=['POST'], host=WEB_DOMAIN)
 def history_get():
     date = flask.request.data.decode('utf-8')
+    return ''
     return history.get(date)
 
 
