@@ -40,13 +40,14 @@ def history_html():
 @app.route("/history/getday", methods=['POST'], host=WEB_DOMAIN)
 def history_get():
     date = flask.request.data.decode('utf-8')
-    return ''
-    return history.get(date)
+    a = history.get(date)
+    print(a)
+    return a
 
 
 @app.route("/history/save", methods=['GET'])
 def history_save():
-    # https://WEBHOOK_LISTEN:WEBHOOK_PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
+    # http://WEBHOOK_LISTEN:WEBHOOK_PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     history.save(flask.request.args)
     return ''
 
