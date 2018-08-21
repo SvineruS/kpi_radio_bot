@@ -79,9 +79,9 @@ def write(history):
 def read():
     try:
         f = open(DB_PATH, 'r')
+        history = loads(f.read())
     except:
         write({})
         return {}
-    history = loads(f.read())
     f.close()
     return history
