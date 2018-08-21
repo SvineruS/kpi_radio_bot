@@ -66,7 +66,7 @@ def save(args):
 
 
 def date2stamp(date):
-    return int(mktime(date.date().timeturple()))
+    return int(mktime(date.date().timetuple()))
 
 
 def write(history):
