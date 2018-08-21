@@ -20,10 +20,11 @@ def get(date):
     date = datetime.fromtimestamp(int(date))
     key = date .date()
     history = read()
-    if key not in history:
-        return []
-
     answer = []
+
+    if key not in history:
+        return dumps(answer)
+
     break_num_old = 0
     for track in history:
         break_num_curr = get_break_num(datetime.fromtimestamp(track['time_start']))
