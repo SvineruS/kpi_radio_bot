@@ -17,8 +17,7 @@ def html():
 
 
 def get(date):
-    date = datetime.fromtimestamp(int(date))
-    key = str(date2stamp(date))
+    key = stamp2key(date)
     history = read()
     answer = []
 
@@ -40,7 +39,7 @@ def get(date):
             'time_start': track['time_start'],
             'time_stop': track['time_stop'],
             'para_num': break_num_old if break_num_curr == 0 else break_num_curr,
-            'path': key + '/' + str(track['time_start'])
+            'path': str(track['time_start'])
         })
 
     answer = dumps(answer)
@@ -58,7 +57,7 @@ def save(args):
         'time_stop': int(time()) + int(args.get('len')),
         'path': args.get('path'),
     }
-    key = str(date2stamp(datetime.today()))
+    key = stamp2key(time())
     history = read()
     if key not in history:
         history[key] = []
@@ -67,7 +66,7 @@ def save(args):
 
 
 def play(path):
-    key, time = path.split('/')
+    key = stamp2key(path)
     history = read()
     for track in history[key]:
         if str(track['time_start']) == time:
@@ -77,8 +76,8 @@ def play(path):
             return bytes
 
 
-def date2stamp(date):
-    return int(mktime(date.date().timetuple()))
+def stamp2key(stamp):
+    return str(int(mktime(datetime.fromtimestamp(int(stamp)).date().timetuple())))
 
 
 def write(history):
