@@ -221,7 +221,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 
 
 <body>
-<audio id="player" ontimeupdate="playerUpdateProgress()" 
+<audio id="player" ontimeupdate="Progress()" 
 	   onpause="playerOnPause()" onplay="playerOnPlay()"></audio>
 <div class="header">
 	<span class="sitename"><a href="http://t.me/kpiradio_bot">KPIRADIOBOT</a></span>
@@ -331,13 +331,15 @@ a:link, a:visited, a:active { text-decoration: none; }
 			old_para_num = item.para_num
             html += getSongItemSplitter(false, item.para_num)
 		}
+		title = (item.artist +' - '+ item.title).replace(/'/g, "&#39;");
+
 	    html += "<div class='item track'>" +
 		"<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span>" +
 		"<span class='casttitle'>" +
 			"<span class='artist'>"+item.artist+"</span>" +
 			"<span class='title'>"+item.title+"</span>" +
 		"</span>" +
-		"<span class='play-btn play' onclick='play(\""+ item.path +'", "'+ item.artist +' - '+ item.title +"\", this)'></span>" +
+		"<span class='play-btn play' onclick='play(\""+ item.path +'", "'+ title +"\", this)'></span>" +
 		"</div>"
 
 		return html
@@ -375,7 +377,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 			Curr_item_playing.classList.add('item-playing')
 			player.src = '/history/play/' + path
 			DOM_player_title.innerHTML = title			
-			playerUpdateProgress()
+			Progress()
 			playerPlayPause(true)
 		} else {								  //pause
 			playerPlayPause(false)
@@ -390,7 +392,8 @@ a:link, a:visited, a:active { text-decoration: none; }
 		if (!player.duration) return;
 		progress = event.layerX / bar.clientWidth
 		player.currentTime = player.duration * progress
-		playerUpdateProgress() 
+		Progress() 
+		player.load()
 	}
 
 	function playerPlayPause(state=undefined) {
@@ -404,8 +407,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		}
 	}
 
-	function playerUpdateProgress() {
+	function Progress() {
 		DOM_player_progressbar.style.width = player.currentTime/player.duration*100 + '%'
+		DOM_player_time.innerHTML = second2mmss(player.currentTime)
 	}
 
 	function playerOnPause() {
@@ -433,7 +437,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		if (s[4] == ':') s = '0' + s.substring(0, 4)
 		return s
 	}
-	
+	function second2mmss(sec) {
+		t = Math.floor(sec/60) + ":" + sec%60
+	}
 	
 	function ajax(url, data) {
 		var xmlhttp = new XMLHttpRequest();
