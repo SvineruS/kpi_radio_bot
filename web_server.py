@@ -51,7 +51,7 @@ def history_save():
     return ''
 
 
-@app.route("/history/play/<path:path>", methods=['GET'], host=WEB_DOMAIN)
+@app.route("/history/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_play(path):
     return history.play(path)
 
