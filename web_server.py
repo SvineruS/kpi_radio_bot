@@ -36,7 +36,7 @@ def download(path):
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_html():
-    return history.html()
+    return co_resp(history.html())
 
 
 @app.route("/history/getday", methods=['POST'], host=WEB_DOMAIN)
