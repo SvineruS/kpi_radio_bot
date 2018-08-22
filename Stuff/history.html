@@ -227,6 +227,10 @@ body {
 	content: '❚❚';
 }
 
+.copy {
+	position: absolute;
+    z-index: -20;
+}
 
 .foot {
   position: absolute;
@@ -377,7 +381,7 @@ button:hover {background-color: #c6c8de;}
 	    html += "<div class='item track'>" +
 		"<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span>" +
 		"<span class='item-casttitle casttitle' onclick='copyTrack(this)'>" +
-			"<input type='text' style='display: none;' value='" + title + "'>" +
+			"<input type='text' class='copy' value='" + title + "'>" +
 			"<span class='artist'>"+item.artist+"</span>" +
 			"<span class='title'>"+item.title+"</span>" +
 		"</span>" +
