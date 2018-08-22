@@ -132,6 +132,7 @@ body {
 	height: 50px;
 	display: inline-block !important;
 	font-size: 2em;
+    line-height: 1;
 }
 
 #DOM_next_day_btn {
@@ -176,8 +177,7 @@ body {
 
 
 .time {
-	position: absolute;
-	left: 15px;
+	float: left;
 	margin-top: -3px;
 	padding: 3px 7px;
 	font-family: DaysRegular, Arial, "Helvetica CY", "Nimbus Sans L", sans-serif;
@@ -202,8 +202,7 @@ body {
 
 
 .play-btn {
-	position: absolute;
-    right: 15px;
+	float: right;
 	padding: 3px 7px;
 	font-size: 13px;
 	font-weight: bold;
@@ -262,7 +261,7 @@ button:hover {background-color: #c6c8de;}
 <div class="main">
 	<div class="input">
 		<input class="item input-item" id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
-		<button class="item input-item" onclick="search()" style="top: 1px;">Поиск 🔎</button>
+		<button class="item input-item" onclick="search()" style="top: 5px;">Поиск 🔎</button>
 	</div>
 	<div class="songs" >
 		<div id="DOM_songs"></div>
