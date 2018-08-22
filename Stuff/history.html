@@ -254,7 +254,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		<div class="player-progress" id="playerprogressbar"></div>
 		<span class="player-pause play" id="playerpause" onclick="playerPlayPause()"></span>
 		<span class="player-title" id="playertitle">Lol - kek</span>
-		<span class="player-volume_wrap"><input type="range" class="player-volume" oninput="playerVolume(this.value)"></span>
+		<span class="player-volume_wrap">
+            <input type="range" class="player-volume" oninput="playerVolume(this.value)" onclick="event.stopPropagation()">
+        </span>
 		<span class="player-time" id="playertime">14:88</span>
 	</div>
 </div>
@@ -421,7 +423,6 @@ a:link, a:visited, a:active { text-decoration: none; }
 	
 	function playerVolume(volume) {
 		player.volume = volume / 100
-		event.stopPropagation()
 	}
 
 	function playerProgress(event, bar) {
