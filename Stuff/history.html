@@ -122,17 +122,14 @@ body {
 }
 
 
-
 .input {
+	display: inline-block;
 	margin-top: 5px;
-}
-.input-item {
-	width: 50%;
-	margin: 0 -3px;
 	height: 50px;
-	display: inline-block !important;
 	font-size: 2em;
-    line-height: 1;
+	border: none;
+    width: 100%;
+    padding: 0 10%;
 }
 
 #DOM_next_day_btn {
@@ -260,10 +257,7 @@ button:hover {background-color: #c6c8de;}
 	</div>
 </div>
 <div class="main">
-	<div class="input">
-		<input class="item input-item" id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
-		<button class="item input-item" onclick="search()" style="top: 5px;">Поиск 🔎</button>
-	</div>
+	<input class="input"id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
 	<div class="songs" >
 		<div id="DOM_songs"></div>
 		<button class="item hidden" onclick="search(true)" id="DOM_next_day_btn">Дальше</button>
