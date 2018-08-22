@@ -1,3 +1,27 @@
+<!--
+
+Короче нах.
+Сервис сохраняет историю радио кпи и
+предоставляет ее в вроде удобном виде 
+с возможностью прослушивания
+by SvineruS (svinua)
+
+Раз уж ты уже открыл исходный код:
+Я не позиционирую себя как фронтэндер,
+даже просил помощи в чате, но никто не 
+отозвался!! Пидары бля. Жрите теперь.
+
+Делал без либ, да. Жс бывает без либ.
+В одном файле потому что так удобнее
+со стороны бэкэнда, песни в base64
+потому что плеер иначе не перематывает.
+
+По всем вопросам мне в телегу
+http:t.me/svinerus
+
+
+-->
+
 <style>
 html {
 	position: relative;
@@ -341,7 +365,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 			old_para_num = item.para_num
             html += getSongItemSplitter(false, item.para_num)
 		}
-		title = (item.artist +' - '+ item.title).replace(/'/g, "&#39;");
+		
+		title = (item.artist + (item.artist?' - ':'')+ item.title)
+		title = title.replace(/'/g, "&#39;")
 
 	    html += "<div class='item track'>" +
 		"<span class='time'>"+date_hhmm(item.time_start)+" - "+date_hhmm(item.time_stop)+"</span>" +
