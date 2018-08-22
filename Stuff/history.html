@@ -438,7 +438,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		return s
 	}
 	function second2mmss(sec) {
-		return Math.floor(sec/60) + ":" + sec%60
+		d = new Date(null)
+		d.setSeconds(sec)
+		return d.toISOString().substr(14, 5);
 	}
 	
 	function ajax(url, data) {
