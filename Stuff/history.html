@@ -310,7 +310,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		Curr_day = date
 		
 		if (+date - 1000*60*60*24 < +MIN_DATE)
-				DOM_next_day_btn.classList.add('hidden')
+			DOM_next_day_btn.classList.add('hidden')
+		else 
+			DOM_next_day_btn.classList.remove('hidden')
 				
 		res = ajax('getday', +date/1000)
 		res = JSON.parse(res)
@@ -321,7 +323,6 @@ a:link, a:visited, a:active { text-decoration: none; }
 
 
 	function tableInsert(res) {
-		DOM_next_day_btn.classList.remove('hidden')
 		full_html = getSongItemSplitter(true, +Curr_day)
 		for (var i=0; i<res.length; i++) {
 			track = res[i]
