@@ -400,7 +400,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 
 	function playerProgress(event, bar) {
 		if (!player.duration) return;
-		progress = event.offsetX / bar.clientWidth
+		progress = (event.clientX - bar.offsetLeft) / bar.clientWidth
 		player.currentTime = player.duration * progress
 		Progress() 
 	}
