@@ -72,7 +72,7 @@ def play(path):
     for track in history[key]:
         if str(track['time_start']) == path:
             f = open(track['path'], 'rb')
-            b64 = 'data:audio/ogg;base64,' + b64encode(f.read())
+            b64 = 'data:audio/mp3;base64,' + b64encode(f.read()).decode('utf-8')
             f.close()
             return b64
 
