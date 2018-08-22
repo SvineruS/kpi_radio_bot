@@ -299,11 +299,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 	var Curr_day
 	old_para_num = 0
 	
-    date_format = {
-	  weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    }
+    date_format = {	  weekday: 'long',      month: 'long',      day: 'numeric',    }
 
 	
 	init()
@@ -342,6 +338,9 @@ a:link, a:visited, a:active { text-decoration: none; }
 		res = JSON.parse(res)
 
 		tableInsert(res)
+		
+		if (res.length == 0)
+			search(true)
 	}
 
 
