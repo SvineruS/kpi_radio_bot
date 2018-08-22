@@ -406,15 +406,17 @@ a:link, a:visited, a:active { text-decoration: none; }
 	function play(path, title, element) {
 		DOMplayer.classList.remove('hidden')
 		if (!element.classList.contains('pause')) { //play
-			if (Curr_item_playing) {
-				playerOnPause()
-				Curr_item_playing.classList.remove('item-playing')
+			if (Curr_item_playing != element.parentElement) {
+				if (Curr_item_playing) {
+					playerOnPause()
+					Curr_item_playing.classList.remove('item-playing')
+				}
+				Curr_item_playing = element.parentElement
+				Curr_item_playing.classList.add('item-playing')
+				player.src = ajax('play/' + path)
+				DOM_player_title.innerHTML = title			
+				Progress()
 			}
-			Curr_item_playing = element.parentElement
-			Curr_item_playing.classList.add('item-playing')
-			player.src = ajax('play/' + path)
-			DOM_player_title.innerHTML = title			
-			Progress()
 			playerPlayPause(true)
 		} else {								  //pause
 			playerPlayPause(false)
