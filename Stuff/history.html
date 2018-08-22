@@ -132,6 +132,7 @@ body {
 	margin-bottom: -1px;
 	background-color: #ffffff;
 	border: 1px solid #ecf0f1;
+	cursor: default;
 }
 
 .item-playing {
@@ -375,7 +376,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 			}
 			Curr_item_playing = element.parentElement
 			Curr_item_playing.classList.add('item-playing')
-			player.src = '/history/play/' + path
+			player.src = ajax('play/' + path)
 			DOM_player_title.innerHTML = title			
 			Progress()
 			playerPlayPause(true)

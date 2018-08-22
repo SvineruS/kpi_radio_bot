@@ -3,6 +3,7 @@ from datetime import datetime
 from bot_utils import get_break_num
 from json import dumps, loads
 from config import *
+from base64 import b64encode
 import os.path
 
 
@@ -71,9 +72,9 @@ def play(path):
     for track in history[key]:
         if str(track['time_start']) == path:
             f = open(track['path'], 'rb')
-            bytes = f.read()
+            b64 = 'data:audio/ogg;base64,' + b64encode(f.read())
             f.close()
-            return bytes
+            return b64
 
 
 def stamp2key(stamp):

@@ -24,7 +24,13 @@ def download(path):
     if not t:
         return ""
 
-    return echo_audio_file(t.data)
+    resp = flask.make_response(t.data)
+    resp.headers['Content-Transfer-Encoding'] = 'binary'
+    resp.headers['Content-Type'] = 'audio/mpeg'
+    resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Content-Length'] = len(t.data)
+    return resp
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
@@ -47,17 +53,7 @@ def history_save():
 
 @app.route("/history/play/<path:path>", methods=['GET'], host=WEB_DOMAIN)
 def history_play(path):
-    return echo_audio_file(history.play(path))
-
-
-def echo_audio_file(bytes):
-    resp = flask.make_response(bytes)
-    resp.headers['Content-Transfer-Encoding'] = 'binary'
-    resp.headers['Content-Type'] = 'audio/mpeg'
-    resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
-    resp.headers['Cache-Control'] = 'no-cache'
-    resp.headers['Content-Length'] = len(bytes)
-    return resp
+    return history.play(path)
 
 
 # Process webhook calls
