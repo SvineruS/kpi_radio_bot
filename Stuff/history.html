@@ -272,7 +272,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 
 <div class="foot"><marquee direction="right">
 <span class="rotate">卐</span>
-<a href='https://t.me/svinerus'>©svinerus</a>
+©<a href='https://t.me/svinerus'>svinerus</a>, 2018, для КПИ
 <span class="rotate">卐</span>
 </marquee></div>
 
@@ -421,6 +421,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 	
 	function playerVolume(volume) {
 		player.volume = volume / 100
+		event.stopPropagation()
 	}
 
 	function playerProgress(event, bar) {
@@ -434,7 +435,7 @@ a:link, a:visited, a:active { text-decoration: none; }
 		if (state === undefined) {
 			if (player.paused) player.play()
 			else player.pause()
-			event.stopPropagation();
+			event.stopPropagation()
 		} else {
 			if (state) player.play()
 			else player.pause()
