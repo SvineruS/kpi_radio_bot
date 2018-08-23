@@ -234,6 +234,11 @@ def callback_query_handler(query):
 
 @bot.message_handler(content_types=['text', 'photo'])
 def message_handler(message):
+
+    if 'что такое' in message.text:
+        bot.send_message(message.chat.id, 'хз')
+        return
+
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == bot_me.id:
 
