@@ -130,7 +130,7 @@ def callback_query_handler(query):
                 callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
-                url="https://77.47.130.190/gettext/" + bot_utils.get_audio_name(query.message.audio)),
+                url='http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio)),
             telebot.types.InlineKeyboardButton(
                 text='Проверить',
                 callback_data='-|-'.join(['predlozka_answ', 'check', str(query.message.chat.id)]))
