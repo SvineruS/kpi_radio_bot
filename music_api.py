@@ -50,7 +50,7 @@ def search_text(name, attempt2=False):
     if not s['hits']:
         if attempt2:
             return 'Ошибка поиска'
-        name = name.split('- ')[1]
+        name = name.split('- ')[-1]
         return search_text(name, True)
 
     s = s['hits'][0]['result']['url']
