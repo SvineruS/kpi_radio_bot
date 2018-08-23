@@ -235,10 +235,6 @@ def callback_query_handler(query):
 @bot.message_handler(content_types=['text', 'photo'])
 def message_handler(message):
 
-    if 'что такое' in message.text:
-        bot.send_message(message.chat.id, 'хз')
-        return
-
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == bot_me.id:
 
@@ -344,6 +340,7 @@ def message_handler(message):
             bot.send_message(message.chat.id, bot_utils.CONFIG['error'])
 
     else:
+        bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
         bot.send_message(message.chat.id, 'Шо ты хош?', reply_markup=bot_utils.keyboard_start())
 
 
