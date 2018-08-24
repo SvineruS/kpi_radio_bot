@@ -435,8 +435,8 @@ button:hover {background-color: #c6c8de;}
 		if (!element.classList.contains('pause')) { //play
 			if (Curr_item_playing != element.parentElement) {
 				if (Curr_item_playing) {
-					playerPlayPause(false)
 					Curr_item_playing.classList.remove('item-playing')
+					playerPlayPause(false)
 				}
 				Curr_item_playing = element.parentElement
 				Curr_item_playing.classList.add('item-playing')
