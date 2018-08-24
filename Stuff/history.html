@@ -480,13 +480,13 @@ button:hover {background-color: #c6c8de;}
 	function playerOnPause() {
 		DOM_player_btn.classList.remove('pause')
 		if (Curr_item_playing)
-			Curr_item_playing.getElementsByClassName('play-btn')[0].classList.remove('pause')
+			Curr_item_playing.getElementsByClassName('item-btn')[1].classList.remove('pause')
 	}
 	
 	function playerOnPlay() {
 		DOM_player_btn.classList.add('pause')
 		if (Curr_item_playing)
-			Curr_item_playing.getElementsByClassName('play-btn')[0].classList.add('pause')
+			Curr_item_playing.getElementsByClassName('item-btn')[1].classList.add('pause')
 	}
 	
 	function copyTrack(element) {
