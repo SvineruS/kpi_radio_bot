@@ -441,7 +441,7 @@ button:hover {background-color: #c6c8de;}
 				Curr_item_playing.classList.add('item-playing')
 				DOM_player_title.innerHTML = title
 				Progress(0)
-				player.src = ajax('play/' + path)
+				assajax('play/' + path, function(answ) {player.src = answ})
 			}
 			playerPlayPause(true)
 		} else {								  //pause
@@ -524,14 +524,9 @@ button:hover {background-color: #c6c8de;}
 	function assajax(url, callback = function() {} ) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.open("GET", 'history/' + url, true);
-	xmlhttp.onreadystatechange=function(){
-		if (xmlhttp.readyState != 4) return
-		clearTimeout(timeout);
-		if (xmlhttp.status == 200) callback(xmlhttp.responseText);
-	}
+	xmlhttp.timeout = 25000;
+	xmlhttp.onloadend=function(){callback(xmlhttp.responseText)}
 	xmlhttp.send();
-	var timeout = setTimeout( function(){ xmlhttp.abort(); }, 25000);
-	return xmlhttp;
 }
 </script>
 
