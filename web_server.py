@@ -56,10 +56,6 @@ def history_html():
 def history_get(date):
     return history.get(date)
 
-@app.route("/history/getday/", methods=['POST'], host=WEB_DOMAIN)
-def history_get2():
-    date = flask.request.data.decode('utf-8')
-    return history.get(date)
 
 @app.route("/history/save", methods=['GET'])
 def history_save():
