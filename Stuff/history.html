@@ -529,7 +529,7 @@ button:hover {background-color: #c6c8de;}
 	}
 	function assajax(url, callback = function() {} ) {
 	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open("GET", url, true);
+	xmlhttp.open("GET", 'history/' + url, true);
 	xmlhttp.onreadystatechange=function(){
 		if (xmlhttp.readyState != 4) return
 		clearTimeout(timeout);
