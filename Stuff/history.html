@@ -537,7 +537,7 @@ button:hover {background-color: #c6c8de;}
 	function assajax(url, callback = function() {}, progress=function() {}) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.open("GET", 'history/' + url, true);
-	xmlhttp.timeout = 25000;
+	xmlhttp.timeout = 60000;
 	xmlhttp.onloadend=function(){callback(xmlhttp.responseText)}
 	xmlhttp.onprogress = function(event) {progress(event.loaded/event.total*100);}
 	xmlhttp.send();
