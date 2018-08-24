@@ -30,19 +30,18 @@ def download(path):
     resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
     resp.headers['Cache-Control'] = 'no-cache'
     resp.headers['Content-Length'] = len(t.data)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_html():
-    return co_resp(history.html())
+    return history.html()
 
 
 @app.route("/history/getday", methods=['POST'], host=WEB_DOMAIN)
 def history_get():
     date = flask.request.data.decode('utf-8')
-    return co_resp(history.get(date))
+    return history.get(date)
 
 
 @app.route("/history/save", methods=['GET'])
@@ -54,18 +53,7 @@ def history_save():
 
 @app.route("/history/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_play(path):
-    return co_resp(history.play(path))
-
-
-@app.route("/history/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def history_play(path):
-    return co_resp(history.play(path))
-
-
-def co_resp(resp):
-    resp = flask.make_response(resp)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return history.play(path)
 
 
 # Process webhook calls
