@@ -52,10 +52,14 @@ def history_html():
     return history.html()
 
 
-@app.route("/history/getday/<path:date>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+@app.route("/history/getday/<path:date>", methods=['GET'], host=WEB_DOMAIN)
 def history_get(date):
     return history.get(date)
 
+@app.route("/history/getday/", methods=['POST'], host=WEB_DOMAIN)
+def history_get():
+    date = flask.request.data.decode('utf-8')
+    return history.get(date)
 
 @app.route("/history/save", methods=['GET'])
 def history_save():
