@@ -505,9 +505,6 @@ button:hover {background-color: #c6c8de;}
 		DOM_player_btn.classList.add('pause')
 		if (Curr_item_playing)
 			Curr_item_playing.getElementsByClassName('item-btn')[0].classList.add('pause')
-		playing = document.getElementsByClassName('pause')
-		for (var i=0; i<playing.length; i++)
-			playing[i].classList.remove('pause')
 	}
 	
 	function copyTrack(element) {
