@@ -39,8 +39,8 @@ def start_handler(message):
 
     t = message.text.split(' ')
     if len(t) == 2:
-        bot.send_chat_action(message.chat.id, 'upload_audio')
         bot.send_message(message.chat.id, 'Ищем нужную песню...')
+        bot.send_chat_action(message.chat.id, 'upload_audio')
         if '/' in t[1]:
             bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1])
         else:
