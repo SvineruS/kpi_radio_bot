@@ -322,6 +322,7 @@ button:hover {background-color: #c6c8de;}
 	
 	var Curr_item_playing
 	var Curr_day
+	var Curr_xnr
 	old_para_num = 0
 	
     date_format = {	  weekday: 'long',      month: 'long',      day: 'numeric',    }
@@ -434,14 +435,14 @@ button:hover {background-color: #c6c8de;}
 		if (!element.classList.contains('pause')) { //play
 			if (Curr_item_playing != element.parentElement) {
 				if (Curr_item_playing) {
-					playerPlayPause(false)
+					playerOnPause()
 					Curr_item_playing.classList.remove('item-playing')
 				}
 				Curr_item_playing = element.parentElement
 				Curr_item_playing.classList.add('item-playing')
 				DOM_player_title.innerHTML = title
 				Progress(0)
-				assajax('play/' + path, function(answ) {player.src = answ})
+				Curr_xnr = assajax('play/' + path, function(answ) {player.src = answ})
 			}
 			playerPlayPause(true)
 		} else {								  //pause
