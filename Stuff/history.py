@@ -66,31 +66,17 @@ def save(args):
     write(history)
 
 
-def play(path):
+def play(path, b64=True):
     key = stamp2key(path)
     history = read()
     for track in history[key]:
         if str(track['time_start']) == path:
             f = open(track['path'], 'rb')
-            b64 = 'data:audio/mp3;base64,' + b64encode(f.read()).decode('utf-8')
+            b = f.read()
+            if b64:
+                b = 'data:audio/mp3;base64,' + b64encode(b).decode('utf-8')
             f.close()
-            return b64
-
-
-def open_timestamp(timestamp):
-    key = stamp2key(timestamp)
-    history = read()
-    for track in history[key]:
-        if str(track['time_start']) == timestamp:
-            f = open(track['path'], 'rb')
-            bytes = f.read()
-            f.close()
-            return {
-                'artist': track['artist'],
-                'title': track['title'],
-                'duration': track['time_stop'] - track['time_start'],
-                'bytes': bytes
-            }
+            return b
 
 
 def stamp2key(stamp):

@@ -40,12 +40,12 @@ def start_handler(message):
 
     t = message.text.split(' ')
     if len(t) == 2:
+        bot.send_chat_action(message.chat.id, 'upload_audio')
+        bot.send_message(message.chat.id, 'Ищем нужную песню...')
         if '/' in t[1]:
-            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1], 'Вот песня которую вы искали.')
+            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1])
         else:
-            audio = open_timestamp(t[1])
-            bot.send_audio(message.chat.id, audio['bytes'], 'Выбери день (или отредактируй название)',
-                           performer=audio['artist'], title=audio['title'], duration=audio['duration'])
+            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/history/play2/'+t[1])
 
         return
 

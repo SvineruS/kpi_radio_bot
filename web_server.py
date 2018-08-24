@@ -24,13 +24,7 @@ def download(path):
     if not t:
         return ""
 
-    resp = flask.make_response(t.data)
-    resp.headers['Content-Transfer-Encoding'] = 'binary'
-    resp.headers['Content-Type'] = 'audio/mpeg'
-    resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
-    resp.headers['Cache-Control'] = 'no-cache'
-    resp.headers['Content-Length'] = len(t.data)
-    return resp
+    return resp_audio(t.data)
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
@@ -56,6 +50,11 @@ def history_play(path):
     return history.play(path)
 
 
+@app.route("/history/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def history_play(path):
+    return resp_audio(history.play(path, False))
+
+
 # Process webhook calls
 @app.route(WEBHOOK_URL_PATH, methods=['POST'])
 def webhook():
@@ -66,6 +65,16 @@ def webhook():
         return ''
     else:
         flask.abort(403)
+
+
+def resp_audio(t):
+    resp = flask.make_response(t)
+    resp.headers['Content-Transfer-Encoding'] = 'binary'
+    resp.headers['Content-Type'] = 'audio/mpeg'
+    resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
+    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Content-Length'] = len(t)
+    return resp
 
 
 def start():
