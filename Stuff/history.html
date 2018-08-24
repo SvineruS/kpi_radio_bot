@@ -94,7 +94,7 @@ a:link, a:visited, a:active { text-decoration: none; color: white;}
 
 .player-progress {
 	position: absolute;
-	top: 0; left: 0;
+	bottom: 0; left: 0;
 	background: #343858;
 	height: 100%;
 	width: 0%;
@@ -102,7 +102,7 @@ a:link, a:visited, a:active { text-decoration: none; color: white;}
 	border-radius: 5px;
 	transition-duration: 0.5s;
 }
-.loading {	animation: loading 1s linear 0s infinite; }
+.loading {	animation: loading 1s linear 0s infinite;  }
 @keyframes loading { from { width: 0; } 	to { width: 100%; } }
 
 
@@ -452,6 +452,8 @@ button:hover {background-color: #c6c8de;}
 					DOM_player_progressbar.classList.remove('loading')
 					player.src = answ;
 					playerPlayPause(true)
+				}, function(progress) {
+					DOM_player_progressbar.style.height = progress + '%'
 				})
 			} else
 				playerPlayPause(true)
@@ -532,11 +534,12 @@ button:hover {background-color: #c6c8de;}
 		if(xmlhttp.status == 200) return xmlhttp.responseText;
 		
 	}
-	function assajax(url, callback = function() {} ) {
+	function assajax(url, callback = function() {}, progress=function() {}) {
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.open("GET", 'history/' + url, true);
 	xmlhttp.timeout = 25000;
 	xmlhttp.onloadend=function(){callback(xmlhttp.responseText)}
+	xmlhttp.upload.onprogress = function(event) {progress(event.total/event.loaded*100);})
 	xmlhttp.send();
 }
 </script>
