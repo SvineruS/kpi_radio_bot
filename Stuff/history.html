@@ -130,19 +130,17 @@ a:link, a:visited, a:active { text-decoration: none; color: white;}
 
 
 .input {
-	display: inline-block;
 	margin-top: 5px;
 	height: 50px;
-	font-size: 2em;
-	border: none;
+	background: white;
     width: 100%;
     border-radius: 5px;
 }
-.input:before {
-    content: '📆';
-    color: grey;
-    padding: 1px;
-    display: inline-block;
+#DOM_date {
+	padding: 6px 10%;
+	font-size: 2em;
+	height: 100%;
+	border: none;
 }
 
 
@@ -283,7 +281,10 @@ button:hover {background-color: #c6c8de;}
 	</div>
 </div>
 <div class="main">
-	<input class="input" id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
+	<div class="input">
+		<span style="color: gray;">📆</span>
+		<input id="DOM_date" required onchange="search()" type="date" min="2018-08-21">
+	</div>
 	<div class="songs" >
 		<div id="DOM_songs"></div>
 		<button class="item hidden" onclick="search(true)" id="DOM_next_day_btn">Дальше</button>
