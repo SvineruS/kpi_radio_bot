@@ -5,6 +5,7 @@ from telebot import types
 from config import *
 from bot import bot
 from threading import Thread
+from json import dumps
 
 app = flask.Flask(__name__)
 
@@ -25,6 +26,16 @@ def download(path):
         return ""
 
     return resp_audio(t.data)
+
+
+@app.route("/search/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def search(path):
+    if not path:
+        return ""
+    t = music_api.search(path)
+    if not t:
+        return ""
+    return dumps(t)
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
