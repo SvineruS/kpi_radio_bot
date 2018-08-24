@@ -52,7 +52,7 @@ def history_html():
     return history.html()
 
 
-@app.route("/history/getday<path:date>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+@app.route("/history/getday/<path:date>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_get(date):
     return history.get(date)
 
