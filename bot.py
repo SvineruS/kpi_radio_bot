@@ -39,7 +39,7 @@ def start_handler(message):
         return
 
     t = message.text.split(' ')
-    if t.len() == 2:
+    if len(t) == 2:
         if '/' in t[1]:
             bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1], 'Вот песня которую вы искали.')
         else:
