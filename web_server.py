@@ -32,10 +32,19 @@ def download(path):
 def search(path):
     if not path:
         return ""
-    t = music_api.search(path)
-    if not t:
+    res = music_api.search(path)
+    if not res:
         return ""
-    return dumps(t)
+    ans = []
+    for t in res:
+        id = '/'.join(t['download'].split('/')[-2:])
+        ans.append({
+            'id': id,
+            'artist': t['artist'],
+            'title': t['title'],
+            'duration': t['duration']
+        })
+    return dumps(ans)
 
 
 @app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
