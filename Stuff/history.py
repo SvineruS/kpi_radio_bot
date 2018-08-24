@@ -77,6 +77,22 @@ def play(path):
             return b64
 
 
+def open_timestamp(timestamp):
+    key = stamp2key(timestamp)
+    history = read()
+    for track in history[key]:
+        if str(track['time_start']) == timestamp:
+            f = open(track['path'], 'rb')
+            bytes = f.read()
+            f.close()
+            return {
+                'artist': track['artist'],
+                'title': track['title'],
+                'duration': track['time_stop'] - track['time_start'],
+                'bytes': bytes
+            }
+
+
 def stamp2key(stamp):
     return str(int(mktime(datetime.fromtimestamp(int(stamp)).date().timetuple())))
 

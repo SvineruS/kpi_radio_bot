@@ -14,6 +14,7 @@ import bot_utils
 import db
 import ban
 from config import *
+from Stuff.history import open_timestamp
 
 from datetime import datetime
 from os import listdir, system, getcwd
@@ -35,6 +36,17 @@ bot.send_message(185520398, 'Я включилсо')
 def start_handler(message):
     db.add(message.chat.id)
     if message.chat.id < 0:
+        return
+
+    t = message.text.split(' ')
+    if t.len() == 2:
+        if '/' in t[1]:
+            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1], 'Вот песня которую вы искали.')
+        else:
+            audio = open_timestamp(t[1])
+            bot.send_audio(message.chat.id, audio['bytes'], 'Выбери день (или отредактируй название)',
+                           performer=audio['artist'], title=audio['title'], duration=audio['duration'])
+
         return
 
     bot.send_message(message.chat.id, bot_utils.CONFIG['start'])
@@ -296,7 +308,7 @@ def message_handler(message):
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
-                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://'+WEB_DOMAIN+'/history')])
+                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history')])
 
         playback = music_api.radioboss_api(action='playbackinfo')
         if playback:

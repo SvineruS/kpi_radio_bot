@@ -57,6 +57,10 @@ def history_play(path):
     return co_resp(history.play(path))
 
 
+@app.route("/history/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def history_play(path):
+    return co_resp(history.play(path))
+
 
 def co_resp(resp):
     resp = flask.make_response(resp)
