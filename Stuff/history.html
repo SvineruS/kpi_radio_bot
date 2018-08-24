@@ -442,7 +442,10 @@ button:hover {background-color: #c6c8de;}
 				Curr_item_playing.classList.add('item-playing')
 				DOM_player_title.innerHTML = title
 				Progress(0)
-				Curr_xnr = assajax('play/' + path, function(answ) {player.src = answ})
+				Curr_xnr = assajax('play/' + path, function(answ) {
+					player.src = answ;
+					playerPlayPause(true)
+				})
 			}
 			playerPlayPause(true)
 		} else {								  //pause
