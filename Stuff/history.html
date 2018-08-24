@@ -322,7 +322,6 @@ button:hover {background-color: #c6c8de;}
 	
 	var Curr_item_playing
 	var Curr_day
-	var Curr_xhr
 	old_para_num = 0
 	
     date_format = {	  weekday: 'long',      month: 'long',      day: 'numeric',    }
@@ -441,13 +440,8 @@ button:hover {background-color: #c6c8de;}
 				Curr_item_playing = element.parentElement
 				Curr_item_playing.classList.add('item-playing')
 				DOM_player_title.innerHTML = title
-				Progress()
-				if (Curr_xhr)
-					Curr_xhr.abort()
-				Curr_xhr = assajax('play/' + path, function(answ) {
-					player.src = answ
-				})
-
+				Progress(0)
+				player.src = ajax('play/' + path)
 			}
 			playerPlayPause(true)
 		} else {								  //pause
