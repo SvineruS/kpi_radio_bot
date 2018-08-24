@@ -51,7 +51,7 @@ def history_play(path):
 
 
 @app.route("/history/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def history_play(path):
+def history_play2(path):
     return resp_audio(history.play(path, False))
 
 
