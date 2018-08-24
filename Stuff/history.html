@@ -450,6 +450,8 @@ button:hover {background-color: #c6c8de;}
 					Curr_xnr.abort()
 				Curr_xnr = assajax('play/' + path, function(answ) {
 					DOM_player_progressbar.classList.remove('loading')
+					DOM_player_progressbar.style.height = '100%'
+					if (answ == 'error') return alert('Произошла ошибка при загрузке аудио')
 					player.src = answ;
 					playerPlayPause(true)
 				}, function(progress) {
@@ -538,7 +540,7 @@ button:hover {background-color: #c6c8de;}
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.open("GET", 'history/' + url, true);
 		xmlhttp.timeout = 60000;
-		xmlhttp.onloadend=function(){ if (xmlhttp.status) callback(xmlhttp.responseText)}
+		xmlhttp.onloadend=function(){callback(xmlhttp.status?xmlhttp.responseText:'error')}
 		xmlhttp.onprogress = function(event) {progress(event.loaded/event.total*100);}
 		xmlhttp.send();
 	}
