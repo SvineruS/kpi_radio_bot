@@ -539,7 +539,7 @@ button:hover {background-color: #c6c8de;}
 	xmlhttp.open("GET", 'history/' + url, true);
 	xmlhttp.timeout = 25000;
 	xmlhttp.onloadend=function(){callback(xmlhttp.responseText)}
-	xmlhttp.upload.onprogress = function(event) {progress(event.total/event.loaded*100);}
+	xmlhttp.onprogress = function(event) {progress(event.total/event.loaded*100);}
 	xmlhttp.send();
 }
 </script>
