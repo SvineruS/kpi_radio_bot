@@ -338,6 +338,7 @@ button:hover {background-color: #c6c8de;}
 	}
 
 	function search(nextday=false) {
+
 		if (!nextday) {
 			date = DOM_date.value
 			if (date == "") {
@@ -352,6 +353,7 @@ button:hover {background-color: #c6c8de;}
 			date = new Date(+date - 1000*60*60*24)
 		
 		Curr_day = date
+		old_para_num = 0
 		
 		if (+date - 1000*60*60*24 < +MIN_DATE)
 			DOM_next_day_btn.classList.add('hidden')
