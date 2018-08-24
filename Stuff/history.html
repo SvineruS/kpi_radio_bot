@@ -450,12 +450,12 @@ button:hover {background-color: #c6c8de;}
 					Curr_xnr.abort()
 				Curr_xnr = assajax('play/' + path, function(answ) {
 					DOM_player_progressbar.classList.remove('loading')
-					Progress(0)
+					DOM_player_progressbar.style.height = '100%'
 					if (answ == 'error') return alert('Произошла ошибка при загрузке аудио')
 					player.src = answ;
 					playerPlayPause(true)
 				}, function(progress) {
-					DOM_player_progressbar.style.width = progress + '%'
+					DOM_player_progressbar.style.height = progress + '%'
 				})
 			} else
 				playerPlayPause(true)
