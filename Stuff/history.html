@@ -102,8 +102,8 @@ a:link, a:visited, a:active { text-decoration: none; color: white;}
 	border-radius: 5px;
 	transition: width 0.5s;
 }
-.loading {	animation: loading 1s linear 0s infinite;  }
-@keyframes loading { from { width: 0; } 	to { width: 100%; } }
+.loading {	animation: loading 1s ease-in-out 0s infinite;  }
+@keyframes loading { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; }}
 
 
 .player-volume {
@@ -450,12 +450,12 @@ button:hover {background-color: #c6c8de;}
 					Curr_xnr.abort()
 				Curr_xnr = assajax('play/' + path, function(answ) {
 					DOM_player_progressbar.classList.remove('loading')
-					DOM_player_progressbar.style.height = '100%'
+					Progress(0)
 					if (answ == 'error') return alert('Произошла ошибка при загрузке аудио')
 					player.src = answ;
 					playerPlayPause(true)
 				}, function(progress) {
-					DOM_player_progressbar.style.height = progress + '%'
+					DOM_player_progressbar.style.width = progress + '%'
 				})
 			} else
 				playerPlayPause(true)
