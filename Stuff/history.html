@@ -439,6 +439,7 @@ button:hover {background-color: #c6c8de;}
 			if (Curr_item_playing != element.parentElement) {
 				if (Curr_item_playing) {
 					Curr_item_playing.classList.remove('item-playing')
+					Curr_item_playing.getElementsByClassName('item-btn')[0].classList.remove('pause')
 					playerPlayPause(false)
 				}
 				Curr_item_playing = element.parentElement
