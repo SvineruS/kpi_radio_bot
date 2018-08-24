@@ -322,6 +322,7 @@ button:hover {background-color: #c6c8de;}
 	
 	var Curr_item_playing
 	var Curr_day
+	var Curr_xhr
 	old_para_num = 0
 	
     date_format = {	  weekday: 'long',      month: 'long',      day: 'numeric',    }
@@ -360,14 +361,13 @@ button:hover {background-color: #c6c8de;}
 			DOM_next_day_btn.classList.add('hidden')
 		else 
 			DOM_next_day_btn.classList.remove('hidden')
-				
-		res = ajax('getday', +date/1000)
-		res = JSON.parse(res)
 
-		tableInsert(res)
-		
-		if (res.length == 0)
+		assajax('getday/'+ +date/1000, function(asnw) {
+			asnw = JSON.parse(asnw)
+			tableInsert(asnw)
+			if (asnw.length == 0)
 			search(true)
+		}
 	}
 
 
@@ -435,14 +435,19 @@ button:hover {background-color: #c6c8de;}
 		if (!element.classList.contains('pause')) { //play
 			if (Curr_item_playing != element.parentElement) {
 				if (Curr_item_playing) {
-					playerOnPause()
+					playerPlayPause(false)
 					Curr_item_playing.classList.remove('item-playing')
 				}
 				Curr_item_playing = element.parentElement
 				Curr_item_playing.classList.add('item-playing')
-				player.src = ajax('play/' + path)
-				DOM_player_title.innerHTML = title			
+				DOM_player_title.innerHTML = title
 				Progress()
+				if (Curr_xhr)
+					Curr_xhr.abort()
+				Curr_xhr = assajax('play/' + path, function(answ) {
+					player.src = answ
+				})
+
 			}
 			playerPlayPause(true)
 		} else {								  //pause
@@ -472,7 +477,9 @@ button:hover {background-color: #c6c8de;}
 		}
 	}
 
-	function Progress() {
+	function Progress(set=false) {
+		if (set !== false)
+			player.currentTime = set
 		DOM_player_progressbar.style.width = player.currentTime/player.duration*100 + '%'
 		DOM_player_time.innerHTML = second2mmss(player.currentTime)
 	}
@@ -520,6 +527,18 @@ button:hover {background-color: #c6c8de;}
 		if(xmlhttp.status == 200) return xmlhttp.responseText;
 		
 	}
+	function assajax(url, callback = function() {} ) {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", url, true);
+	xmlhttp.onreadystatechange=function(){
+		if (xmlhttp.readyState != 4) return
+		clearTimeout(timeout);
+		if (xmlhttp.status == 200) callback(xmlhttp.responseText);
+	}
+	xmlhttp.send();
+	var timeout = setTimeout( function(){ xmlhttp.abort(); }, 25000);
+	return xmlhttp;
+}
 </script>
 
 
