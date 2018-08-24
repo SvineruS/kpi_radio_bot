@@ -14,7 +14,6 @@ import bot_utils
 import db
 import ban
 from config import *
-from Stuff.history import open_timestamp
 
 from datetime import datetime
 from os import listdir, system, getcwd
