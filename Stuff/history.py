@@ -79,7 +79,7 @@ def play(path, b64=True):
             return b
 
 
-def stamp2key(stamp):
+def stamp2key(stamp):  # TODO разбиение на файлы по месяцу
     return str(int(mktime(datetime.fromtimestamp(int(stamp)).date().timetuple())))
 
 
