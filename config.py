@@ -15,7 +15,7 @@ DB_URL = "mongodb://user:123456@ds151048.mlab.com:51048/ripll"
 
 
 
-BITRATE = 192  # 64 / 128 / 192 / '' - original
+BITRATE = 128  # 64 / 128 / 192 / '' - original
 
 WEBHOOK_HOST = '77.47.130.190'
 WEBHOOK_PORT = 443  # 443, 80, 88 or 8443 (port need to be 'open')
