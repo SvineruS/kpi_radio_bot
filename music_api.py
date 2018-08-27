@@ -28,9 +28,6 @@ def download(url, short=False):
     url += '/' + str(BITRATE)
     try:
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"}, stream=True)
-        if s.status_code != 200:
-            print('Error: datmusic-download not 200')
-            return False
         return s.raw
     except Exception as e:
         print('Error: download song!', e)
