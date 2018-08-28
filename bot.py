@@ -362,7 +362,7 @@ def query_text(inline_query):
     if not music:
         return
     articles = []
-    for i in range(min(5, len(music))):
+    for i in range(min(10, len(music))):
         audio = music[i]
         link = 'http://'+WEB_DOMAIN+'/download/' + '/'.join(audio['download'].split('/')[-2:])
         articles.append(
