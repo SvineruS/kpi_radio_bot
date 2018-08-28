@@ -27,7 +27,12 @@ def download(url, short=False):
         url = 'https://api-2.datmusic.xyz/dl/' + url.replace('.mp3', '')
     url += '/' + str(BITRATE)
     try:
+        s = requests.get(url, headers={'referer': "https://datmusic.xyz/"})
+        url = s.text.split('<title>Redirecting to ')[1].split('</title>')[0]
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"}, stream=True)
+        if s.status_code != 200:
+            print('datmusic download not 200')
+            return False
         return s.raw
     except Exception as e:
         print('Error: download song!', e)

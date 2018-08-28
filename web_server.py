@@ -92,7 +92,9 @@ def resp_audio(t):
     resp.headers['Content-Type'] = 'audio/mpeg'
     resp.headers['Content-Disposition'] = 'inline;filename="music.mp3"'
     resp.headers['Cache-Control'] = 'no-cache'
-    resp.headers['Content-Length'] = len(t)
+    resp.headers['Accept-Ranges'] = 'bytes'
+    resp.headers['Content-Range'] = 'bytes */' + str(len(t))
+    resp.headers['Content-Length'] = str(len(t))
     return resp
 
 
