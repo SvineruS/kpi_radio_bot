@@ -28,6 +28,7 @@ def download(url, short=False):
     url += '/' + str(BITRATE)
     try:
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"})
+        print(s.text)
         url = s.text.split('<title>Redirecting to ')[1].split('</title>')[0]
         s = requests.get(url, headers={'referer': "https://datmusic.xyz/"}, stream=True)
         if s.status_code != 200:
