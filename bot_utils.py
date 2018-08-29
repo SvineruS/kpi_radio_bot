@@ -203,7 +203,7 @@ def check_bad_words(text):
 
 
 def auto_check_bad_words(msg, bot):
-    name = get_audio_name(msg)
+    name = get_audio_name(msg.audio)
     text = search_text(name)
     res = check_bad_words(text)
     if 'Нашел' not in res:
