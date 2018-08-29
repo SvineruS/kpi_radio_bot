@@ -4,7 +4,7 @@ import os
 import requests
 from telebot import types
 from datetime import datetime
-
+from music_api import search_text
 
 CONFIG = {
     'start': '''Привет, это бот РадиоКПИ. 
@@ -200,3 +200,14 @@ def check_bad_words(text):
         return "Все ок вродь"
     else:
         return "Нашел это: " + ' '.join(answ)
+
+
+def auto_check_bad_words(msg, bot):
+    name = get_audio_name(msg)
+    text = search_text(name)
+    res = check_bad_words(text)
+    if 'Нашел' not in res:
+        return
+    new_text = msg.caption + '\n Наша крутая нейронная сеть проанализировала песню и возможно она содержит матюки. Подумай дважды перед тем как отправить.'
+    bot.edit_message_caption(caption=new_text,
+                             chat_id=msg.chat.id, message_id=msg.message_id)

@@ -282,10 +282,10 @@ def message_handler(message):
                 audio = audio[0]
                 try:
                     audio_file = music_api.download(audio['download'])
-                    bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
+                    msg = bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
                                    performer=audio['artist'], title=audio['title'], duration=audio['duration'],
                                    reply_markup=bot_utils.keyboard_day())
-
+                    bot_utils.auto_check_bad_words(msg, bot)
                 except Exception as e:
                     print('Error: loading audio!', e)
                     bot.send_message(message.chat.id, bot_utils.CONFIG['error'],
@@ -378,7 +378,8 @@ def query_text(inline_query):
 @bot.message_handler(content_types=['audio'])
 def message_width_audio(message):
     if __name__ == '__main__' or message.chat.id != ADMINS_CHAT_ID:
-        bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
+        msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
+        bot_utils.auto_check_bad_words(msg, bot)
 
 
 @bot.edited_message_handler(func=lambda message: True)
