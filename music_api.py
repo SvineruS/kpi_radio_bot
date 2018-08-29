@@ -56,16 +56,18 @@ def search_text(name, attempt2=False):
         name = name.split('- ')[-1]
         return search_text(name, True)
 
-    s = s['hits'][0]['result']['url']
+    s = s['hits'][0]['result']
+    title = s['full_title']
 
-    s = requests.get(s)
-    if s.status_code != 200:
+    r = requests.get(s['url'])
+    if r.status_code != 200:
         return 'Ошибка взятия текста'
 
-    t = BeautifulSoup(s.text, "html.parser")
+    t = BeautifulSoup(r.text, "html.parser")
     t = t.find("div", class_="lyrics")
     t = t.get_text()
-    return t
+
+    return title + '\n\n' + t
 
 
 def radioboss_api(**kwargs):
