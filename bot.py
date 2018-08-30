@@ -123,7 +123,7 @@ def callback_query_handler(query):
         if cmd[0] == 'admin_cancel':
             user_obj = query.message.caption_entities[0].user
             user_id = user_obj.id
-        elif cmd[0] == 'predlozka':
+        else:
             user_id = query.message.chat.id
             user_obj = query.from_user
 
