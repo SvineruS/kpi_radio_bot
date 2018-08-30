@@ -31,7 +31,7 @@ print('Запускаем ботика..', bot_me)
 bot.send_message(185520398, 'Я включилсо')
 
 
-@bot.message_handler(commands=['start', 'help', 'song'])
+@bot.message_handler(commands=['start', 'song'])
 def start_handler(message):
     db.add(message.chat.id)
     if message.chat.id < 0:
@@ -50,6 +50,11 @@ def start_handler(message):
 
     bot.send_message(message.chat.id, bot_utils.CONFIG['start'])
     bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+
+
+@bot.message_handler(commands=['help'])
+def help_handler(message):
+    bot.send_message(message.chat.id, bot_utils.CONFIG['help'])
 
 
 @bot.message_handler(commands=['cancel'])
