@@ -171,8 +171,8 @@ def callback_query_handler(query):
                            reply_markup=keyboard, parse_mode='HTML')
 
         elif cmd[0] == 'admin_cancel':
-            bot.edit_message_caption(caption=admin_text, reply_markup=telebot.types.InlineKeyboardMarkup(),
-                                     chat_id=ADMINS_CHAT_ID, message_id=query.message.message_id)
+            bot.edit_message_caption(caption=admin_text, chat_id=ADMINS_CHAT_ID, message_id=query.message.message_id,
+                                     reply_markup=keyboard, parse_mode='HTML')
             if cmd[3] == 'ok':
                 path = bot_utils.get_music_path(int(cmd[1]), int(cmd[2])) + \
                        bot_utils.get_audio_name(query.message.audio) + '.mp3'
