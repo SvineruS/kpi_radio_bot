@@ -206,7 +206,7 @@ def callback_query_handler(query):
         keyboard_cancel = telebot.types.InlineKeyboardMarkup()
         keyboard_cancel.add(telebot.types.InlineKeyboardButton(
             text='Отмена',
-            callback_data='-|-'.join(['admin_cancel', cmd[3], cmd[4], cmd[1]])))
+            callback_data='-|-'.join(['admin_cancel', cmd[3], cmd[4], cmd[1], str(query.message.message_id)])))
 
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
