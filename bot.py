@@ -31,7 +31,7 @@ print('Запускаем ботика..', bot_me)
 bot.send_message(185520398, 'Я включилсо')
 
 
-@bot.message_handler(commands=['start', 'song'])
+@bot.message_handler(commands=['start'])
 def start_handler(message):
     db.add(message.chat.id)
     if message.chat.id < 0:
@@ -282,7 +282,7 @@ def message_handler(message):
             # Одмены отвечают на заказ
             if message.reply_to_message.audio:
                 name = bot_utils.get_audio_name(message.reply_to_message.audio)
-                bot.send_message(message.reply_to_message.caption_entities[0].user.id, 
+                bot.send_message(message.reply_to_message.caption_entities[0].user.id,
                                  "  На ваш заказ _" + name + "_ ответили: \n" + message.text, parse_mode='Markdown')
 
             # Одмены отвечают на отзыв
@@ -297,21 +297,22 @@ def message_handler(message):
                 bot_utils.save_file(url, bot_utils.CONFIG['pics_path'] + str(message.photo[0].file_size) + '.jpg')
 
         # Ввод названия песни
-        if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
+        if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song'] or \
+                message.reply_to_message.text == '/song':
             bot.send_chat_action(message.chat.id, 'upload_audio')
             audio = music_api.search(message.text)
 
             if not audio:
                 bot.send_message(message.chat.id,
-                                 'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота!',
+                                 'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота! Попробовать еще раз /song',
                                  reply_markup=bot_utils.keyboard_start())
             else:
                 audio = audio[0]
                 try:
                     audio_file = music_api.download(audio['download'])
                     msg = bot.send_audio(message.chat.id, audio_file, 'Выбери день (или отредактируй название)',
-                                   performer=audio['artist'], title=audio['title'], duration=audio['duration'],
-                                   reply_markup=bot_utils.keyboard_day())
+                                         performer=audio['artist'], title=audio['title'], duration=audio['duration'],
+                                         reply_markup=bot_utils.keyboard_day())
                     bot_utils.auto_check_bad_words(msg, bot)
                 except Exception as e:
                     print('Error: loading audio!', e)
@@ -334,7 +335,7 @@ def message_handler(message):
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
-                 telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history')])
+                       telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history')])
 
         playback = music_api.radioboss_api(action='playbackinfo')
         if playback:
@@ -379,7 +380,7 @@ def message_handler(message):
 
     else:
         bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        bot.send_message(message.chat.id, 'Шо ты хош? Попробуй /help', reply_markup=bot_utils.keyboard_start())
+    bot.send_message(message.chat.id, 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку. /help', reply_markup=bot_utils.keyboard_start())
 
 
 @bot.inline_handler(func=lambda kek: True)
