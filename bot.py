@@ -379,7 +379,7 @@ def message_handler(message):
 
     else:
         bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        bot.send_message(message.chat.id, 'Шо ты хош?', reply_markup=bot_utils.keyboard_start())
+        bot.send_message(message.chat.id, 'Шо ты хош? Попробуй /help', reply_markup=bot_utils.keyboard_start())
 
 
 @bot.inline_handler(func=lambda kek: True)
