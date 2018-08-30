@@ -96,6 +96,8 @@ def ban_handler(message):
 @bot.callback_query_handler(func=lambda c: True)
 def callback_query_handler(query):
     cmd = query.data.split('-|-')
+    user = query.message.chat.id
+
 
     # Выбрал день, отправляю клавиатуру выбора времени
     #
@@ -113,13 +115,13 @@ def callback_query_handler(query):
     #   cmd[1] = выбранный день
     #   cmd[2] = выбранное время
     #
-    elif cmd[0] == 'predlozka':
+    # Если админы выбрали отмену:
+    #
+    #   cmd[3] = ok\neok
+    #   cmd[4] = msg_id
+    #
 
-        is_ban = ban.chek_ban(query.message.chat.id)
-        if is_ban:
-            bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
-                             datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M"))
-            return
+    elif cmd[0] == 'predlozka' or cmd[0] == 'cancel':
 
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
         if cmd[1] == '6':
@@ -127,34 +129,53 @@ def callback_query_handler(query):
         else:
             text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
 
-        bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(text),
-                                 chat_id=query.message.chat.id, message_id=query.message.message_id,
-                                 reply_markup=telebot.types.InlineKeyboardMarkup())
-
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-        btns = [
+        keyboard.add(*[
             telebot.types.InlineKeyboardButton(
                 text='Принять',
-                callback_data='-|-'.join(['predlozka_answ', 'ok', str(query.message.chat.id), cmd[1], cmd[2]])),
+                callback_data='-|-'.join(['predlozka_answ', 'ok', str(user), cmd[1], cmd[2]])),
             telebot.types.InlineKeyboardButton(
                 text='Отклонить',
-                callback_data='-|-'.join(['predlozka_answ', 'neok', str(query.message.chat.id)])),
+                callback_data='-|-'.join(['predlozka_answ', 'neok', str(user)])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
                 url='http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio)),
             telebot.types.InlineKeyboardButton(
                 text='Проверить',
-                callback_data='-|-'.join(['predlozka_answ', 'check', str(query.message.chat.id)]))
-        ]
-        keyboard.add(*btns)
+                callback_data='-|-'.join(['predlozka_answ', 'check']))
+        ])
 
         now = int(cmd[1]) == datetime.today().weekday() and int(cmd[2]) == bot_utils.get_break_num()
         admin_text = ('‼️' if now else '❗️') + 'Новый заказ - ' + text + (' (сейчас!)' if now else '') + \
-                                               ' от ' + bot_utils.get_user_name(query.from_user)
-        bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
-                       reply_markup=keyboard, parse_mode='HTML')
+                                               ' от ' + bot_utils.get_user_name(user)
 
-        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+        if cmd[0] == 'predlozka':
+
+            is_ban = ban.chek_ban(user)
+            if is_ban:
+                bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
+                                 datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M"))
+                return
+
+            bot.edit_message_caption(caption=bot_utils.CONFIG['predlozka_moderating'].format(text),
+                                     chat_id=query.message.chat.id, message_id=query.message.message_id,
+                                     reply_markup=telebot.types.InlineKeyboardMarkup())
+
+            bot.send_message(user, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+
+            bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
+                           reply_markup=keyboard, parse_mode='HTML')
+
+        elif cmd[0] == 'cancel':
+            bot.edit_message_caption(caption=admin_text, reply_markup=telebot.types.InlineKeyboardMarkup(),
+                                     chat_id=ADMINS_CHAT_ID, message_id=int(cmd[4]))
+            if cmd[3] == 'ok':
+                path = bot_utils.get_music_path(int(cmd[1]), int(cmd[2])) + \
+                       bot_utils.get_audio_name(query.message.audio) + '.mp3'
+                bot_utils.delete(path)
+
+
+
 
     # Админы выбрали принять\отменить
     #
@@ -185,9 +206,15 @@ def callback_query_handler(query):
                    ', от ' + bot_utils.get_user_name(query.message.caption_entities[0].user) + \
                    ' - ' + ("✅Принят" if cmd[1] == 'ok' else "❌Отклонен") + \
                    ' (' + bot_utils.get_user_name(query.from_user) + ')'
+
+        keyboard_cancel = telebot.types.InlineKeyboardMarkup()
+        keyboard_cancel.add(telebot.types.InlineKeyboardButton(
+            text='Отмена',
+            callback_data='-|-'.join(['predlozka_cancel', cmd[3], cmd[4], cmd[1]])))
+
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
-                                 reply_markup=telebot.types.InlineKeyboardMarkup(), parse_mode='HTML')
+                                 reply_markup=keyboard_cancel, parse_mode='HTML')
 
         url = 'https://api.telegram.org/file/bot{0}/{1}'.format(
             TOKEN, bot.get_file(query.message.audio.file_id).file_path)

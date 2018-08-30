@@ -1,6 +1,6 @@
 import flask
 import music_api
-from Stuff import history
+import history
 from telebot import types
 from config import *
 from bot import bot

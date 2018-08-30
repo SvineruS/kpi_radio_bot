@@ -145,6 +145,12 @@ def save_file(url, to):
         print('Error: download!', e)
 
 
+def delete(path):
+    if not os.path.isfile(path):
+        return
+    os.remove(path)
+
+
 def get_break_num(time=None):
     day = datetime.today().weekday()
     if not time:
