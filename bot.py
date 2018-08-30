@@ -189,7 +189,6 @@ def callback_query_handler(query):
     #   cmd[4] = выбранное время
     #
     elif cmd[0] == 'predlozka_answ':
-        print(cmd)
         name = bot_utils.get_audio_name(query.message.audio)
 
         if cmd[1] == 'check':
