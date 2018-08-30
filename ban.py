@@ -4,23 +4,23 @@ import os
 DB_PATH = os.path.join(os.path.dirname(__file__), 'Stuff/banned.db')
 
 
-def ban_user(id, ban_time_min):
+def ban_user(user_id, ban_time_min):
     ban_time = int(ban_time_min * 60 + time())
     banned = read_ban()
-    banned[id] = ban_time
+    banned[user_id] = ban_time
     write_ban(banned)
     return int(ban_time_min)
 
 
-def chek_ban(id):
+def chek_ban(user_id):
     banned = read_ban()
-    if id not in banned:
+    if user_id not in banned:
         return False
-    if banned[id] < time():
-        del banned[id]
+    if banned[user_id] < time():
+        del banned[user_id]
         write_ban(banned)
         return False
-    return banned[id]
+    return banned[user_id]
 
 
 def write_ban(banned):
