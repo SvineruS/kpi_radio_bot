@@ -54,7 +54,7 @@ def start_handler(message):
 
 @bot.message_handler(commands=['help'])
 def help_handler(message):
-    bot.send_message(message.chat.id, bot_utils.CONFIG['help'])
+    bot.send_message(message.chat.id, bot_utils.CONFIG['help'], parse_mode='HTML')
 
 
 @bot.message_handler(commands=['cancel'])
