@@ -140,7 +140,7 @@ def callback_query_handler(query):
                 callback_data='-|-'.join(['predlozka_answ', 'ok', str(user_id), cmd[1], cmd[2]])),
             telebot.types.InlineKeyboardButton(
                 text='Отклонить',
-                callback_data='-|-'.join(['predlozka_answ', 'neok', str(user_id)])),
+                callback_data='-|-'.join(['predlozka_answ', 'neok', str(user_id), cmd[1], cmd[2]])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
                 url='http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio)),
@@ -189,6 +189,7 @@ def callback_query_handler(query):
     #   cmd[4] = выбранное время
     #
     elif cmd[0] == 'predlozka_answ':
+        print(cmd)
         name = bot_utils.get_audio_name(query.message.audio)
 
         if cmd[1] == 'check':
