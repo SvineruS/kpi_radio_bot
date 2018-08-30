@@ -119,11 +119,11 @@ def callback_query_handler(query):
     #   cmd[4] = msg_id
     #
 
-    elif cmd[0] == 'predlozka' or cmd[0] == 'cancel':
-        if cmd[0] == 'cancel':
+    elif cmd[0] == 'predlozka' or cmd[0] == 'admin_cancel':
+        if cmd[0] == 'admin_cancel':
             user_obj = query.message.caption_entities[0].user
             user_id = user_obj.id
-        else:
+        elif cmd[0] == 'predlozka':
             user_id = query.message.chat.id
             user_obj = query.from_user
 
@@ -170,7 +170,7 @@ def callback_query_handler(query):
             bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                            reply_markup=keyboard, parse_mode='HTML')
 
-        elif cmd[0] == 'cancel':
+        elif cmd[0] == 'admin_cancel':
             bot.edit_message_caption(caption=admin_text, reply_markup=telebot.types.InlineKeyboardMarkup(),
                                      chat_id=ADMINS_CHAT_ID, message_id=int(cmd[4]))
             if cmd[3] == 'ok':
@@ -206,7 +206,7 @@ def callback_query_handler(query):
         keyboard_cancel = telebot.types.InlineKeyboardMarkup()
         keyboard_cancel.add(telebot.types.InlineKeyboardButton(
             text='Отмена',
-            callback_data='-|-'.join(['predlozka_cancel', cmd[3], cmd[4], cmd[1]])))
+            callback_data='-|-'.join(['admin_cancel', cmd[3], cmd[4], cmd[1]])))
 
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
