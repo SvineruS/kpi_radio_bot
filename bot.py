@@ -354,7 +354,8 @@ def message_handler(message):
             bot.send_message(message.chat.id, 'Не знаю(')
 
     # Кнопка 'Предложить песню'
-    elif message.text == bot_utils.btn['predlozka']:
+    elif message.text == bot_utils.btn['predlozka'] or \
+         message.text == '/song':
         bot.send_message(message.chat.id, bot_utils.CONFIG['predlozka_choose_song'],
                          reply_markup=telebot.types.ForceReply(), parse_mode="HTML")
 
@@ -379,7 +380,7 @@ def message_handler(message):
 
     else:
         bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-    bot.send_message(message.chat.id, 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку "Заказать песню". Помощь тут /help', reply_markup=bot_utils.keyboard_start())
+        bot.send_message(message.chat.id, 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку "Заказать песню". Помощь тут /help', reply_markup=bot_utils.keyboard_start())
 
 
 @bot.inline_handler(func=lambda kek: True)
