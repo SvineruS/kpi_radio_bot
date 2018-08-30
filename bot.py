@@ -297,8 +297,7 @@ def message_handler(message):
                 bot_utils.save_file(url, bot_utils.CONFIG['pics_path'] + str(message.photo[0].file_size) + '.jpg')
 
         # Ввод названия песни
-        if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song'] or \
-                message.reply_to_message.text == '/song':
+        if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
             bot.send_chat_action(message.chat.id, 'upload_audio')
             audio = music_api.search(message.text)
 
@@ -355,7 +354,8 @@ def message_handler(message):
             bot.send_message(message.chat.id, 'Не знаю(')
 
     # Кнопка 'Предложить песню'
-    elif message.text == bot_utils.btn['predlozka']:
+    elif message.text == bot_utils.btn['predlozka'] or \
+         message.text == '/song':
         bot.send_message(message.chat.id, bot_utils.CONFIG['predlozka_choose_song'],
                          reply_markup=telebot.types.ForceReply(), parse_mode="HTML")
 
