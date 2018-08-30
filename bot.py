@@ -119,9 +119,12 @@ def callback_query_handler(query):
     #
     #   cmd[3] = ok\neok
     #   cmd[4] = msg_id
+    #   cmd[5] = id заказавшего
     #
 
     elif cmd[0] == 'predlozka' or cmd[0] == 'cancel':
+        if cmd[0] == 'cancel':
+            user = int(cmd[5])
 
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
         if cmd[1] == '6':
@@ -187,16 +190,7 @@ def callback_query_handler(query):
     elif cmd[0] == 'predlozka_answ':
         name = bot_utils.get_audio_name(query.message.audio)
 
-        if cmd[1] == 'text':
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            keyboard.add(telebot.types.InlineKeyboardButton(
-                    text='Скрыть',
-                    callback_data='-|-'.join(['text_delete', str(query.message.chat.id)])))
-            text = music_api.search_text(name)
-            bot.send_message(query.message.chat.id, text, reply_markup=keyboard)
-            bot.answer_callback_query(query.id)
-            return
-        elif cmd[1] == 'check':
+        if cmd[1] == 'check':
             text = music_api.search_text(name)
             n = bot_utils.check_bad_words(text)
             bot.answer_callback_query(query.id, text=n)
@@ -210,7 +204,7 @@ def callback_query_handler(query):
         keyboard_cancel = telebot.types.InlineKeyboardMarkup()
         keyboard_cancel.add(telebot.types.InlineKeyboardButton(
             text='Отмена',
-            callback_data='-|-'.join(['predlozka_cancel', cmd[3], cmd[4], cmd[1]])))
+            callback_data='-|-'.join(['predlozka_cancel', cmd[3], cmd[4], cmd[1], cmd[2]])))
 
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
