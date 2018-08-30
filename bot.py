@@ -172,7 +172,7 @@ def callback_query_handler(query):
 
         elif cmd[0] == 'admin_cancel':
             bot.edit_message_caption(caption=admin_text, reply_markup=telebot.types.InlineKeyboardMarkup(),
-                                     chat_id=ADMINS_CHAT_ID, message_id=int(cmd[4]))
+                                     chat_id=ADMINS_CHAT_ID, message_id=query.message.message_id)
             if cmd[3] == 'ok':
                 path = bot_utils.get_music_path(int(cmd[1]), int(cmd[2])) + \
                        bot_utils.get_audio_name(query.message.audio) + '.mp3'
@@ -206,7 +206,7 @@ def callback_query_handler(query):
         keyboard_cancel = telebot.types.InlineKeyboardMarkup()
         keyboard_cancel.add(telebot.types.InlineKeyboardButton(
             text='Отмена',
-            callback_data='-|-'.join(['admin_cancel', cmd[3], cmd[4], cmd[1], str(query.message.message_id)])))
+            callback_data='-|-'.join(['admin_cancel', cmd[3], cmd[4], cmd[1]])))
 
         bot.edit_message_caption(caption=new_text,
                                  chat_id=query.message.chat.id, message_id=query.message.message_id,
