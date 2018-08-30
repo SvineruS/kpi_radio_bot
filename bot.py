@@ -80,7 +80,7 @@ def ban_handler(message):
         return
 
     cmd = message.text.split(' ')
-    user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.from_user
+    user = message.reply_to_message.caption_entities[0].user if message.reply_to_message.audio else message.reply_to_message.forward_from
     ban_time = int(cmd[1]) if len(cmd) >= 2 else 60 * 24
     reason = " Причина: " + ' '.join(cmd[2:]) if len(cmd) >= 3 else ""
     ban_time = str(ban.ban_user(user.id, ban_time))

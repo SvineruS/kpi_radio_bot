@@ -211,3 +211,6 @@ def auto_check_bad_words(msg, bot):
     new_text = msg.caption + '\n⚠️Наша крутая нейронная сеть проанализировала песню и возможно она содержит матюки. Подумай дважды перед тем как отправить.'
     bot.edit_message_caption(chat_id=msg.chat.id, message_id=msg.message_id,
                              caption=new_text, reply_markup=keyboard_day())
+
+
+# TODO покормить Кешу
