@@ -35,7 +35,7 @@ def get(date):
             'title': track['title'],
             'time_start': track['time_start'],
             'time_stop': track['time_stop'],
-            'para_num': get_break_num(datetime.fromtimestamp(track['time_start']))
+            'para_num': get_break_num(datetime.fromtimestamp(track['time_start'])),
             'path': str(track['time_start'])
         })
 
