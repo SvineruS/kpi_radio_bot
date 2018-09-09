@@ -24,11 +24,7 @@ def get(date):
     if key not in history:
         return dumps(answer)
 
-    break_num_old = 0
     for track in history[key]:
-        break_num_curr = get_break_num(track['time_start'])
-        if break_num_curr != 0 and break_num_curr != break_num_old:
-            break_num_old = break_num_curr
 
         if not track['artist'] and not track['title']:
             track['title'] = track['casttitle']
@@ -38,7 +34,7 @@ def get(date):
             'title': track['title'],
             'time_start': track['time_start'],
             'time_stop': track['time_stop'],
-            'para_num': break_num_old if break_num_curr == 0 else break_num_curr,
+            'para_num': get_break_num(datetime.fromtimestamp(track['time_start'])),
             'path': str(track['time_start'])
         })
 
