@@ -103,9 +103,9 @@ def get_break_num(timestamp):
 
     # Воскресенье
     if day == 6:
-        if 11*60+15 < time < 18*60:
+        if time < 18*60:
             return -1
-        if time > 18*60:
+        else:
             return 5
 
     # Вечерний эфир
