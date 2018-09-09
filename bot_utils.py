@@ -182,9 +182,11 @@ def delete(path):
 
 
 def get_break_num(time=None):
-    day = datetime.today().weekday()
     if not time:
         time = datetime.now()
+        day = datetime.today().weekday()
+    else:
+        day = time.weekday()
     time = time.hour * 60 + time.minute
 
     if time > 22*60 or time < 10*60+5:

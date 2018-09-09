@@ -1,6 +1,5 @@
 from time import time, mktime
 from datetime import datetime
-from bot_utils import get_break_num
 from json import dumps, loads
 from config import *
 from base64 import b64encode
@@ -27,7 +26,7 @@ def get(date):
 
     break_num_old = 0
     for track in history[key]:
-        break_num_curr = get_break_num(datetime.fromtimestamp(track['time_start']))
+        break_num_curr = get_break_num(track['time_start'])
         if break_num_curr != 0 and break_num_curr != break_num_old:
             break_num_old = break_num_curr
 
@@ -99,3 +98,32 @@ def read():
         return {}
     f.close()
     return history
+
+
+def get_break_num(timestamp):
+    time = datetime.fromtimestamp(timestamp)
+    day = time.weekday()
+    time = time.hour * 60 + time.minute
+
+    if time > 22*60 or time < 10*60+5:
+        return 0
+
+    # Воскресенье
+    if day == 6:
+        if 11*60+15 < time < 18*60:
+            return -1
+        if time > 18*60:
+            return 5
+
+    # Вечерний эфир
+    if time > 17*60+50:
+        return 5
+
+    # Перерыв
+    for i in range(4):
+        # 10:05 + пара * i (10:05 - начало 1 перерыва)
+        if 0 < time - (10*60+5 + i*115) < 20:
+            return i+1
+
+    #Пара
+    return 0
