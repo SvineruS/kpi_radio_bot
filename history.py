@@ -97,12 +97,9 @@ def read():
 
 
 def get_break_num(timestamp):
-    time = datetime.fromtimestamp(timestamp)
-    day = time.weekday()
-    time = time.hour * 60 + time.minute
-
-    if time > 22*60 or time < 10*60+5:
-        return 0
+    dt = datetime.fromtimestamp(timestamp)
+    day = dt.weekday()
+    time = dt.hour * 60 + dt.minute
 
     # Воскресенье
     if day == 6:
@@ -121,5 +118,4 @@ def get_break_num(timestamp):
         if 0 < time - (10*60+5 + i*115) < 20:
             return i+1
 
-    #Пара
     return 0
