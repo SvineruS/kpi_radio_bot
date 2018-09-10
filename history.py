@@ -115,7 +115,7 @@ def get_break_num(timestamp):
     # Перерыв
     for i in range(4):
         # 10:05 + пара * i (10:05 - начало 1 перерыва)
-        if 0 < time - (10*60+5 + i*115) < 20:
+        if 0 <= time - (10*60+5 + i*115) <= 20:
             return i+1
 
     return 0
