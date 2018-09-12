@@ -109,7 +109,7 @@ def get_break_num(timestamp):
             return 5
 
     # Вечерний эфир
-    if time > 17*60+50:
+    if time >= 17*60+50:
         return 5
 
     # Перерыв
