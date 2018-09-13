@@ -272,7 +272,7 @@ def callback_query_handler(query):
             bot.send_message(query.message.chat.id, text)
 
 
-@bot.message_handler(content_types=['text', 'photo'])
+@bot.message_handler(func=lambda message: True)
 def message_handler(message):
 
     # Форс реплаи
@@ -285,12 +285,16 @@ def message_handler(message):
             if message.reply_to_message.audio:
                 name = bot_utils.get_audio_name(message.reply_to_message.audio)
                 bot.send_message(message.reply_to_message.caption_entities[0].user.id,
-                                 "  На ваш заказ _" + name + "_ ответили: \n" + message.text, parse_mode='Markdown')
+                                 "  На ваш заказ _" + name + "_ ответили:")
+                bot.forward_message(message.reply_to_message.caption_entities[0].user.id,
+                                    message.chat.id, message.message_id)
 
             # Одмены отвечают на отзыв
             if message.reply_to_message.forward_from:
                 bot.send_message(message.reply_to_message.forward_from.id,
-                                 "  На ваше сообщение ответили: \n" + message.text)
+                                 "  На ваше сообщение ответили: ")
+                bot.forward_message(message.reply_to_message.forward_from.id,
+                                    message.chat.id, message.message_id)
 
             # Сохранение картинок
             if message.reply_to_message.text == bot_utils.CONFIG['save_pic']:
@@ -399,7 +403,7 @@ def query_text(inline_query):
 
 @bot.message_handler(content_types=['audio'])
 def message_width_audio(message):
-    if __name__ == '__main__' or message.chat.id != ADMINS_CHAT_ID:
+    if message.chat.id != ADMINS_CHAT_ID:
         msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
         bot_utils.auto_check_bad_words(msg, bot)
 

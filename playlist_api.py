@@ -19,6 +19,7 @@ def get_prev():
 
 
 def get_next():
+    return False  # TODO
     answer = []
 
     playlist = radioboss_api(action='getplaylist2')
