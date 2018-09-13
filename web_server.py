@@ -74,6 +74,11 @@ def history_play2(path):
     return resp_audio(history.play(path, False))
 
 
+app.route("/playlist/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def todo():
+    pass #TODO
+
+
 @app.route("/playlist/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def todo():
     pass #TODO
