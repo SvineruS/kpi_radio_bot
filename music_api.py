@@ -83,5 +83,5 @@ def radioboss_api(**kwargs):
             return True
         return Etree.fromstring(t)
     except Exception as e:
-        print('Error! Radioboss api! ', e, t)
+        print('Error! Radioboss api! ', e, t, url)
         return False

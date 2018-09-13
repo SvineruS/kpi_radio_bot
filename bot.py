@@ -13,6 +13,7 @@ import music_api
 import bot_utils
 import db
 import ban
+import playlist_api
 from config import *
 
 from datetime import datetime
@@ -248,26 +249,27 @@ def callback_query_handler(query):
         bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
-    elif cmd[0] == 'song_played':
-        bot.answer_callback_query(callback_query_id=query.id)
-        playback = music_api.radioboss_api(action='getlastplayed')
-        if playback:
+    elif cmd[0] == 'song_prev':
+        playback = playlist_api.get_prev()
+        if not playback:
+            bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start())
+        else:
             text = ''
-            try:
-                for i in range(min(5, len(playback))):
-                    track = playback[i].attrib
-                    text += '🕖{0}: {1}\n'.format(track['STARTTIME'].split(' ')[1], track['CASTTITLE'])
-#  bot.answer_callback_query(callback_query_id=query.id, text=text, show_alert=True)  # мб так красивее, хз
-                bot.send_message(query.message.chat.id, text)
-            except:
-                pass
-        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+            for track in playback:
+                text += '🕖{0}: {1}\n'.format(track['time_start'], track['title'])
+                #  bot.answer_callback_query(callback_query_id=query.id, text=text, show_alert=True)  # мб так красивее, хз
+            bot.send_message(query.message.chat.id, text)
 
-    # Кнопка ввода вермени в сообщении "что играет"
-    if cmd[0] == 'song_played_time':
-        bot.answer_callback_query(callback_query_id=query.id)
-        bot.send_message(query.message.chat.id, bot_utils.CONFIG['what_played_choose_time'],
-                         reply_markup=telebot.types.ForceReply())
+    # Кнопка "следующие треки" в сообщении "что играет" # TODO надо чото придумать для отличия от предыдущего пункта
+    elif cmd[0] == 'song_next':
+        playback = playlist_api.get_next()
+        if not playback:
+            bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start())
+        else:
+            text = ''
+            for track in playback:
+                text += '🕖{0}: {1}\n'.format(track['time_start'], track['title'])
+            bot.send_message(query.message.chat.id, text)
 
 
 @bot.message_handler(content_types=['text', 'photo'])
@@ -333,25 +335,17 @@ def message_handler(message):
     # Кнопка 'Что играет?'
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(*[telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_played'),
-                       telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history')])
+        keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history'))
+        keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
+                     telebot.types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
-        playback = music_api.radioboss_api(action='playbackinfo')
-        if playback:
-            try:
-                if playback[3].attrib['state'] == 'stop':
-                    bot.send_message(message.chat.id, "Ничего", reply_markup=keyboard)
-                else:
-                    bot.send_message(message.chat.id,
-                                     '⏮ <b>Предыдущий трек: </b>' + playback[0][0].attrib['CASTTITLE'] +
-                                     '\n▶️ <b>Сейчас играет: </b>' + playback[1][0].attrib['CASTTITLE'] +
-                                     '\n⏭ <b>Следующий трек: </b>' + playback[2][0].attrib['CASTTITLE'],
-                                     parse_mode='HTML', reply_markup=keyboard)
-            except Exception as e:
-                print('Error! what playing', e)
-                bot.send_message(message.chat.id, 'Ничего', reply_markup=keyboard)
+        playback = playlist_api.get_now()
+        if not playback:
+            bot.send_message(message.chat.id, "Не знаю(", reply_markup=keyboard)
         else:
-            bot.send_message(message.chat.id, 'Не знаю(')
+            bot.send_message(message.chat.id, bot_utils.CONFIG['what_playing'].format(*playback),
+                             parse_mode='HTML', reply_markup=keyboard)
+
 
     # Кнопка 'Предложить песню'
     elif message.text == bot_utils.btn['predlozka'] or \
@@ -414,8 +408,7 @@ def message_width_audio(message):
 def edited_message(message):
     if message.reply_to_message is None:
         return
-    if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song'] or \
-       message.reply_to_message.text == bot_utils.CONFIG['what_played_choose_time']:
+    if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
         message_handler(message)
 
 
