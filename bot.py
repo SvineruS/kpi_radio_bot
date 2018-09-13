@@ -274,6 +274,12 @@ def callback_query_handler(query):
 
 @bot.message_handler(content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice'])
 def message_handler(message):
+    # Пользователь скинул аудио
+    if message.audio:
+        msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
+                             reply_markup=bot_utils.keyboard_day())
+        bot_utils.auto_check_bad_words(msg, bot)
+        return
 
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == bot_me.id:
@@ -304,15 +310,6 @@ def message_handler(message):
 
         # Ввод названия песни
         if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
-
-            # Пользователь скинул аудио
-            if message.audio:
-                msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
-                                     reply_markup=bot_utils.keyboard_day())
-                bot_utils.auto_check_bad_words(msg, bot)
-                return
-
-            # Пользователь скинул название
             bot.send_chat_action(message.chat.id, 'upload_audio')
             audio = music_api.search(message.text)
 
