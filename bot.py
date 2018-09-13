@@ -304,6 +304,15 @@ def message_handler(message):
 
         # Ввод названия песни
         if message.reply_to_message.text == bot_utils.CONFIG['predlozka_choose_song']:
+
+            # Пользователь скинул аудио
+            if message.audio:
+                msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
+                                     reply_markup=bot_utils.keyboard_day())
+                bot_utils.auto_check_bad_words(msg, bot)
+                return
+
+            # Пользователь скинул название
             bot.send_chat_action(message.chat.id, 'upload_audio')
             audio = music_api.search(message.text)
 
@@ -334,16 +343,11 @@ def message_handler(message):
     if message.chat.id < 0:
         return
 
-    # Пользователь скинул аудио
-
-    if message.audio:
-        msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
-        bot_utils.auto_check_bad_words(msg, bot)
 
     # Кнопки
 
     # Кнопка 'Что играет?'
-    elif message.text == bot_utils.btn['what_playing']:
+    if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history'))
         keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
