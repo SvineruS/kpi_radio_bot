@@ -334,10 +334,16 @@ def message_handler(message):
     if message.chat.id < 0:
         return
 
+    # Пользователь скинул аудио
+
+    if message.audio:
+        msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
+        bot_utils.auto_check_bad_words(msg, bot)
+
     # Кнопки
 
     # Кнопка 'Что играет?'
-    if message.text == bot_utils.btn['what_playing']:
+    elif message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history'))
         keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
@@ -399,13 +405,6 @@ def query_text(inline_query):
         )
     if articles:
         bot.answer_inline_query(inline_query.id, articles)
-
-
-@bot.message_handler(content_types=['audio'])
-def message_width_audio(message):
-    if message.chat.id != ADMINS_CHAT_ID:
-        msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день', reply_markup=bot_utils.keyboard_day())
-        bot_utils.auto_check_bad_words(msg, bot)
 
 
 @bot.edited_message_handler(func=lambda message: True)
