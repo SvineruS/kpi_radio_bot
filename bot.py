@@ -272,7 +272,7 @@ def callback_query_handler(query):
             bot.send_message(query.message.chat.id, text)
 
 
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice'])
 def message_handler(message):
 
     # Форс реплаи
