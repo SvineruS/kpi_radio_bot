@@ -74,6 +74,12 @@ def history_play2(path):
     return resp_audio(history.play(path, False))
 
 
+@app.route("/playlist/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def todo():
+    pass #TODO
+
+
+
 # Process webhook calls
 @app.route(WEBHOOK_URL_PATH, methods=['POST'])
 def webhook():
