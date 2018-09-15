@@ -35,14 +35,13 @@ def next_get():
     dt_now = datetime.now()
     time_min = dt_now.time()
     bn = get_break_num()
-    if dt_now.weekday() == 6:
+    if bn == -1:
         time_max = datetime.strptime(['18:00', '22:00'][bn-1], '%H:%M').time()
+    elif bn == 5:
+        time_max = datetime.strptime('22:00', '%H:%M').time()
     else:
-        if bn == 5:
-            time_max = datetime.strptime('22:00', '%H:%M').time()
-        else:
-            m = 10*60+25 + (bn-1)*115
-            time_max = datetime(1,1,1, hour=m//60, minute=m%60).time()
+        m = 10*60+25 + (bn-1)*115
+        time_max = datetime(1,1,1, hour=m//60, minute=m%60).time()
 
     i = 0
     for track in playlist:
@@ -117,7 +116,7 @@ def get_history(date):
             'title': track['title'],
             'time_start': track['time_start'],
             'time_stop': track['time_stop'],
-            'para_num': get_break_num_history(track['time_start']),
+            'para_num': get_break_num(datetime.fromtimestamp(track['time_start'])),
             'path': str(track['time_start'])
         })
 
@@ -180,28 +179,3 @@ def read():
         return {}
     f.close()
     return history
-
-
-def get_break_num_history(timestamp):
-    dt = datetime.fromtimestamp(timestamp)
-    day = dt.weekday()
-    time = dt.hour * 60 + dt.minute
-
-    # Воскресенье
-    if day == 6:
-        if time < 18*60:
-            return -1
-        else:
-            return 5
-
-    # Вечерний эфир
-    if time >= 17*60+50:
-        return 5
-
-    # Перерыв
-    for i in range(4):
-        # 10:05 + пара * i (10:05 - начало 1 перерыва)
-        if 0 <= time - (10*60+5 + i*115) <= 20:
-            return i+1
-
-    return 0

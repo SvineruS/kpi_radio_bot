@@ -84,7 +84,7 @@ def get_music_path(day, time):
     t = 'D:\\Вещание Радио\\'
     # В воскресенье только дневной(0) и вечерний(1) эфир
     if day == 6:
-        t += '({0}){1}\\{2}\\'.format(day+1, CONFIG['days1'][day], ['Дневной эфир', 'Вечерний эфир'][time-1])
+        t += '({0}){1}\\{2}\\'.format(day+1, CONFIG['days1'][day], 'Дневной эфир' if time == -1 else 'Вечерний эфир')
     # До вечернего эфира
     elif time < 5:
         t += 'Перерыв\\0{0}_{1}\\{2}.{3} перерыв\\'.format(
@@ -201,9 +201,9 @@ def get_break_num(time=None):
     # Воскресенье
     if day == 6:
         if 11*60+15 < time < 18*60:
-            return 1
+            return -1
         if time > 18*60:
-            return 2
+            return 5
 
     # Вечерний эфир
     if time >= 17*60+50:

@@ -134,10 +134,12 @@ def callback_query_handler(query):
             user_obj = query.from_user
 
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
-        if cmd[1] == '6':
-            text += 'днем' if cmd[2] == 0 else 'вечером'  # в воскресенье есть только дневной (0) и вечерний (1) эфир
+        if cmd[2] == -1:
+            text += 'днем'
+        elif cmd[2] == 5:
+            text += 'вечером'
         else:
-            text += 'вечером' if cmd[2] == '5' else 'после ' + cmd[2] + ' пары'
+            text += 'после ' + cmd[2] + ' пары'
 
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(*[
