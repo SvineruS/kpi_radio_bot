@@ -256,7 +256,7 @@ def callback_query_handler(query):
         else:
             text = ''
             for track in playback:
-                text += '🕖<b>{0}: </b>{1}\n'.format(track['time_start'], track['title'])
+                text += '🕖<b>{0}</b> {1}\n'.format(track['time_start'], track['title'])
                 #  bot.answer_callback_query(callback_query_id=query.id, text=text, show_alert=True)  # мб так красивее, хз
             bot.send_message(query.message.chat.id, text, parse_mode='HTML')
 
@@ -268,7 +268,7 @@ def callback_query_handler(query):
         else:
             text = ''
             for track in playback:
-                text += '🕖<b>{0}:</b> {1}\n'.format(track['time_start'], track['title'])
+                text += '🕖<b>{0}</b> {1}\n'.format(track['time_start'], track['title'])
             bot.send_message(query.message.chat.id, text, parse_mode='HTML')
 
     bot.answer_callback_query(query.id)
