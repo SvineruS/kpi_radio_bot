@@ -260,14 +260,15 @@ def callback_query_handler(query):
                 #  bot.answer_callback_query(callback_query_id=query.id, text=text, show_alert=True)  # мб так красивее, хз
             bot.send_message(query.message.chat.id, text)
 
-    # Кнопка "следующие треки" в сообщении "что играет" # TODO надо чото придумать для отличия от предыдущего пункта
+    # Кнопка "следующие треки" в сообщении "что играет" #
     elif cmd[0] == 'song_next':
         playback = playlist_api.get_next()
         if not playback:
-            bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start())
+            bot.send_message(query.message.chat.id, 'Доступно только во время эфира', reply_markup=bot_utils.keyboard_start())
         else:
             text = ''
-            for track in playback:
+            for i in range(max(5, len(playback))):
+                track = playback[i]
                 text += '🕖{0}: {1}\n'.format(track['time_start'], track['title'])
             bot.send_message(query.message.chat.id, text)
 

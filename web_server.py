@@ -1,4 +1,5 @@
 import flask
+import playlist_api
 import music_api
 import history
 from telebot import types
@@ -74,14 +75,17 @@ def history_play2(path):
     return resp_audio(history.play(path, False))
 
 
-app.route("/playlist/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def todo():
-    pass #TODO
+@app.route("/playlist/next/get", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def playlist_next_get():
+    return dumps(playlist_api.get_next(True))
 
 
-@app.route("/playlist/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def todo():
-    pass #TODO
+@app.route("/playlist/next/move/<path:n1>/<path:n2>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+def playlist_next_move(n1, n2):
+    playlist_api.move_next(n1, n2)
+    return playlist_next_get()
+
+
 
 
 
