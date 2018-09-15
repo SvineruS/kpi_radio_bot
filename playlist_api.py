@@ -203,4 +203,4 @@ def get_break_num_history(timestamp):
 
     return 0
 
-print(next_get_full())
+#print(next_get_full())
