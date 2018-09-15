@@ -46,6 +46,8 @@ def next_get():
 
     i = 0
     for track in playlist:
+        if not track.attrib['STARTTIME']:
+            continue
         time_start = datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S').time()
         if time_start < time_min:
             continue
