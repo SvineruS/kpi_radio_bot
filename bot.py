@@ -45,7 +45,7 @@ def start_handler(message):
         if '/' in t[1]:
             bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/download/'+t[1])
         else:
-            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/history/play2/'+t[1])
+            bot.send_audio(message.chat.id, 'http://'+WEB_DOMAIN+'/playlist/prev/play/'+t[1])
 
         return
 
@@ -250,27 +250,28 @@ def callback_query_handler(query):
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_prev':
-        playback = playlist_api.get_prev()
+        playback = playlist_api.prev_get()
         if not playback:
             bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start())
         else:
             text = ''
             for track in playback:
-                text += '🕖{0}: {1}\n'.format(track['time_start'], track['title'])
+                text += '🕖<b>{0}: </b>{1}\n'.format(track['time_start'], track['title'], parse_mode='HTML')
                 #  bot.answer_callback_query(callback_query_id=query.id, text=text, show_alert=True)  # мб так красивее, хз
             bot.send_message(query.message.chat.id, text)
 
     # Кнопка "следующие треки" в сообщении "что играет" #
     elif cmd[0] == 'song_next':
-        playback = playlist_api.get_next()
+        playback = playlist_api.next_get()
         if not playback:
             bot.send_message(query.message.chat.id, 'Доступно только во время эфира', reply_markup=bot_utils.keyboard_start())
         else:
             text = ''
-            for i in range(max(5, len(playback))):
-                track = playback[i]
-                text += '🕖{0}: {1}\n'.format(track['time_start'], track['title'])
-            bot.send_message(query.message.chat.id, text)
+            for track in playback:
+                text += '🕖<b>{0}:</b> {1}\n'.format(track['time_start'], track['title'])
+            bot.send_message(query.message.chat.id, text, parse_mode='HTML')
+
+    bot.answer_callback_query(query.id)
 
 
 @bot.message_handler(content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice'])
@@ -351,7 +352,7 @@ def message_handler(message):
         keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
                      telebot.types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
-        playback = playlist_api.get_now()
+        playback = playlist_api.now_get()
         if not playback:
             bot.send_message(message.chat.id, "Не знаю(", reply_markup=keyboard)
         else:

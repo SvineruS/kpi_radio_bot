@@ -48,45 +48,34 @@ def search(path):
     return dumps(ans)
 
 
-@app.route("/history", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def history_html():
-    return history.html()
+# сайтик
 
-
-@app.route("/history/getday/<path:date>", methods=['GET'], host=WEB_DOMAIN)
+@app.route("/playlist/prev/get/<path:date>", methods=['GET'], host=WEB_DOMAIN)
 def history_get(date):
-    return history.get(date)
+    return playlist_api.get_history(date)
 
 
-@app.route("/history/save", methods=['GET'])
+@app.route("/playlist/prev/save", methods=['GET'])
 def history_save():
     # https://WEBHOOK_LISTEN:WEBHOOK_PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
-    history.save(flask.request.args)
-    return ''
+    playlist_api.history_save(flask.request.args)
+    return 'ok'
 
 
-@app.route("/history/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
-def history_play(path):
-    return history.play(path)
-
-
-@app.route("/history/play2/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+@app.route("/playlist/prev/play/<path:path>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def history_play2(path):
-    return resp_audio(history.play(path, False))
+    return resp_audio(playlist_api.history_play(path))
 
 
 @app.route("/playlist/next/get", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def playlist_next_get():
-    return dumps(playlist_api.get_next(True))
+    return dumps(playlist_api.next_get_full())
 
 
 @app.route("/playlist/next/move/<path:n1>/<path:n2>", methods=['GET', 'POST'], host=WEB_DOMAIN)
 def playlist_next_move(n1, n2):
-    playlist_api.move_next(n1, n2)
+    playlist_api.next_move(n1, n2)
     return playlist_next_get()
-
-
-
 
 
 # Process webhook calls
