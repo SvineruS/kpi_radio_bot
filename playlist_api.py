@@ -73,7 +73,7 @@ def next_get_full():
     for track in playlist:
         answer.append({
             'title': track.attrib['CASTTITLE'],
-            'time_start': int(mktime(datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S').timetuple())),
+            'time_start': time2stamp(datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S')),
             'index': track.attrib['INDEX'],
         })
 
@@ -153,6 +153,11 @@ def history_play(path):
 
 def stamp2key(stamp):  # TODO разбиение на файлы по месяцу, хранить только этот и предыдущий месяц
     return str(int(mktime(datetime.fromtimestamp(int(stamp)).date().timetuple())))
+
+def time2stamp(time):
+    dt = datetime.now().replace(hour=time.hour, minute=time.minute, second=time.second)
+    return int(mktime(dt.timetuple()))
+
 
 
 def write(history):
