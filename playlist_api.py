@@ -71,7 +71,8 @@ def next_get_full():
         return answer
 
     for track in playlist:
-        print(track.attrib['STARTTIME'])
+        if not track.attrib['STARTTIME']:
+            continue
         answer.append({
             'title': track.attrib['CASTTITLE'],
             'time_start': time2stamp(datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S')),
@@ -202,5 +203,3 @@ def get_break_num_history(timestamp):
             return i+1
 
     return 0
-
-#print(next_get_full())
