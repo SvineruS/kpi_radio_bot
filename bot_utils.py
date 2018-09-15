@@ -132,8 +132,8 @@ def keyboard_time(day):
 
     if day == 6:
         if not today or time < 18 * 60:
-            btns.append(types.InlineKeyboardButton(text='Днем', callback_data='predlozka-|-6-|-1'))
-        btns.append(types.InlineKeyboardButton(text='Вечером', callback_data='predlozka-|-6-|-2'))
+            btns.append(types.InlineKeyboardButton(text='Днем', callback_data='predlozka-|-6-|--1'))
+        btns.append(types.InlineKeyboardButton(text='Вечером', callback_data='predlozka-|-6-|-5'))
     else:
         for i in range(1, 5):
             if today and time > 8*60+30 + 115*i:
