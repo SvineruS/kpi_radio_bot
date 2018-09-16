@@ -134,9 +134,9 @@ def callback_query_handler(query):
             user_obj = query.from_user
 
         text = bot_utils.CONFIG['days1'][int(cmd[1])] + ', '
-        if cmd[2] == -1:
+        if cmd[2] == '-1':
             text += 'днем'
-        elif cmd[2] == 5:
+        elif cmd[2] == '5':
             text += 'вечером'
         else:
             text += 'после ' + cmd[2] + ' пары'
