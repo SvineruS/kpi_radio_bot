@@ -276,7 +276,7 @@ def callback_query_handler(query):
     bot.answer_callback_query(query.id)
 
 
-@bot.message_handler(content_types=['text', 'audio', 'photo', 'sticker', 'video_note', 'voice'])
+@bot.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])  # todo (мб) #, 'video_note', 'voice'])
 def message_handler(message):
     # Пользователь скинул аудио
     if message.audio:
@@ -356,7 +356,7 @@ def message_handler(message):
     # Кнопки
 
     # Кнопка 'Что играет?'
-    if message.text == bot_utils.btn['what_playing']:
+    if message.text == bot_utils.btn['what_playing'] or message.text == '🎧Что сейчас играет?':  # todo убрать это где то зимой
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history'))
         keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
