@@ -276,7 +276,7 @@ def callback_query_handler(query):
     bot.answer_callback_query(query.id)
 
 
-@bot.message_handler(content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note', 'voice'])
+@bot.message_handler(content_types=['text', 'audio', 'photo', 'sticker', 'video_note', 'voice'])
 def message_handler(message):
     # Пользователь скинул аудио
     if message.audio:
@@ -303,11 +303,14 @@ def message_handler(message):
                     txt = "  На ваше сообщение ответили: "
 
                 bot.send_message(to, txt)
-                bot.send_document(to, message.document.file_id)
-                #if message.audio:
-                #    bot.send_audio(to, message.audio.file_id)
-                #if message.sticker:
-                #    bot.send_sticker(to, message.sticker.file_id)
+                if message.audio:
+                    bot.send_audio(to, message.audio.file_id)
+                elif message.sticker:
+                    bot.send_sticker(to, message.sticker.file_id)
+                elif message.photo:
+                    bot.send_photo(to, message.photo.file_id)
+                else:
+                    bot.send_message(to, message.text)
 
 
 
