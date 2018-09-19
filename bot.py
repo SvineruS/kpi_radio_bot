@@ -290,21 +290,26 @@ def message_handler(message):
 
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
+            # Одмены отвечают
+            if message.reply_to_message.audio or message.reply_to_message.forward_from:
+                # TODO аноннимный ответ
 
-            # Одмены отвечают на заказ
-            if message.reply_to_message.audio:
-                name = bot_utils.get_audio_name(message.reply_to_message.audio)
-                bot.send_message(message.reply_to_message.caption_entities[0].user.id,
-                                 "  На ваш заказ _" + name + "_ ответили:")
-                bot.forward_message(message.reply_to_message.caption_entities[0].user.id,
-                                    message.chat.id, message.message_id)
+                if message.reply_to_message.audio:  # на заказ
+                    to = message.reply_to_message.caption_entities[0].user.id
+                    txt = "На ваш заказ _" + bot_utils.get_audio_name(message.reply_to_message.audio) + "_ ответили:"
 
-            # Одмены отвечают на отзыв
-            if message.reply_to_message.forward_from:
-                bot.send_message(message.reply_to_message.forward_from.id,
-                                 "  На ваше сообщение ответили: ")
-                bot.forward_message(message.reply_to_message.forward_from.id,
-                                    message.chat.id, message.message_id)
+                if message.reply_to_message.forward_from:  # на отзыв
+                    to = message.reply_to_message.forward_from.id,
+                    txt = "  На ваше сообщение ответили: "
+
+                bot.send_message(to, txt)
+                bot.send_document(to, message.document.file_id)
+                #if message.audio:
+                #    bot.send_audio(to, message.audio.file_id)
+                #if message.sticker:
+                #    bot.send_sticker(to, message.sticker.file_id)
+
+
 
             # Сохранение картинок
             if message.reply_to_message.text == bot_utils.CONFIG['save_pic']:
