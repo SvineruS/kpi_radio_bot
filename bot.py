@@ -299,7 +299,7 @@ def message_handler(message):
                     txt = "На ваш заказ _" + bot_utils.get_audio_name(message.reply_to_message.audio) + "_ ответили:"
 
                 if message.reply_to_message.forward_from:  # на отзыв
-                    to = message.reply_to_message.forward_from.id,
+                    to = message.reply_to_message.forward_from.id
                     txt = "  На ваше сообщение ответили: "
 
                 bot.send_message(to, txt)
