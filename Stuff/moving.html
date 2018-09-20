@@ -23,19 +23,29 @@
     crossorigin="anonymous"></script>
 
   <style>
-    html {
-      /* touch-action: manipulation; */
+    body {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      overflow: hidden;
     }
 
-    .list-group-item {
+    .container {
+      overflow-y: scroll;
+      height: 100%;
+    }
+
+    li.list-group-item {
       user-select: none;
       display: flex;
       flex-flow: row nowrap;
       align-items: center;
+      justify-content: space-between;
     }
 
     .list-group-item * {
-      /* display: inline; */
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .list-group-item span {
@@ -72,7 +82,7 @@
   </style>
 
   <script>
-    // window.rServer = 'http://kpiradiobot.ga/'; ::deprecated
+    // window.rServer = 'http://kpiradiobot.ga/';
     window.rServer = '/';
     window.dragSensitivity = 20;
     window.canScroll = true;
@@ -109,10 +119,16 @@
       };
 
       function toggleScroll(bool) {
-        if (bool)
-          $('body').css('overflow', 'initial');
-        else
-          $('body').css('overflow', 'hidden');
+        if (bool) {
+          $('.container').css({
+            'overflow-y': 'scroll',
+          });
+        }
+        else {
+          $('.container').css({
+            'overflow-y': 'hidden',
+          });
+        }
       }
 
       function reBindHandlers() {
@@ -123,7 +139,7 @@
         let toClone = null;
         let moveToTransactionIndex = null;
 
-        $('#list li').on('mouseenter', function () {
+        function mEnter() {
           if (dragEl) {
             moveToTransactionIndex = $(this).attr('id');
             if (+$(toClone).attr('id') - 1 === $(this).index()) {
@@ -136,73 +152,78 @@
             }
 
           }
-        });
-        if (!mobilecheck()) {
-          $(document).on('mousemove', function ({ clientX, clientY }) {
-            if (dragTrigger && dist(clientX, clickStart.x, clientY, clickStart.y) > dragSensitivity) {
-              const { width, height, left } = toClone.getBoundingClientRect();
-              dragEl = $(toClone)
-                .clone()
-                .attr('id', 'drag-el')
-                .addClass('li-drag')
-                .css({ width, height, left, opacity: '0.5' })
-                .appendTo($('.drag-cont').first());
-              $(toClone).css('visibility', 'hidden');
-              dragTrigger = false;
-              dragging = true;
-            }
+        }
 
-            if (dragEl) {
-              dragEl
-                .css({
-                  top: clientY - clickStart.y,
-                });
-            }
-          });
-
-          $(document).on('mouseup', function () {
-            if (moveToTransactionIndex) {
-              swapTransaction(+$(toClone).attr('id'), moveToTransactionIndex);
-              moveToTransactionIndex = null;
-            }
-            $('#list').children().each((index, el) => {
-              $(el).attr('id', index + 1);
+        // mouse handlers:
+        function mMove({ clientX, clientY }) {
+          if (dragTrigger && dist(clientX, clickStart.x, clientY, clickStart.y) > dragSensitivity) {
+            const { width, height, left } = toClone.getBoundingClientRect();
+            dragEl = $(toClone)
+              .clone()
+              .attr('id', 'drag-el')
+              .addClass('li-drag')
+              .css({ width, height, left, opacity: '0.5' })
+              .appendTo($('.drag-cont').first());
+            $(toClone).css({
+              'opacity': '0.3',
+              'background-color': 'blue'
             });
-            $(dragEl).remove();
-            dragEl = null;
-            dragging = false;
-            $(toClone).css('visibility', 'visible');
-            toClone = null;
-          });
+            dragTrigger = false;
+            dragging = true;
+          }
 
-          $('#list li span.material-icons').on('mousedown', function (e) {
-            const { left, top } = this.getBoundingClientRect();
-            clickStart = { x: e.clientX - left, y: e.clientY - top - window.scrollY };
-            toClone = $(this).parent()[0];
-            dragTrigger = true;
+          if (dragEl) {
+            if (clientY < 20) {
+              document.getElementsByClassName('container')[0]
+                .scrollBy({ top: -30, behavior: 'instant' })
+            } else if (clientY > window.innerHeight - 20) {
+              document.getElementsByClassName('container')[0]
+                .scrollBy({ top: 30, behavior: 'instant' })
+            }
+            dragEl
+              .css({
+                top: clientY - clickStart.y,
+              });
+          }
+        }
+
+        function mUp() {
+          if (moveToTransactionIndex) {
+            swapTransaction(+$(toClone).attr('id'), moveToTransactionIndex);
+            moveToTransactionIndex = null;
+          }
+          $('#list').children().each((index, el) => {
+            $(el).attr('id', index + 1);
           });
+          $(dragEl).remove();
+          dragEl = null;
+          dragging = false;
+          $(toClone).css({
+            'opacity': '1',
+            'background-color': 'initial'
+          });
+          toClone = null;
+        }
+
+        function mDown(e) {
+          const { left, top } = this.getBoundingClientRect();
+          clickStart = { x: e.clientX - left, y: e.clientY - top - window.scrollY };
+          toClone = $(this).parent()[0];
+          dragTrigger = true;
+        }
+
+        $('#list li').on('mouseenter', mEnter);
+
+        if (!mobilecheck()) {
+          $(document).on('mousemove', mMove);
+          $(document).on('mouseup', mUp);
+          $('#list li span.material-icons').on('mousedown', mDown);
+
         } else {
           $(document).on('touchmove', function (evt) {
-            const { clientX, clientY } = evt.changedTouches[0];
-            if (dragTrigger && dist(clientX, clickStart.x, clientY, clickStart.y) > dragSensitivity) {
-              const { width, height, left } = toClone.getBoundingClientRect();
-              dragEl = $(toClone)
-                .clone()
-                .attr('id', 'drag-el')
-                .addClass('li-drag')
-                .css({ width, height, left, opacity: '0.5' })
-                .appendTo($('.drag-cont').first());
-              $(toClone).css('visibility', 'hidden');
-              dragTrigger = false;
-              dragging = true;
-            }
 
-            if (dragEl) {
-              dragEl
-                .css({
-                  top: clientY - clickStart.y,
-                });
-            }
+            const { clientX, clientY } = evt.changedTouches[0];
+            mMove({ clientX, clientY });
 
             $('#list li').each((index, el) => {
               const { top, height } = el.getBoundingClientRect();
@@ -216,18 +237,7 @@
           });
 
           $(document).on('touchend', function () {
-            if (moveToTransactionIndex) {
-              swapTransaction(+$(toClone).attr('id'), moveToTransactionIndex);
-              moveToTransactionIndex = null;
-            }
-            $('#list').children().each((index, el) => {
-              $(el).attr('id', index + 1);
-            });
-            $(dragEl).remove();
-            dragEl = null;
-            dragging = false;
-            $(toClone).css('visibility', 'visible');
-            toClone = null;
+            mUp();
             toggleScroll(true);
           });
 
@@ -263,8 +273,8 @@
           arr.forEach((item, index) => {
             $list.append(`
               <li id="${item.index}" class="list-group-item">
-                <span class="material-icons">drag_handle</span>
                 <h5>${item.title}</h5>
+                <span class="material-icons">dehaze</span>
               </li>
             `);
           });
@@ -276,8 +286,8 @@
           //   .forEach((item, index) => {
           //     $list.append(`
           //       <li id="${item.index}" class="list-group-item">
-          //         <span class="material-icons">drag_handle</span>
           //         <h5>${item.title}</h5>
+          //         <span class="material-icons">dehaze</span>
           //       </li>
           //     `);
           //   });
