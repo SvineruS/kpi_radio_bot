@@ -6,7 +6,7 @@ from json import dumps, loads
 from config import *
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / 'Stuff/settings.json'
+DB_PATH = Path(__file__).parent / 'Stuff/history.db'
 
 
 def prev_get():

@@ -1,6 +1,6 @@
 .idea
 .__pycache__
 config.py
-.idea/workspace.xml
+.idea/*
 *.pyc
 *.pem
