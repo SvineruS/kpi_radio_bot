@@ -4,3 +4,6 @@ config.py
 .idea/*
 *.pyc
 *.pem
+
+# это для меня оч надо было, не трогай
+test-server.js
