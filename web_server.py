@@ -68,7 +68,7 @@ def history_play2(path):
 
 @app.route("/playlist/next", methods=['GET', 'POST'])
 def playlist_next_html():
-    f = open('Stuff/moving.html')
+    f = open('Stuff/moving.html', encoding='utf-8')
     h = f.read()
     f.close()
     return h
