@@ -66,12 +66,20 @@ def history_play2(path):
     return resp_audio(playlist_api.history_play(path))
 
 
-@app.route("/playlist/next/get", methods=['GET', 'POST'], host=WEB_DOMAIN)
+@app.route("/playlist/next/", methods=['GET', 'POST'])
+def playlist_next_html():
+    f = open('Stuff/moving.html')
+    h = f.read()
+    f.close()
+    return h
+
+
+@app.route("/playlist/next/get", methods=['GET', 'POST'])
 def playlist_next_get():
     return dumps(playlist_api.next_get_full())
 
 
-@app.route("/playlist/next/move/<path:n1>/<path:n2>", methods=['GET', 'POST'], host=WEB_DOMAIN)
+@app.route("/playlist/next/move/<path:n1>/<path:n2>", methods=['GET', 'POST'])
 def playlist_next_move(n1, n2):
     playlist_api.next_move(n1, n2)
     return playlist_next_get()
