@@ -68,6 +68,7 @@ def history_play2(path):
 
 @app.route("/playlist/next", methods=['GET', 'POST'])
 def playlist_next_html():
+    print('alo bluad robotoi')
     f = open('Stuff/moving.html')
     h = f.read()
     f.close()
