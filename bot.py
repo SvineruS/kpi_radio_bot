@@ -279,7 +279,7 @@ def callback_query_handler(query):
 @bot.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])  # todo (мб) #, 'video_note', 'voice'])
 def message_handler(message):
     # Пользователь скинул аудио
-    if message.audio:
+    if message.audio and message.chat.id != ADMINS_CHAT_ID:
         msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
                              reply_markup=bot_utils.keyboard_day())
         bot_utils.auto_check_bad_words(msg, bot)
