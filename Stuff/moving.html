@@ -89,7 +89,7 @@
       function swapTransaction(i1, i2) {
         $.ajax({
           method: 'GET',
-          url: `playlist/next/move/${i1}/${i2}`,
+          url: `next/move/${i1}/${i2}`,
         }).done(() => {
           alert('Transaction complete');
         });
