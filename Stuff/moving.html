@@ -82,8 +82,8 @@
   </style>
 
   <script>
-    // window.rServer = 'http://kpiradiobot.ga/';
-    window.rServer = '/';
+    window.testMode = 0;
+    window.rServer = testMode ? 'http://kpiradiobot.ga/' : '/';
     window.dragSensitivity = 20;
     window.canScroll = true;
     window.mobilecheck = function () {
@@ -98,10 +98,15 @@
       let touchHovered = null;
 
       function swapTransaction(i1, i2) {
-        // alert('Transaction complete');
+        if (testMode) {
+          alert(`Transaction complete. Indexes: ${i1}, ${i2}`);
+          return;
+        }
+
         $.ajax({
           method: 'GET',
           url: `next/move/${i1}/${i2}`,
+          crossDomain: true,
         }).done(() => {
           alert('Transaction complete');
         });
@@ -119,16 +124,7 @@
       };
 
       function toggleScroll(bool) {
-        if (bool) {
-          $('.container').css({
-            'overflow-y': 'scroll',
-          });
-        }
-        else {
-          $('.container').css({
-            'overflow-y': 'hidden',
-          });
-        }
+        $('.container').css('overflow-y', bool ? 'scroll' : 'hidden');
       }
 
       function reBindHandlers() {
@@ -140,18 +136,19 @@
         let moveToTransactionIndex = null;
 
         function mEnter() {
-          if (dragEl) {
+          if (dragEl && +$(toClone).attr('id') !== +$(this).attr('id')) {
             moveToTransactionIndex = $(this).attr('id');
             if (+$(toClone).attr('id') - 1 === $(this).index()) {
               moveToTransactionIndex = null;
             }
+
             if ($(this).isAfter($(toClone))) {
               $(this).after($(toClone));
             } else {
               $(this).before($(toClone));
             }
-
           }
+
         }
 
         // mouse handlers:
@@ -168,6 +165,7 @@
               'opacity': '0.3',
               'background-color': 'blue'
             });
+            $('#list').css('cursor', 'grabbing');
             dragTrigger = false;
             dragging = true;
           }
@@ -202,6 +200,7 @@
             'opacity': '1',
             'background-color': 'initial'
           });
+          $('#list').css('cursor', 'initial');
           toClone = null;
         }
 
@@ -258,7 +257,8 @@
       $.ajax({
         url: rServer + 'playlist/next/get',
         contentType: 'application/json',
-        method: 'GET'
+        method: 'GET',
+        crossDomain: true,
       })
         .done((data) => {
           const arr = JSON.parse(data);
