@@ -151,7 +151,7 @@ def callback_query_handler(query):
                 callback_data='-|-'.join(['predlozka_answ', 'neok', str(user_id), cmd[1], cmd[2]])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
-                url=('http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio))[0:40]),  # trim
+                url=('http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio))[0:100]),  # trim
             telebot.types.InlineKeyboardButton(
                 text='Проверить',
                 callback_data='-|-'.join(['predlozka_answ', 'check']))
