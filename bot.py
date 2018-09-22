@@ -292,8 +292,6 @@ def message_handler(message):
         if message.chat.id == ADMINS_CHAT_ID:
             # Одмены отвечают
             if message.reply_to_message.audio or message.reply_to_message.forward_from:
-                # TODO аноннимный ответ
-
                 if message.reply_to_message.audio:  # на заказ
                     to = message.reply_to_message.caption_entities[0].user.id
                     txt = "На ваш заказ _" + bot_utils.get_audio_name(message.reply_to_message.audio) + "_ ответили:"
@@ -431,3 +429,6 @@ def edited_message(message):
 if __name__ == '__main__':
     bot.remove_webhook()
     bot.polling(none_stop=True)
+
+
+# TODO сделать че то шоб песни были не стеком а очередью
