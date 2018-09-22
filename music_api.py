@@ -71,7 +71,7 @@ def search_text(name, attempt2=False):
 def radioboss_api(**kwargs):
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
     for key in kwargs:
-        url += '&{0}={1}'.format(key, kwargs[key])
+        url += '&{0}={1}'.format(key, quote(kwargs[key]))
     t = 'Еще даже не подключился к радиобоссу а уже эксепшены(('
     try:
         t = requests.get(url)
