@@ -53,7 +53,7 @@ def next_get(full=False):
         if not full :
             if not playable:
                 continue           
-            if not full and i >= 5:
+            if i >= 5:
                 break
                 
         if full:  
