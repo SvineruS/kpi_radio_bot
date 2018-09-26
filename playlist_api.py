@@ -25,7 +25,7 @@ def prev_get():
     return answer
 
 
-def next_get():
+def next_get(full=False):
     answer = []
 
     playlist = radioboss_api(action='getplaylist2')
@@ -48,39 +48,32 @@ def next_get():
         if not track.attrib['STARTTIME']:
             continue
         time_start = datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S').time()
-        if time_start < time_min:
-            continue
-        if i >= 5 or time_start > time_max:
-            break
-
-        answer.append({
-            'title': track.attrib['CASTTITLE'],
-            'time_start': track.attrib['STARTTIME'],
-            'index': track.attrib['INDEX'],
-        })
-
-        i += 1
-
-    return answer
-
-
-def next_get_full():
-    answer = []
-
-    playlist = radioboss_api(action='getplaylist2')
-    if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop ':
-        return answer
-
-    for track in playlist:
-        if not track.attrib['STARTTIME']:
-            continue
-        answer.append({
-            'title': track.attrib['CASTTITLE'],
-            'time_start': time2stamp(datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S')),
-            'index': track.attrib['INDEX'],
-        })
+        playable = time_min < time_start < time_max
+        
+        if not full :
+            if not playable:
+                continue           
+            if not full and i >= 5:
+                break
+                
+        if full:  
+            item = {
+                'title': track.attrib['CASTTITLE'],
+                'index': track.attrib['INDEX'],
+                'time_start': time2stamp(datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S')),
+                'playable': playable
+            }  
+        else:
+            item= {
+                'title': track.attrib['CASTTITLE'],
+                'time_start': track.attrib['STARTTIME']
+            }
+            i += 1
+            
+        answer.append(item)  
 
     return answer
+
 
 
 def now_get():
