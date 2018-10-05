@@ -63,7 +63,7 @@
     }
 
     .drag-cont>* {
-      box-shadow: 0px 0px 5px black;
+      /* box-shadow: 0px 0px 5px black; */
     }
 
     .overlay {
@@ -79,10 +79,14 @@
       left: 20px;
     }
 
+    .now-pl {
+      background-color: lightskyblue;
+    }
+
   </style>
 
   <script>
-    window.testMode = 0;
+    window.testMode = 1;
     window.rServer = testMode ? 'http://kpiradiobot.ga/' : '/';
     window.dragSensitivity = 20;
     window.canScroll = true;
@@ -127,6 +131,26 @@
         $('.container').css('overflow-y', bool ? 'scroll' : 'hidden');
       }
 
+      function flip(fromEl, toEl) {
+        const { left, top, width, height } = fromEl.getBoundingClientRect();
+        $(toEl)
+          .clone()
+          .appendTo('.drag-cont')
+          .css({
+            position: 'absolute',
+            top, left, width, height
+          })
+          .animate({
+            top: $(toEl).offset().top,
+            left: $(toEl).offset().left
+          }, 200, function () {
+            $(this).remove();
+            $(toEl).css('opacity', 1);
+          });
+
+        $(toEl).css('opacity', 0);
+      }
+
       function reBindHandlers() {
         let clickStart = null;
         let dragTrigger = false;
@@ -135,6 +159,7 @@
         let toClone = null;
         let moveToTransactionIndex = null;
 
+        // handlers:
         function mEnter() {
           if (dragEl && +$(toClone).attr('id') !== +$(this).attr('id')) {
             moveToTransactionIndex = $(this).attr('id');
@@ -147,23 +172,22 @@
             } else {
               $(this).before($(toClone));
             }
+            flip(toClone, this);
           }
-
         }
 
-        // mouse handlers:
         function mMove({ clientX, clientY }) {
           if (dragTrigger && dist(clientX, clickStart.x, clientY, clickStart.y) > dragSensitivity) {
             const { width, height, left } = toClone.getBoundingClientRect();
             dragEl = $(toClone)
               .clone()
               .attr('id', 'drag-el')
-              .addClass('li-drag')
+              // .addClass('li-drag')
               .css({ width, height, left, opacity: '0.5' })
               .appendTo($('.drag-cont').first());
             $(toClone).css({
-              'opacity': '0.3',
-              'background-color': 'blue'
+              'opacity': 0.3,
+              'background-color': 'skyblue',
             });
             $('#list').css('cursor', 'grabbing');
             dragTrigger = false;
@@ -188,11 +212,13 @@
         function mUp() {
           if (moveToTransactionIndex) {
             swapTransaction(+$(toClone).attr('id'), moveToTransactionIndex);
+            $('li#' + moveToTransactionIndex).attr('id', $(toClone).attr('id'));
+            $(toClone).attr('id', moveToTransactionIndex);
             moveToTransactionIndex = null;
           }
-          $('#list').children().each((index, el) => {
-            $(el).attr('id', index + 1);
-          });
+          // $('#list').children().each((index, el) => {
+          //   $(el).attr('id', index + 1);
+          // });
           $(dragEl).remove();
           dragEl = null;
           dragging = false;
@@ -205,12 +231,13 @@
         }
 
         function mDown(e) {
-          const { left, top } = this.getBoundingClientRect();
-          clickStart = { x: e.clientX - left, y: e.clientY - top - window.scrollY };
+          const { left, top } = $(this).parent()[0].getBoundingClientRect();
+          clickStart = { x: e.clientX - left, y: e.clientY - top + window.scrollY };
           toClone = $(this).parent()[0];
           dragTrigger = true;
         }
 
+        // event binding:
         $('#list li').on('mouseenter', mEnter);
 
         if (!mobilecheck()) {
@@ -270,9 +297,18 @@
             `);
             return;
           }
+          const now = Math.floor(Date.now());
+          let nowI = arr[0].index;
+          arr.some((val, ind) => {
+            if (+val['time_start'] > now) {
+              nowI = ind - 1;
+              return true;
+            }
+            return false;
+          });
           arr.forEach((item, index) => {
             $list.append(`
-              <li id="${item.index}" class="list-group-item">
+              <li id="${item.index}" class="list-group-item${nowI === index ? ' now-pl' : ''}">
                 <h5>${item.title}</h5>
                 <span class="material-icons">dehaze</span>
               </li>
@@ -282,17 +318,31 @@
         })
         .fail(() => {
           // comment dat shit!!!
-          // JSON.parse('[{"title": "Axel Johansson - The River", "time_start": 1537188600, "index": "1"}, {"title": "Faul & Wad Ad vs. Pnau - Changes", "time_start": 1537188806, "index": "2"}, {"title": "Halsey - Gasoline", "time_start": 1537189003, "index": "3"}, {"title": "Kygo - Firestone ft. Conrad Sewell", "time_start": 1537189200, "index": "4"}, {"title": "Loren Allred (OST \u0438\u0437 \u0412\u0435\u043b\u0438\u0447\u0430\u0439\u0448\u0438\u0439 \u0448\u043e\u0443\u043c\u0435\u043d, The Greatest Showman) - Never Enough", "time_start": 1537189420, "index": "5"}, {"title": "lp - night-like-this", "time_start": 1537189626, "index": "6"}, {"title": "monatik - dym", "time_start": 1537189864, "index": "7"}, {"title": "Myth & Roid - Jingo Jungle", "time_start": 1537190068, "index": "8"}, {"title": "Nirvana - The Man Who Sold The World", "time_start": 1537190297, "index": "9"}, {"title": "onuka - animal", "time_start": 1537190525, "index": "10"}, {"title": "Pixies - Where Is My Mind?", "time_start": 1537190790, "index": "11"}, {"title": "Rhye - Waste", "time_start": 1537191022, "index": "12"}, {"title": "System of a Down - Roulette", "time_start": 1537191232, "index": "13"}]')
-          //   .forEach((item, index) => {
-          //     $list.append(`
-          //       <li id="${item.index}" class="list-group-item">
+          // const arr = JSON.parse('[{"title": "Axel Johansson - The River", "time_start": 1538784575, "index": "1"}, {"title": "Faul & Wad Ad vs. Pnau - Changes", "time_start": 1538793698, "index": "2"}, {"title": "Halsey - Gasoline", "time_start": 1538784575, "index": "3"}, {"title": "Kygo - Firestone ft. Conrad Sewell", "time_start": 1537189200, "index": "4"}, {"title": "Loren Allred (OST \u0438\u0437 \u0412\u0435\u043b\u0438\u0447\u0430\u0439\u0448\u0438\u0439 \u0448\u043e\u0443\u043c\u0435\u043d, The Greatest Showman) - Never Enough", "time_start": 1537189420, "index": "5"}, {"title": "lp - night-like-this", "time_start": 1537189626, "index": "6"}, {"title": "monatik - dym", "time_start": 1537189864, "index": "7"}, {"title": "Myth & Roid - Jingo Jungle", "time_start": 1537190068, "index": "8"}, {"title": "Nirvana - The Man Who Sold The World", "time_start": 1537190297, "index": "9"}, {"title": "onuka - animal", "time_start": 1537190525, "index": "10"}, {"title": "Pixies - Where Is My Mind?", "time_start": 1537190790, "index": "11"}, {"title": "Rhye - Waste", "time_start": 1537191022, "index": "12"}, {"title": "System of a Down - Roulette", "time_start": 1537191232, "index": "13"}]')
+          // const now = Math.floor(Date.now() / 1000);
+          // console.log(now);
+          // let nowI = arr[0].index;
+          // arr.some((val, ind) => {
+          //   console.log(+val['time_start']);
+          //   if (+val['time_start'] > now) {
+          //     nowI = ind - 1;
+          //     console.log(nowI);
+          //     return true;
+          //   }
+          //   return false;
+          // });
+
+          // arr.forEach((item, index) => {
+          //   $list.append(`
+          //       <li id="${item.index}" class="list-group-item${nowI === index ? ' now-pl' : ''}">
           //         <h5>${item.title}</h5>
           //         <span class="material-icons">dehaze</span>
           //       </li>
           //     `);
-          //   });
+          // });
           // reBindHandlers();
           // return;
+          // ...to here
 
           $list.append(`
             <li class="list-group-item list-group-item-danger">
@@ -301,6 +351,13 @@
           `);
         });
 
+
+      setTimeout(() => {
+        window.scrollTo({
+          top: $('li.now-pl').scrollTop(),
+          behavior: 'smooth'
+        });
+      }, 1000);
     });
 
   </script>
