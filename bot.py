@@ -151,7 +151,7 @@ def callback_query_handler(query):
                 callback_data='-|-'.join(['predlozka_answ', 'neok', str(user_id), cmd[1], cmd[2]])),
             telebot.types.InlineKeyboardButton(
                 text='Посмотреть текст',
-                url='http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio)),
+                url=('http://'+WEB_DOMAIN+'/gettext/' + bot_utils.get_audio_name(query.message.audio))[0:100]),  # trim
             telebot.types.InlineKeyboardButton(
                 text='Проверить',
                 callback_data='-|-'.join(['predlozka_answ', 'check']))
@@ -279,7 +279,7 @@ def callback_query_handler(query):
 @bot.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])  # todo (мб) #, 'video_note', 'voice'])
 def message_handler(message):
     # Пользователь скинул аудио
-    if message.audio:
+    if message.audio and message.chat.id != ADMINS_CHAT_ID:
         msg = bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
                              reply_markup=bot_utils.keyboard_day())
         bot_utils.auto_check_bad_words(msg, bot)
@@ -292,8 +292,6 @@ def message_handler(message):
         if message.chat.id == ADMINS_CHAT_ID:
             # Одмены отвечают
             if message.reply_to_message.audio or message.reply_to_message.forward_from:
-                # TODO аноннимный ответ
-
                 if message.reply_to_message.audio:  # на заказ
                     to = message.reply_to_message.caption_entities[0].user.id
                     txt = "На ваш заказ _" + bot_utils.get_audio_name(message.reply_to_message.audio) + "_ ответили:"
@@ -431,3 +429,6 @@ def edited_message(message):
 if __name__ == '__main__':
     bot.remove_webhook()
     bot.polling(none_stop=True)
+
+
+# TODO сделать че то шоб песни были не стеком а очередью

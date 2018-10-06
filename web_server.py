@@ -76,7 +76,7 @@ def playlist_next_html():
 
 @app.route("/playlist/next/get", methods=['GET', 'POST'])
 def playlist_next_get():
-    return dumps(playlist_api.next_get_full())
+    return dumps(playlist_api.next_get(True))
 
 
 @app.route("/playlist/next/move/<path:n1>/<path:n2>", methods=['GET', 'POST'])
