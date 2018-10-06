@@ -216,15 +216,11 @@
             $(toClone).attr('id', moveToTransactionIndex);
             moveToTransactionIndex = null;
           }
-          // $('#list').children().each((index, el) => {
-          //   $(el).attr('id', index + 1);
-          // });
           $(dragEl).remove();
           dragEl = null;
           dragging = false;
           $(toClone).css({
             'opacity': '1',
-            'background-color': 'initial'
           });
           $('#list').css('cursor', 'initial');
           toClone = null;
@@ -297,10 +293,10 @@
             `);
             return;
           }
-          const now = Math.floor(Date.now());
+          const now = Math.floor(Date.now() / 1000);
           let nowI = arr[0].index;
           arr.some((val, ind) => {
-            if (+val['time_start'] > now) {
+            if (+val['time_start'] >= now) {
               nowI = ind - 1;
               return true;
             }
@@ -308,12 +304,15 @@
           });
           arr.forEach((item, index) => {
             $list.append(`
-              <li id="${item.index}" class="list-group-item${nowI === index ? ' now-pl' : ''}">
+              <li id="${item.index}" class="list-group-item${+nowI === index ? ' now-pl' : ''}">
                 <h5>${item.title}</h5>
                 <span class="material-icons">dehaze</span>
               </li>
             `);
           });
+          // setInterval(() => {
+
+          // }, 1000);
           reBindHandlers();
         })
         .fail(() => {
