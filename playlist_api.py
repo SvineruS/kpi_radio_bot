@@ -117,25 +117,6 @@ def get_history(date):
     return answer
 
 
-def history_save(args):
-    if args.get('pass') != str(list(RADIOBOSS_DATA)[2]):
-        return 'wrong pass'
-    obj = {
-        'artist': args.get('artist'),
-        'title': args.get('title'),
-        'casttitle': args.get('casttitle'),
-        'time_start': int(time()),
-        'time_stop': int(time()) + int(args.get('len')),
-        'path': args.get('path'),
-    }
-    key = stamp2key(time())
-    history = read()
-    if key not in history:
-        history[key] = []
-    history[key].append(obj)
-    write(history)
-
-
 def history_play(path):
     key = stamp2key(path)
     history = read()
