@@ -445,11 +445,12 @@ def send_history(fields):
     else:
         sender_name = 'Заказал ' + sender_name
 
-    print(sender_name)
 
-    #f = open(fields['path'], 'rb')
-    #m = f.read()
-    #f.close()
+    f = open(fields['path'], 'rb')
+    m = f.read()
+    f.close()
+
+    print(sender_name, fields['path'], f, m)
 
     #bot.send_audio(HISTORY_CHAT_ID, m, performer=fields['artist'], title=fields['title'],
     #               caption=sender_name, parse_mode='HTML')
