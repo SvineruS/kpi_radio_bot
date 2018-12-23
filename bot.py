@@ -307,7 +307,7 @@ def message_handler(message):
                     to = message.reply_to_message.forward_from.id
                     txt = "  На ваше сообщение ответили: "
 
-                bot.send_message(to, txt, parse_mode='HTML')
+                bot.send_message(to, txt, parse_mode='markdown')
                 if message.audio:
                     bot.send_audio(to, message.audio.file_id)
                 elif message.sticker:
