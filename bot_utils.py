@@ -232,7 +232,10 @@ def save_file(url, to):
 def delete_file(path):
     if not os.path.isfile(path):
         return
-    os.remove(path)
+    try:
+        os.remove(path)
+    except:
+        print('Error! deleting file')
 
 
 
