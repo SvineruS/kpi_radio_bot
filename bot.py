@@ -452,6 +452,17 @@ def send_history(fields):
     f.close()
 
 
+def send_live_begin(time):
+    if time == 5:
+        time_name = 'Вечерний эфир'
+    elif time == -1:
+        time_name = 'Утренний эфир'
+    else:
+        time_name = bot_utils.CONFIG['times'][time] + ' перерыв'
+
+    bot.send_message(HISTORY_CHAT_ID, time_name)
+
+
 if __name__ == '__main__':
     bot.remove_webhook()
     bot.polling(none_stop=True)

@@ -248,7 +248,10 @@ def write_sender_tag(path, user_obj):
 def read_sender_tag(path):
     tags = radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
-    name = b64decode(name).decode('utf-8')
+    try:
+        name = b64decode(name).decode('utf-8')
+    except:
+        return False
     return name
 
 
