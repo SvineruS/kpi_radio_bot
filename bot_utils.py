@@ -195,7 +195,10 @@ def keyboard_time(day):
 
 
 def get_audio_name(audio):
-    name = str(audio.performer) + ' - ' + str(audio.title)
+    if not audio.performer and not audio.title:
+        name = 'Названия нету :('
+    else:
+        name = ' - '.join([str(audio.performer), str(audio.title)])
     name = ''.join(list(filter(lambda c: (c not in '\/:*?"<>|'), name)))  # винда агрится на эти символы в пути
     return name
 
