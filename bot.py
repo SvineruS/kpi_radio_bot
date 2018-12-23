@@ -443,7 +443,7 @@ def send_history(fields):
     if not sender_name:
         sender_name = 'От команды РадиоКпи'
     else:
-        sender_name = 'Заказал ' + sender_name
+        sender_name = 'Заказал(а) ' + sender_name
 
     print(fields['path'])
     f = open(fields['path'], 'rb')
