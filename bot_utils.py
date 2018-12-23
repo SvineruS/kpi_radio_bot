@@ -240,7 +240,7 @@ def delete_file(path):
 def write_sender_tag(path, user_obj):
     tags = radioboss_api(action='readtag', fn=path)
     name = get_user_name(user_obj)
-    name = b64encode(name.encode('utf-8'))
+    name = b64encode(name.encode('utf-8')).decode('utf-8')
     tags[0].attrib['Comment'] = name
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
     radioboss_api(action='writetag', fn=path, data=xmlstr)
@@ -293,4 +293,3 @@ def auto_check_bad_words(msg, bot):
 
 
 # TODO покормить Кешу
-print(read_sender_tag("D:\Вещание Радио\Заказы\07_Воскресенье\Вечерний эфир\Jodeci - Freek'n You.mp3"))
