@@ -301,7 +301,7 @@ def message_handler(message):
             if message.reply_to_message.audio or message.reply_to_message.forward_from:
                 if message.reply_to_message.audio:  # на заказ
                     to = message.reply_to_message.caption_entities[0].user.id
-                    txt = "На ваш заказ _" + bot_utils.get_audio_name(message.reply_to_message.audio) + "_ ответили:"
+                    txt = "На ваш заказ _(" + bot_utils.get_audio_name(message.reply_to_message.audio) + ")_ ответили:"
 
                 if message.reply_to_message.forward_from:  # на отзыв
                     to = message.reply_to_message.forward_from.id
