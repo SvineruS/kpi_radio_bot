@@ -307,7 +307,7 @@ def message_handler(message):
                     to = message.reply_to_message.forward_from.id
                     txt = "  На ваше сообщение ответили: "
 
-                bot.send_message(to, txt)
+                bot.send_message(to, txt, parse_mode='HTML')
                 if message.audio:
                     bot.send_audio(to, message.audio.file_id)
                 elif message.sticker:
@@ -419,7 +419,6 @@ def query_text(inline_query):
         url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
             urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
         )
-        print(url)
         articles.append(
             telebot.types.InlineQueryResultAudio(
                 i, url,
@@ -449,7 +448,6 @@ def send_history(fields):
     else:
         sender_name = 'Заказал(а) ' + sender_name
 
-    print(fields['path'])
     f = open(fields['path'], 'rb')
     bot.send_audio(HISTORY_CHAT_ID, f, sender_name,
                    performer=fields['artist'], title=fields['title'], parse_mode='HTML', timeout=60)
