@@ -14,12 +14,9 @@ def start():
     for index, time in enumerate(('10:05', '12:00', '13:55', '15:50', '17:50')):
         if index == 4:
             index = 5  # потому шо везде вечер это 5 а тут 4
-        schedule.every().monday.at(time).do(lambda time_=index: send_live_begin(time_))
-        schedule.every().tuesday.at(time).do(lambda time_=index: send_live_begin(time_))
-        schedule.every().wednesday.at(time).do(lambda time_=index: send_live_begin(time_))
-        schedule.every().thursday.at(time).do(lambda time_=index: send_live_begin(time_))
-        schedule.every().friday.at(time).do(lambda time_=index: send_live_begin(time_))
-        schedule.every().saturday.at(time).do(lambda time_=index: send_live_begin(time_))
+
+        for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
+            getattr(schedule.every(), day).at(time).do(lambda time_=index: send_live_begin(time_))
 
     schedule.every().sunday.at('10:00').do(lambda: send_live_begin(-1))
     schedule.every().sunday.at('18:00').do(lambda: send_live_begin(5))
