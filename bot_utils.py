@@ -77,12 +77,12 @@ CONFIG = {
     'times': ['Первый', 'Второй', 'Третий', 'Четвертый'],
 }
 
-btn = {
-    'what_playing': '🎧Что играет?',
-    'predlozka': '📝Заказать песню',
-    'feedback_v_komandu': '🖌Обратная связь',
-    # 'pokazhi': '📷Покажи радио',
-}
+btn = [
+      {'what_playing': '🎧Что играет?'},
+      {'predlozka': '📝Заказать песню',
+       'feedback_v_komandu': '🖌Обратная связь'},
+     # 'pokazhi': '📷Покажи радио',
+]
 
 
 keyboard_predlozka_inline = types.InlineKeyboardMarkup()
@@ -137,10 +137,10 @@ def get_break_num(time=None):
 
 
 
-
 def keyboard_start():
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    keyboard.add(*[types.KeyboardButton(btn[t]) for t in btn])
+    for row in btn:
+        keyboard.add(*[types.KeyboardButton(row[i]) for i in row])
     return keyboard
 
 

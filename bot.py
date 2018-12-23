@@ -364,7 +364,7 @@ def message_handler(message):
     # Кнопка 'Что играет?'
     if message.text == bot_utils.btn['what_playing']:
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='http://r.kpi.ua/history'))
+        keyboard.add(telebot.types.InlineKeyboardButton(text='Поиск песни по времени', url='https://t.me/rkpi_music'))
         keyboard.add(telebot.types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
                      telebot.types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
