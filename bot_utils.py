@@ -7,7 +7,7 @@ from datetime import datetime
 from music_api import search_text, radioboss_api
 from pathlib import Path
 import xml.etree.ElementTree as Etree
-
+from base64 import b64decode, b64encode
 
 CONFIG = {
     'start': '''Привет, это бот РадиоКПИ. 
@@ -240,14 +240,16 @@ def delete_file(path):
 def write_sender_tag(path, user_obj):
     tags = radioboss_api(action='readtag', fn=path)
     name = get_user_name(user_obj)
+    name = b64encode(name.encode('utf-8'))
     tags[0].attrib['Comment'] = name
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
-    print(xmlstr)
     radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 def read_sender_tag(path):
     tags = radioboss_api(action='readtag', fn=path)
-    return tags[0].attrib['Comment']
+    name = tags[0].attrib['Comment']
+    name = b64decode(name).decode('utf-8')
+    return name
 
 
 
