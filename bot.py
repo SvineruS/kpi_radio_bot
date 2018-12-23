@@ -446,8 +446,8 @@ def send_history(fields):
         sender_name = 'Заказал ' + sender_name
 
     f = open(fields['path'], 'rb')
-    bot.send_audio(HISTORY_CHAT_ID, f, sender_name,
-                   performer=fields['artist'], title=fields['title'], parse_mode='HTML')
+    bot.send_audio(HISTORY_CHAT_ID, f, 'test') #sender_name,
+                   #performer=fields['artist'], title=fields['title'], parse_mode='HTML')
     f.close()
 
 
