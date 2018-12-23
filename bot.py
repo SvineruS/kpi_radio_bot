@@ -19,7 +19,7 @@ from config import *
 from datetime import datetime
 from os import listdir, system, getcwd
 from random import choice
-
+import urllib.parse
 
 if __name__ == '__main__':
     TOKEN = TOKEN_TEST
@@ -419,7 +419,7 @@ def query_text(inline_query):
         url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
             audio['artist'] + ' - ' + audio['title'], audio['url']
         )
-
+        url = urllib.parse.quote_plus(url)
         articles.append(
             telebot.types.InlineQueryResultAudio(
                 i, url,
