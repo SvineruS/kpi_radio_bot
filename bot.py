@@ -414,6 +414,8 @@ def query_text(inline_query):
     articles = []
     for i in range(min(50, len(music))):
         audio = music[i]
+        if not audio:
+            continue
         articles.append(
             telebot.types.InlineQueryResultAudio(
                 i, audio['url'],
