@@ -417,9 +417,9 @@ def query_text(inline_query):
         if not audio or not audio['url']:
             continue
         url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
-            audio['artist'] + ' - ' + audio['title'], audio['url']
+            urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
         )
-        url = urllib.parse.quote_plus(url)
+        print(url)
         articles.append(
             telebot.types.InlineQueryResultAudio(
                 i, url,
