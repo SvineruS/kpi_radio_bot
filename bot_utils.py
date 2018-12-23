@@ -78,8 +78,8 @@ CONFIG = {
 }
 
 btn = [
-      {'what_playing': '🎧Что играет?'},
-      {'predlozka': '📝Заказать песню',
+      {'predlozka': '📝Заказать песню'},
+      {'what_playing': '🎧Что играет?',
        'feedback_v_komandu': '🖌Обратная связь'},
      # 'pokazhi': '📷Покажи радио',
 ]
