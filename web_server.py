@@ -26,6 +26,8 @@ def history_get(date):
 def history_save():
     # https://WEBHOOK_LISTEN:WEBHOOK_PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = flask.request.args
+    if args.get('pass') != RADIOBOSS_DATA[2]:
+        return 'neok'
     fields = {
         'artist': args.get('artist'),
         'title': args.get('title'),
