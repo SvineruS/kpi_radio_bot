@@ -50,7 +50,7 @@ def start_handler(message):
         return
 
     bot.send_message(message.chat.id, bot_utils.CONFIG['start'])
-    bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+    bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start)
 
 
 @bot.message_handler(commands=['help'])
@@ -60,7 +60,7 @@ def help_handler(message):
 
 @bot.message_handler(commands=['cancel'])
 def moar(message):
-    bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+    bot.send_message(message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start)
 
 
 @bot.message_handler(commands=['save_pic'])
@@ -173,7 +173,7 @@ def callback_query_handler(query):
                                      chat_id=query.message.chat.id, message_id=query.message.message_id,
                                      reply_markup=telebot.types.InlineKeyboardMarkup())
 
-            bot.send_message(user_id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+            bot.send_message(user_id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start)
 
             bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                            reply_markup=keyboard, parse_mode='HTML')
@@ -255,13 +255,13 @@ def callback_query_handler(query):
             chat_id=query.message.chat.id, message_id=query.message.message_id,
             caption='Ну ок(', reply_markup=telebot.types.InlineKeyboardMarkup()
         )
-        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start())
+        bot.send_message(query.message.chat.id, bot_utils.CONFIG['menu'], reply_markup=bot_utils.keyboard_start)
 
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_prev':
         playback = playlist_api.prev_get()
         if not playback:
-            bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start())
+            bot.send_message(query.message.chat.id, 'Не знаю(', reply_markup=bot_utils.keyboard_start)
         else:
             text = ''
             for track in playback:
@@ -273,7 +273,7 @@ def callback_query_handler(query):
     elif cmd[0] == 'song_next':
         playback = playlist_api.next_get()
         if not playback:
-            bot.send_message(query.message.chat.id, 'Доступно только во время эфира', reply_markup=bot_utils.keyboard_start())
+            bot.send_message(query.message.chat.id, 'Доступно только во время эфира', reply_markup=bot_utils.keyboard_start)
         else:
             text = ''
             for track in playback:
@@ -333,7 +333,7 @@ def message_handler(message):
             if not audio:
                 bot.send_message(message.chat.id,
                                  'Ничего не нашел( \nМожешь загрузить свое аудио сам или переслать от другого бота!',
-                                 reply_markup=bot_utils.keyboard_start())
+                                 reply_markup=bot_utils.keyboard_start)
             else:
                 audio = audio[0]
                 try:
@@ -346,11 +346,11 @@ def message_handler(message):
                 except Exception as e:
                     print('Error: loading audio!', e)
                     bot.send_message(message.chat.id, bot_utils.CONFIG['error'],
-                                     reply_markup=bot_utils.keyboard_start())
+                                     reply_markup=bot_utils.keyboard_start)
 
         # Обратная связь
         if message.reply_to_message.text == bot_utils.CONFIG['feedback']:
-            bot.send_message(message.chat.id, bot_utils.CONFIG['feedback_thanks'], reply_markup=bot_utils.keyboard_start())
+            bot.send_message(message.chat.id, bot_utils.CONFIG['feedback_thanks'], reply_markup=bot_utils.keyboard_start)
             bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
 
         return
@@ -401,7 +401,7 @@ def message_handler(message):
 
     else:
         bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        bot.send_message(message.chat.id, 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку "Заказать песню". Помощь тут /help', reply_markup=bot_utils.keyboard_start())
+        bot.send_message(message.chat.id, 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку "Заказать песню". Помощь тут /help', reply_markup=bot_utils.keyboard_start)
 
 
 @bot.inline_handler(func=lambda kek: True)

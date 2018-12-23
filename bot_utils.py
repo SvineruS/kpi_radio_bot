@@ -77,16 +77,21 @@ CONFIG = {
     'times': ['Первый', 'Второй', 'Третий', 'Четвертый'],
 }
 
-btn = [
-      {'predlozka': '📝Заказать песню'},
-      {'what_playing': '🎧Что играет?',
-       'feedback_v_komandu': '🖌Обратная связь'},
+btn = {
+      'predlozka': '📝Заказать песню',
+      'what_playing': '🎧Что играет?',
+      'feedback_v_komandu': '🖌Обратная связь',
      # 'pokazhi': '📷Покажи радио',
-]
+}
 
 
 keyboard_predlozka_inline = types.InlineKeyboardMarkup()
 keyboard_predlozka_inline.add(types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat=""))
+
+keyboard_start = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+keyboard_start.add(types.KeyboardButton(btn['predlozka']))
+keyboard_start.add(types.KeyboardButton(btn['what_playing']), types.KeyboardButton(btn['feedback_v_komandu']))
+
 
 
 
@@ -134,14 +139,6 @@ def get_break_num(time=None):
             return i+1
     # Пара
     return 0
-
-
-
-def keyboard_start():
-    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    for row in btn:
-        keyboard.add(*[types.KeyboardButton(row[i]) for i in row])
-    return keyboard
 
 
 def keyboard_day():
