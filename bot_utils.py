@@ -242,6 +242,7 @@ def write_sender_tag(path, user_obj):
     name = get_user_name(user_obj)
     tags[0].attrib['Comment'] = name
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
+    print(xmlstr)
     radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 def read_sender_tag(path):
@@ -290,3 +291,4 @@ def auto_check_bad_words(msg, bot):
 
 
 # TODO покормить Кешу
+print(read_sender_tag("D:\Вещание Радио\Заказы\07_Воскресенье\Вечерний эфир\Jodeci - Freek'n You.mp3"))
