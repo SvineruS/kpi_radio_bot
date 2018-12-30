@@ -2,7 +2,7 @@
 
 Сам бот http://t.me/kpiradio_bot
 
-Так же страница истории http://r.kpi.ua/history 
+Так же канал истории https://t.me/rkpi_music
 
 
 Автор http://t.me/svinerus
