@@ -67,7 +67,7 @@ async def on_shutdown(app):
     await dp.storage.wait_closed()
 
 
-def start_serv():
+def start():
     app.add_routes(routes)
 
     app.on_startup.append(on_startup)
