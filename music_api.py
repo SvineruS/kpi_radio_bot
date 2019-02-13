@@ -1,4 +1,5 @@
 import requests
+import logging
 from json import loads as json_decode
 from bs4 import BeautifulSoup
 from urllib.parse import quote
@@ -11,24 +12,12 @@ def search(name):
     try:
         s = requests.get(url)
         if s.status_code != 200:
-            print('Error: music-search not 200')
+            logging.error(f'svinua audio api wtf')
             return False
 
         return json_decode(s.text)
     except Exception as e:
-        print('Error: find song!', e)
-        return False
-
-
-def download(url):
-    try:
-        s = requests.get('http://svinua.cf/api/music/?download=' + url, stream=True)
-        if s.status_code != 200:
-            print('music download not 200')
-            return False
-        return s.raw
-    except Exception as e:
-        print('Error: download song!', e)
+        logging.error(f'search song: {e} {name}')
         return False
 
 
@@ -78,5 +67,5 @@ def radioboss_api(**kwargs):
             return True
         return Etree.fromstring(t)
     except Exception as e:
-        print('Error! Radioboss api! ', e, t, url)
+        logging.error(f'radioboss: {e} {t} {url}')
         return False

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import os
 import requests
-from telebot import types
-from datetime import datetime
-from music_api import search_text, radioboss_api
-from pathlib import Path
 import xml.etree.ElementTree as Etree
+from aiogram import types
+from datetime import datetime
+from music_api import radioboss_api
 from base64 import b64decode, b64encode
+from config import *
 
-CONFIG = {
+TEXT = {
     'start': '''Привет, это бот РадиоКПИ. 
 Ты можешь:
  - Заказать песню
@@ -25,7 +25,8 @@ CONFIG = {
     'help': '''
 📝Есть 3 способа <b>заказать песню:</b>
 - Нажать на кнопку <code>Заказать песню</code> и ввести название, бот выберет наиболее вероятный вариант
-- Использовать инлайн режим поиска (ввести <code>@kpiradio_bot</code> или нажать на соответствующую кнопку). В этом случае ты можешь выбрать из 10 найденных вариантов, с возможностью сначала послушать
+- Использовать инлайн режим поиска (ввести <code>@kpiradio_bot</code> или нажать на соответствующую кнопку). 
+    В этом случае ты можешь выбрать из 10 найденных вариантов, с возможностью сначала послушать
 - Загрузить или переслать боту желаемую песню
 
 После этого необходимо выбрать день и время для заказа.
@@ -65,25 +66,23 @@ CONFIG = {
 ▶️ <b>Сейчас играет: </b> {1}
 ⏭ <b>Следующий трек: </b> {2}""",
 
-
-
     'error': 'Не получилось(',
+    'unknown_cmd': 'Шо ты хош? Для заказа песни не забывай нажимать на кнопку "Заказать песню". Помощь тут /help',
 
-    'save_pic': 'Окей, кидай фотошки, я залью!',
+    'song_no_prev': 'Не знаю(',
+    'song_no_next': 'Доступно только во время эфира',
+    
 
-    'pics_path': 'D:\\pics\\',
     'days1': ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'],
     'days2': ['Сегодня', 'Завтра', 'Послезавтра', 'Сейчас'],
     'times': ['Первый', 'Второй', 'Третий', 'Четвертый'],
 }
 
 btn = {
-      'predlozka': '📝Заказать песню',
-      'what_playing': '🎧Что играет?',
-      'feedback_v_komandu': '🖌Обратная связь',
-     # 'pokazhi': '📷Покажи радио',
+    'predlozka': '📝Заказать песню',
+    'what_playing': '🎧Что играет?',
+    'feedback_v_komandu': '🖌Обратная связь',
 }
-
 
 keyboard_predlozka_inline = types.InlineKeyboardMarkup()
 keyboard_predlozka_inline.add(types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat=""))
@@ -92,13 +91,16 @@ keyboard_start = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 keyboard_start.add(types.KeyboardButton(btn['predlozka']))
 keyboard_start.add(types.KeyboardButton(btn['what_playing']), types.KeyboardButton(btn['feedback_v_komandu']))
 
+keyboard_what_playing = types.InlineKeyboardMarkup(row_width=2)
+keyboard_what_playing.add(types.InlineKeyboardButton(text='Поиск песни по времени', url='https://t.me/rkpi_music'))
+keyboard_what_playing.add(types.InlineKeyboardButton(text='Предыдущие треки', callback_data='song_prev'),
+                          types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
 
-
-def get_music_path(day, time=False, archive=False):
+def get_music_path(day, time=False, archive=False) -> Path:
     t = Path('D:/Вещание Радио/')
     t /= 'Эфир' if archive else 'Заказы'
-    t /= '0{0}_{1}'.format(day+1, CONFIG['days1'][day])
+    t /= '0{0}_{1}'.format(day + 1, TEXT['days1'][day])
 
     if not time:
         return t
@@ -106,14 +108,14 @@ def get_music_path(day, time=False, archive=False):
     if day == 6:  # В воскресенье только дневной(0) и вечерний(1) эфир
         t /= 'Дневной эфир' if time == -1 else 'Вечерний эфир'
     elif time < 5:  # До вечернего эфира
-        t /= '{0}.{1} перерыв'.format(time, CONFIG['times'][time-1])
+        t /= '{0}.{1} перерыв'.format(time, TEXT['times'][time - 1])
     else:  # Вечерний эфир
-        t /= '({0}){1}\\'.format(day+1, CONFIG['days1'][day])
+        t /= '({0}){1}\\'.format(day + 1, TEXT['days1'][day])
 
     return t
 
 
-def get_break_num(time=None):
+def get_break_num(time=None) -> int:
     if not time:
         time = datetime.now()
         day = datetime.today().weekday()
@@ -121,24 +123,36 @@ def get_break_num(time=None):
         day = time.weekday()
     time = time.hour * 60 + time.minute
 
-    if time > 22*60 or time < 10*60+5:
+    if time > 22 * 60 or time < 10 * 60 + 5:
         return 0
 
     if day == 6:  # Воскресенье
-        if 11*60+15 < time < 18*60:
+        if 11 * 60 + 15 < time < 18 * 60:
             return -1
-        if time > 18*60:
+        if time > 18 * 60:
             return 5
 
-    if time >= 17*60+50:  # Вечерний эфир
+    if time >= 17 * 60 + 50:  # Вечерний эфир
         return 5
 
     for i in range(4):  # Перерыв
         # 10:05 + пара * i   (10:05 - начало 1 перерыва)
-        if 0 <= time - (10*60+5 + i*115) <= 20:
-            return i+1
+        if 0 <= time - (10 * 60 + 5 + i * 115) <= 20:
+            return i + 1
     # Пара
     return 0
+
+
+def get_break_name(time: int) -> str:
+    if time == -1:
+        return 'Утренний эфир'
+    if time == 5:
+        return 'Вечерний эфир'
+    return TEXT['times'][time] + ' перерыв'
+
+
+def is_break_now(day: int, time: int) -> bool:
+    return day == datetime.today().weekday() and time == get_break_num()
 
 
 def keyboard_day():
@@ -148,15 +162,15 @@ def keyboard_day():
 
     if get_break_num() != 0:
         btns.append(types.InlineKeyboardButton(
-            text=CONFIG['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
+            text=TEXT['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
 
     if datetime.now().hour < 22:
         btns.append(types.InlineKeyboardButton(
-            text=CONFIG['days2'][0], callback_data='predlozka_day-|-' + str(day)))
+            text=TEXT['days2'][0], callback_data='predlozka_day-|-' + str(day)))
 
     for i in range(1, 3):
         btns.append(types.InlineKeyboardButton(
-            text=CONFIG['days2'][i], callback_data='predlozka_day-|-' + str((day+i) % 7)))
+            text=TEXT['days2'][i], callback_data='predlozka_day-|-' + str((day + i) % 7)))
 
     btns.append(types.InlineKeyboardButton(text='Отмена', callback_data='predlozka_cancel'))
     keyboard.add(*btns)
@@ -175,7 +189,7 @@ def keyboard_time(day):
         btns.append(types.InlineKeyboardButton(text='Вечером', callback_data='predlozka-|-6-|-5'))
     else:
         for i in range(1, 5):
-            if today and time > 8*60+30 + 115*i:
+            if today and time > 8 * 60 + 30 + 115 * i:
                 continue  # после конца перерыва убираем кнопку
             btns.append(types.InlineKeyboardButton(
                 text='После ' + str(i) + ' пары',
@@ -183,15 +197,34 @@ def keyboard_time(day):
             ))
 
         btns.append(types.InlineKeyboardButton(
-                text='Вечером', callback_data='predlozka-|-' + str(day) + '-|-' + '5'))
+            text='Вечером', callback_data='predlozka-|-' + str(day) + '-|-' + '5'))
 
     btns.append(types.InlineKeyboardButton(text='Назад', callback_data='predlozka_back_day'))
     keyboard.add(*btns)
     return keyboard
 
 
-
-
+def keyboard_admin(day: int, time: int, audio_name, user_id):
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(
+        types.InlineKeyboardButton(
+            text='Принять',
+            callback_data='-|-'.join(['predlozka_answ', 'ok', str(user_id), str(day), str(time)])
+        ),
+        types.InlineKeyboardButton(
+            text='Отклонить',
+            callback_data='-|-'.join(['predlozka_answ', 'neok', str(user_id), str(day), str(time)])
+        ),
+        types.InlineKeyboardButton(
+            text='Посмотреть текст',
+            url=f'https://{HOST}/gettext/{audio_name[0:100]}'
+        ),
+        types.InlineKeyboardButton(
+            text='Проверить',
+            callback_data='-|-'.join(['predlozka_answ', 'check'])
+        )
+    )
+    return keyboard
 
 
 def get_audio_name(audio):
@@ -199,14 +232,12 @@ def get_audio_name(audio):
         name = 'Названия нету :('
     else:
         name = ' - '.join([str(audio.performer), str(audio.title)])
-    name = ''.join(list(filter(lambda c: (c not in '\/:*?"<>|'), name)))  # винда агрится на эти символы в пути
+    name = ''.join(list(filter(lambda c: (c not in '/:*?"<>|'), name)))  # винда агрится на эти символы в пути
     return name
 
 
 def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
-
-
 
 
 def save_file(url, to):
@@ -216,7 +247,6 @@ def save_file(url, to):
     if os.path.isfile(to):
         return
 
-    print('Downloading... ', to)
     try:
         file = requests.get(url, stream=True)
         f = open(to, 'wb')
@@ -224,20 +254,18 @@ def save_file(url, to):
             if chunk:
                 f.write(chunk)
         f.close()
-        print('downloaded')
-    except Exception as e:
-        print('Error: download!', e)
+        logging.info(f'saved file: {to}')
+    except Exception as ex:
+        logging.error(f'save file: {ex} {to}')
 
 
-def delete_file(path):
-    if not os.path.isfile(path):
+def delete_file(path: Path):
+    if not path.exists():
         return
     try:
-        os.remove(path)
-    except:
-        print('Error! deleting file')
-
-
+        path.unlink()
+    except Exception as ex:
+        logging.error(f'delete file: {ex} {path}')
 
 
 def write_sender_tag(path, user_obj):
@@ -248,6 +276,7 @@ def write_sender_tag(path, user_obj):
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
     radioboss_api(action='writetag', fn=path, data=xmlstr)
 
+
 def read_sender_tag(path):
     tags = radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
@@ -256,8 +285,6 @@ def read_sender_tag(path):
     except:
         return False
     return name
-
-
 
 
 def check_bad_words(text):
@@ -287,15 +314,20 @@ def check_bad_words(text):
         return "Нашел это: " + ' '.join(answ)
 
 
-def auto_check_bad_words(msg, bot):
-    name = get_audio_name(msg.audio)
-    text = search_text(name)
-    res = check_bad_words(text)
-    if 'Нашел' not in res:
-        return
-    new_text = msg.caption + '\n⚠️Наша крутая нейронная сеть проанализировала песню и возможно она содержит матюки. Подумай дважды перед тем как отправить.'
-    bot.edit_message_caption(chat_id=msg.chat.id, message_id=msg.message_id,
-                             caption=new_text, reply_markup=keyboard_day())
+#
+# def auto_check_bad_words(msg):
+#     name = get_audio_name(msg.audio)
+#     text = search_text(name)
+#     res = check_bad_words(text)
+#     if 'Нашел' not in res:
+#         return
+#     new_text = msg.caption + '\n⚠️Наша крутая нейронная сеть проанализировала песню и возможно она содержит матюки.
+#     Подумай дважды перед тем как отправить.'
+#     bot.edit_message_caption(chat_id=msg.chat.id, message_id=msg.message_id,
+#                              caption=new_text, reply_markup=keyboard_day())
 
+
+def reboot():
+    os.system(r'cmd.exe /C start ' + os.getcwd() + '\\update.bat')
 
 # TODO покормить Кешу

@@ -4,8 +4,7 @@ from bot_utils import get_music_path
 from shutil import move, rmtree
 from time import sleep
 from os import makedirs
-from bot import send_live_begin
-
+from core import send_live_begin
 
 
 def start():

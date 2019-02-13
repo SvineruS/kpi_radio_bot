@@ -1,7 +1,7 @@
 from time import time
-import os
+from config import STUFF_PATH
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'Stuff/banned.db')
+DB_PATH = STUFF_PATH / 'banned.db'
 
 
 def ban_user(user_id, ban_time_min):
