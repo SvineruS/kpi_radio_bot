@@ -1,9 +1,7 @@
-.idea
-.__pycache__
+./idea
+./__pycache__
 config.py
-.idea/*
+./idea/*
 *.pyc
 *.pem
-
-# это для меня оч надо было, не трогай
-test-server.js
+./git_backup
