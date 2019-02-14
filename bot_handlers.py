@@ -97,7 +97,7 @@ async def message_handler(message):
                                     reply_markup=bot_utils.keyboard_day())
 
     # Форс реплаи
-    if message.reply_to_message and message.reply_to_message.from_user.id == await bot.me.id:
+    if message.reply_to_message and message.reply_to_message.from_user.id == (await bot.me).id:
 
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
