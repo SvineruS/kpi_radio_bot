@@ -148,7 +148,7 @@ async def song_next(query):
     await bot.send_message(query.message.chat.id, text)
 
 
-async def song_format(playback):
+def song_format(playback):
     text = [
         f"🕖<b>{track['time_start']}</b> {track['title']}"
         for track in playback
