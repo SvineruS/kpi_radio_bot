@@ -46,7 +46,7 @@ async def ban_handler(message):
     await core.admin_ban(message)
 
 
-@dp.callback_query_handler(func=lambda c: True)
+@dp.callback_query_handler()
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
 
@@ -147,12 +147,12 @@ async def message_handler(message):
         await bot.send_message(message.chat.id, bot_utils.TEXT['unknown_cmd'], reply_markup=bot_utils.keyboard_start)
 
 
-@dp.inline_handler(func=lambda kek: True)
+@dp.inline_handler()
 async def query_text(inline_query):
     await core.inline_search(inline_query)
 
 
-@dp.edited_message_handler(func=lambda message: True)
+@dp.edited_message_handler()
 async def edited_message(message):
     if message.reply_to_message is None:
         return

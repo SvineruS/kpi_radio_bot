@@ -12,7 +12,7 @@ import music_api
 app = web.Application()
 routes = web.RouteTableDef()
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 @routes.get("/gettext/{name}")
