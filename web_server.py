@@ -73,7 +73,7 @@ def start():
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
 
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(SSL_CERT, SSL_PRIV)
 
     web.run_app(
