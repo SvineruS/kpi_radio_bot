@@ -20,7 +20,7 @@ async def gettext(request):
     name = request.match_info.get('name')
     if not name:
         return web.Response(text="")
-    return web.Response(text="<pre>" + music_api.search_text(name))
+    return web.Response(text=music_api.search_text(name))
 
 
 @routes.get("/playlist")
