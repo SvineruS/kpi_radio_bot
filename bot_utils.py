@@ -5,6 +5,7 @@ import requests
 import xml.etree.ElementTree as Etree
 from aiogram import types
 from datetime import datetime
+from urllib.parse import quote
 from music_api import radioboss_api
 from base64 import b64decode, b64encode
 from config import *
@@ -217,7 +218,7 @@ def keyboard_admin(day: int, time: int, audio_name, user_id):
         ),
         types.InlineKeyboardButton(
             text='Посмотреть текст',
-            url=f'https://{HOST}/gettext/{audio_name[0:100]}'
+            url=f'https://{HOST}/gettext/{quote(audio_name[0:100])}'
         ),
         types.InlineKeyboardButton(
             text='Проверить',
