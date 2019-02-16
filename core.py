@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import urllib.parse
 from datetime import datetime
@@ -269,5 +270,8 @@ async def send_history(fields):
     f.close()
 
 
-async def send_live_begin(time):
-    await bot.send_message(HISTORY_CHAT_ID, bot_utils.get_break_name(time))
+def send_live_begin(time):
+    async def send():
+        await bot.send_message(HISTORY_CHAT_ID, bot_utils.get_break_name(time))
+
+    asyncio.ensure_future(send())
