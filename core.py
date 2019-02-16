@@ -265,7 +265,7 @@ async def send_history(fields):
 
     f = open(fields['path'], 'rb')
     await bot.send_audio(HISTORY_CHAT_ID, f, sender_name,
-                         performer=fields['artist'], title=fields['title'], timeout=60)
+                         performer=fields['artist'], title=fields['title'])
     f.close()
 
 

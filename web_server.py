@@ -23,7 +23,7 @@ async def gettext(request):
     return "<pre>" + music_api.search_text(name)
 
 
-@routes.get("/playlist/prev/save")
+@routes.get("/playlist")
 async def history_save(request):
     # https://HOST:PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = request.rel_url.query
