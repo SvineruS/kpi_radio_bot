@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.DEBUG)
 async def gettext(request):
     name = request.match_info.get('name')
     if not name:
-        return ""
-    return "<pre>" + music_api.search_text(name)
+        return web.Response(text="")
+    return web.Response(text="<pre>" + music_api.search_text(name))
 
 
 @routes.get("/playlist")
@@ -28,7 +28,7 @@ async def history_save(request):
     # https://HOST:PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
-        return 'neok'
+        return web.Response(text='neok')
     fields = {
         'artist': args.get('artist'),
         'title': args.get('title'),
@@ -36,7 +36,7 @@ async def history_save(request):
         'path': args.get('path'),
     }
     await core.send_history(fields)
-    return 'ok'
+    return web.Response(text='ok')
 
 
 @routes.post(WEBHOOK_PATH)
