@@ -199,6 +199,8 @@ async def search_audio(message):
             await bot.send_audio(
                 message.chat.id, url,
                 'Выбери день (или отредактируй название)',
+                performer=audio['artist'],
+                title=audio['title'],
                 reply_markup=bot_utils.keyboard_day()
             )
 
