@@ -190,14 +190,15 @@ async def search_audio(message):
         audio = audio[0]
         try:
             # скачивание файла шоб поставить норм имя песне
-            # audio_file = music_api.download(audio['url'])
+            audio_file = music_api.download(audio['url'])
 
-            url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
-                urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
-            )
+            # это почему то не работает
+            # url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
+            #    urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
+            # )
 
             await bot.send_audio(
-                message.chat.id, url,
+                message.chat.id, audio_file,
                 'Выбери день (или отредактируй название)',
                 performer=audio['artist'],
                 title=audio['title'],

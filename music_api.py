@@ -21,6 +21,18 @@ def search(name):
         return False
 
 
+def download(url):
+    try:
+        s = requests.get('http://svinua.cf/api/music/?download=' + url, stream=True)
+        if s.status_code != 200:
+            logging.error(f'svinua audio api wtf')
+            return False
+        return s.raw
+    except Exception as e:
+        logging.error(f'download song: {e} {url}')
+        return False
+
+
 def search_text(name, attempt2=False):
     s = requests.get("https://genius.com/api/search/multi?q=" + quote(name))
     if s.status_code != 200:
