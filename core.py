@@ -103,7 +103,7 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
     if status:
         to = bot_utils.get_music_path(day, time) / (name + '.mp3')
         await query.message.audio.download(to, timeout=60)
-        bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
+        await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
 
         if bot_utils.is_break_now(day, time):
             await music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
@@ -263,7 +263,7 @@ async def send_history(fields):
     if not fields['artist'] and not fields['title']:
         fields['title'] = fields['casttitle']
 
-    sender_name = bot_utils.read_sender_tag(fields['path'])
+    sender_name = await bot_utils.read_sender_tag(fields['path'])
     sender_name = 'Заказал(а) ' + sender_name if sender_name else \
                   'От команды РадиоКпи'
 

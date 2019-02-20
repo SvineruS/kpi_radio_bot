@@ -244,7 +244,7 @@ def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
 
 
-def save_file(url, to):
+async def save_file(url, to):
     dirname = os.path.dirname(to)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -275,7 +275,7 @@ def delete_file(path: Path):
         logging.error(f'delete file: {ex} {path}')
 
 
-def write_sender_tag(path, user_obj):
+async def write_sender_tag(path, user_obj):
     tags = await radioboss_api(action='readtag', fn=path)
     name = get_user_name(user_obj)
     name = b64encode(name.encode('utf-8')).decode('utf-8')
@@ -284,7 +284,7 @@ def write_sender_tag(path, user_obj):
     await radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 
-def read_sender_tag(path):
+async def read_sender_tag(path):
     tags = await radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
     try:
