@@ -276,16 +276,16 @@ def delete_file(path: Path):
 
 
 def write_sender_tag(path, user_obj):
-    tags = radioboss_api(action='readtag', fn=path)
+    tags = await radioboss_api(action='readtag', fn=path)
     name = get_user_name(user_obj)
     name = b64encode(name.encode('utf-8')).decode('utf-8')
     tags[0].attrib['Comment'] = name
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
-    radioboss_api(action='writetag', fn=path, data=xmlstr)
+    await radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 
 def read_sender_tag(path):
-    tags = radioboss_api(action='readtag', fn=path)
+    tags = await radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
     try:
         name = b64decode(name).decode('utf-8')

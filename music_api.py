@@ -1,13 +1,12 @@
 import aiohttp
 import logging
-from json import loads as json_decode
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from config import *
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 
 
-def search(name):
+async def search(name):
     url = "http://svinua.cf/api/music/?search={}".format(quote(name))
     try:
         async with aiohttp.ClientSession() as session:
@@ -19,7 +18,7 @@ def search(name):
         return False
 
 
-def download(url):
+async def download(url):
     url = f'http://svinua.cf/api/music/?download={url}'
     try:
         async with aiohttp.ClientSession() as session:
@@ -31,7 +30,7 @@ def download(url):
         return False
 
 
-def search_text(name, attempt2=False):
+async def search_text(name, attempt2=False):
     url = "https://genius.com/api/search/multi?q=" + quote(name)
 
     async with aiohttp.ClientSession() as session:
@@ -65,7 +64,7 @@ def search_text(name, attempt2=False):
                 return title + '\n\n' + t
 
 
-def radioboss_api(**kwargs):
+async def radioboss_api(**kwargs):
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
     for key in kwargs:
         url += '&{0}={1}'.format(key, quote(str(kwargs[key])))

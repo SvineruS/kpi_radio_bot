@@ -67,16 +67,16 @@ async def admin_cancel(query, day: int, time: int, status: bool):
     if status:
         path = bot_utils.get_music_path(day, time) / (name + '.mp3')
 
-        for i in music_api.radioboss_api(action='getplaylist2'):  # удалить из плейлиста радиобосса
+        for i in await music_api.radioboss_api(action='getplaylist2'):  # удалить из плейлиста радиобосса
             if i.attrib['FILENAME'] == str(path):
-                music_api.radioboss_api(action='delete', pos=i.attrib['INDEX'])
+                await music_api.radioboss_api(action='delete', pos=i.attrib['INDEX'])
                 break
         bot_utils.delete_file(path)  # удалить с диска
 
 
 async def admin_check_text(query):
     name = bot_utils.get_audio_name(query.message.audio)
-    text = music_api.search_text(name)
+    text = await music_api.search_text(name)
     bad_words = bot_utils.check_bad_words(text)
     await bot.answer_callback_query(query.id, text=bad_words)
 
@@ -106,7 +106,7 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
 
         if bot_utils.is_break_now(day, time):
-            music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
+            await music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok_next'].format(name))
         else:
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok'].format(name))
@@ -180,7 +180,7 @@ async def admin_reply(message):
 
 async def search_audio(message):
     await bot.send_chat_action(message.chat.id, 'upload_audio')
-    audio = music_api.search(message.text)
+    audio = await music_api.search(message.text)
 
     if not audio:
         await bot.send_message(message.chat.id, 'Ничего не нашел( \n'
@@ -190,7 +190,7 @@ async def search_audio(message):
         audio = audio[0]
         try:
             # скачивание файла шоб поставить норм имя песне
-            audio_file = music_api.download(audio['url'])
+            audio_file = await music_api.download(audio['url'])
 
             # это почему то не работает
             # url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
@@ -213,7 +213,7 @@ async def search_audio(message):
 
 async def inline_search(inline_query):
     name = inline_query.query
-    music = music_api.search(name)
+    music = await music_api.search(name)
     if not music:
         return await bot.answer_inline_query(inline_query.id, [])
 

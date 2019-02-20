@@ -8,7 +8,7 @@ DB_PATH = Path(__file__).parent / 'Stuff/history.db'
 
 def prev_get():
     answer = []
-    playback = radioboss_api(action='getlastplayed')
+    playback = await radioboss_api(action='getlastplayed')
     if not playback:
         return answer
 
@@ -25,7 +25,7 @@ def prev_get():
 def next_get():
     answer = []
 
-    playlist = radioboss_api(action='getplaylist2')
+    playlist = await radioboss_api(action='getplaylist2')
     if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop ':
         return answer
 
@@ -64,7 +64,7 @@ def next_get():
 
 def now_get():
     answer = []
-    playback = radioboss_api(action='playbackinfo')
+    playback = await radioboss_api(action='playbackinfo')
     if not playback or \
            playback[3].attrib['state'] == 'stop':
         return answer
@@ -74,6 +74,6 @@ def now_get():
 
 
 def next_move(n1, n2):
-    playback = radioboss_api(action='move', pos1=n1, pos2=n2)
+    playback = await radioboss_api(action='move', pos1=n1, pos2=n2)
     print(playback)
 
