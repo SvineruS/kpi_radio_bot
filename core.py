@@ -277,4 +277,4 @@ def send_live_begin(time):
     async def send():
         await bot.send_message(HISTORY_CHAT_ID, bot_utils.get_break_name(time))
 
-    asyncio.ensure_future(send())
+    asyncio.get_event_loop().run_until_complete(send())
