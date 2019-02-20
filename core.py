@@ -130,7 +130,7 @@ async def predlozka_cancel(query):
 
 
 async def song_prev(query):
-    playback = playlist_api.prev_get()
+    playback = await playlist_api.prev_get()
     if not playback:
         return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_prev'],
                                       reply_markup=bot_utils.keyboard_start)
@@ -140,7 +140,7 @@ async def song_prev(query):
 
 
 async def song_next(query):
-    playback = playlist_api.next_get()
+    playback = await playlist_api.next_get()
     if not playback:
         return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_next'],
                                       reply_markup=bot_utils.keyboard_start)

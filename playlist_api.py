@@ -6,7 +6,7 @@ from pathlib import Path
 DB_PATH = Path(__file__).parent / 'Stuff/history.db'
 
 
-def prev_get():
+async def prev_get():
     answer = []
     playback = await radioboss_api(action='getlastplayed')
     if not playback:
@@ -22,7 +22,7 @@ def prev_get():
     return answer
 
 
-def next_get():
+async def next_get():
     answer = []
 
     playlist = await radioboss_api(action='getplaylist2')
@@ -62,7 +62,7 @@ def next_get():
 
 
 
-def now_get():
+async def now_get():
     answer = []
     playback = await radioboss_api(action='playbackinfo')
     if not playback or \
@@ -73,7 +73,7 @@ def now_get():
     return answer
 
 
-def next_move(n1, n2):
+async def next_move(n1, n2):
     playback = await radioboss_api(action='move', pos1=n1, pos2=n2)
     print(playback)
 

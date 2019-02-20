@@ -124,7 +124,7 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == bot_utils.btn['what_playing']:
-        playback = playlist_api.now_get()
+        playback = await playlist_api.now_get()
         if not playback:
             await bot.send_message(message.chat.id, "Не знаю(", reply_markup=bot_utils.keyboard_what_playing)
         else:
