@@ -201,7 +201,7 @@ def keyboard_time(day):
                 continue  # после конца перерыва убираем кнопку
             btns.append(get_btn(i))
 
-    btns.append(get_btn)
+    btns.append(get_btn(5))
 
     btns.append(types.InlineKeyboardButton(text='Назад', callback_data='predlozka_back_day'))
     keyboard.add(*btns)
