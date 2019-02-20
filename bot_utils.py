@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
-import requests
+import aiohttp
 import xml.etree.ElementTree as Etree
 from aiogram import types
 from datetime import datetime
@@ -10,10 +10,11 @@ from music_api import radioboss_api
 from base64 import b64decode, b64encode
 from config import *
 
+
 TEXT = {
     'start': '''Привет, это бот РадиоКПИ. 
 Ты можешь:
- - Заказать песню
+ - Заказать песню   
  - Задать любой вопрос
  - Узнать что играет сейчас, играло или будет играть
  - Узнать как стать частью ламповой команды РадиоКПИ.
@@ -76,7 +77,7 @@ TEXT = {
 
     'days1': ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'],
     'days2': ['Сегодня', 'Завтра', 'Послезавтра', 'Сейчас'],
-    'times': ['Первый', 'Второй', 'Третий', 'Четвертый'],
+    'times': ['Утрений эфир', 'Первый перерыв', 'Второй перерыв', 'Третий перерыв', 'Четвертый перерыв', 'Вечерний эфир'],
 }
 
 btn = {
@@ -106,17 +107,17 @@ def get_music_path(day, time=False, archive=False) -> Path:
     if not time:
         return t
 
-    if day == 6:  # В воскресенье только дневной(0) и вечерний(1) эфир
-        t /= 'Дневной эфир' if time == -1 else 'Вечерний эфир'
+    if day == 6:  # В воскресенье только утренний(0) и вечерний эфир(5)
+        t /= TEXT['times'][time]
     elif time < 5:  # До вечернего эфира
-        t /= '{0}.{1} перерыв'.format(time, TEXT['times'][time - 1])
+        t /= '{0}.{1}'.format(time, TEXT['times'][time - 1])
     else:  # Вечерний эфир
         t /= '({0}){1}\\'.format(day + 1, TEXT['days1'][day])
 
     return t
 
 
-def get_break_num(time=None) -> int:
+def get_break_num(time=None):
     if not time:
         time = datetime.now()
         day = datetime.today().weekday()
@@ -125,13 +126,16 @@ def get_break_num(time=None) -> int:
     time = time.hour * 60 + time.minute
 
     if time > 22 * 60 or time < 10 * 60 + 5:
-        return 0
+        return False
 
     if day == 6:  # Воскресенье
-        if 11 * 60 + 15 < time < 18 * 60:
-            return -1
-        if time > 18 * 60:
+        if 11 * 60 + 15 < time < 18 * 60:  # Утренний эфир
+            return 0
+        if time > 18 * 60:  # Вечерний эфир
             return 5
+
+    if time <= 8 * 60 + 30:  # Утренний эфир
+        return 0
 
     if time >= 17 * 60 + 50:  # Вечерний эфир
         return 5
@@ -140,16 +144,13 @@ def get_break_num(time=None) -> int:
         # 10:05 + пара * i   (10:05 - начало 1 перерыва)
         if 0 <= time - (10 * 60 + 5 + i * 115) <= 20:
             return i + 1
-    # Пара
-    return 0
+
+    # Не перерыв
+    return False
 
 
 def get_break_name(time: int) -> str:
-    if time == -1:
-        return 'Утренний эфир'
-    if time == 5:
-        return 'Вечерний эфир'
-    return TEXT['times'][time] + ' перерыв'
+    return TEXT['times'][time]
 
 
 def is_break_now(day: int, time: int) -> bool:
@@ -161,7 +162,7 @@ def keyboard_day():
     btns = []
     day = datetime.today().weekday()
 
-    if get_break_num() != 0:
+    if get_break_num():
         btns.append(types.InlineKeyboardButton(
             text=TEXT['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
 
@@ -179,6 +180,13 @@ def keyboard_day():
 
 
 def keyboard_time(day):
+
+    def get_btn(time):
+        return types.InlineKeyboardButton(
+                text=get_break_name(time),
+                callback_data=f'predlozka-|-{day}-|-{time}'
+            )
+
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     btns = []
     time = datetime.now().hour * 60 + datetime.now().minute
@@ -186,19 +194,14 @@ def keyboard_time(day):
 
     if day == 6:
         if not today or time < 18 * 60:
-            btns.append(types.InlineKeyboardButton(text='Днем', callback_data='predlozka-|-6-|--1'))
-        btns.append(types.InlineKeyboardButton(text='Вечером', callback_data='predlozka-|-6-|-5'))
+            btns.append(get_btn(0))
     else:
-        for i in range(1, 5):
+        for i in range(0, 5):
             if today and time > 8 * 60 + 30 + 115 * i:
                 continue  # после конца перерыва убираем кнопку
-            btns.append(types.InlineKeyboardButton(
-                text='После ' + str(i) + ' пары',
-                callback_data='predlozka-|-' + str(day) + '-|-' + str(i)
-            ))
+            btns.append(get_btn(i))
 
-        btns.append(types.InlineKeyboardButton(
-            text='Вечером', callback_data='predlozka-|-' + str(day) + '-|-' + '5'))
+    btns.append(get_btn)
 
     btns.append(types.InlineKeyboardButton(text='Назад', callback_data='predlozka_back_day'))
     keyboard.add(*btns)
@@ -249,12 +252,15 @@ def save_file(url, to):
         return
 
     try:
-        file = requests.get(url, stream=True)
-        f = open(to, 'wb')
-        for chunk in file.iter_content(chunk_size=512):
-            if chunk:
-                f.write(chunk)
-        f.close()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                assert resp.status == 200
+                with open(to, 'wb') as fd:
+                    while True:
+                        chunk = await resp.content.read(512)
+                        if not chunk:
+                            break
+                        fd.write(chunk)
         logging.info(f'saved file: {to}')
     except Exception as ex:
         logging.error(f'save file: {ex} {to}')
