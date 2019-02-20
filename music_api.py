@@ -57,7 +57,8 @@ async def search_text(name, attempt2=False):
             async with session.get(s['url']) as resp2:
                 assert resp.status == 200
 
-                t = BeautifulSoup(resp2.text, "html.parser")
+                t = await resp2.text()
+                t = BeautifulSoup(t, "html.parser")
                 t = t.find("div", class_="lyrics")
                 t = t.get_text()
 
@@ -73,7 +74,7 @@ async def radioboss_api(**kwargs):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 resp.encoding = 'utf-8'
-                t = resp.text
+                t = await resp.text()
                 if not t:
                     return False
                 if t == 'OK':
