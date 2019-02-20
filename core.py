@@ -105,7 +105,7 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         await query.message.audio.download(to, timeout=60)
         bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
 
-        if day == datetime.today().weekday() and time == bot_utils.get_break_num():
+        if bot_utils.is_break_now(day, time):
             music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok_next'].format(name))
         else:
