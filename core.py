@@ -102,6 +102,7 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
 
     if status:
         to = bot_utils.get_music_path(day, time) / (name + '.mp3')
+        bot_utils.create_dirs(to)
         await query.message.audio.download(to, timeout=60)
         await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
 

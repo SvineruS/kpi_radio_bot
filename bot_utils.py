@@ -244,13 +244,16 @@ def get_user_name(user_obj):
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
 
 
-async def save_file(url, to):
+def create_dirs(to):
     dirname = os.path.dirname(to)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     if os.path.isfile(to):
         return
 
+
+async def save_file(url, to):
+    create_dirs(to)
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
