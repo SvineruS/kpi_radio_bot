@@ -110,7 +110,7 @@ def get_music_path(day, time=False, archive=False) -> Path:
     if day == 6:  # В воскресенье только утренний(0) и вечерний эфир(5)
         t /= TEXT['times'][time]
     elif time < 5:  # До вечернего эфира
-        t /= '{0}.{1}'.format(time, TEXT['times'][time - 1])
+        t /= '{0}.{1}'.format(time, TEXT['times'][time])
     else:  # Вечерний эфир
         t /= '({0}){1}\\'.format(day + 1, TEXT['days1'][day])
 
