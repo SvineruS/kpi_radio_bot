@@ -117,7 +117,7 @@ def get_music_path(day: int, time: int = None, archive: bool = None) -> Path:
     return t
 
 
-def get_break_num(time: datetime = None) -> Union[False, int]:
+def get_break_num(time: datetime = None) -> Union[bool, int]:
     if not time:
         time = datetime.now()
         day = datetime.today().weekday()
@@ -270,7 +270,7 @@ async def write_sender_tag(path: Path, user_obj: types.User) -> None:
     await radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 
-async def read_sender_tag(path: Path) -> Union[False, str]:
+async def read_sender_tag(path: Path) -> Union[bool, str]:
     tags = await radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
     try:
