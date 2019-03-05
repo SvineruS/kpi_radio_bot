@@ -104,7 +104,7 @@ def get_music_path(day, time=False, archive=False) -> Path:
     t /= 'Эфир' if archive else 'Заказы'
     t /= '0{0}_{1}'.format(day + 1, TEXT['days1'][day])
 
-    if not time:
+    if time is False:  # сука 0 считается как False
         return t
 
     if day == 6:  # В воскресенье только утренний(0) и вечерний эфир(5)
@@ -125,7 +125,7 @@ def get_break_num(time=None):
         day = time.weekday()
     time = time.hour * 60 + time.minute
 
-    if time > 22 * 60 or time < 10 * 60 + 5:
+    if time > 22 * 60 or time < 7 * 60:
         return False
 
     if day == 6:  # Воскресенье
