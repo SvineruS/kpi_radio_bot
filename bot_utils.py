@@ -225,7 +225,7 @@ def keyboard_admin(day: int, time: int, audio_name, user_id):
         ),
         types.InlineKeyboardButton(
             text='Проверить',
-            callback_data='-|-'.join(['predlozka_answ', 'check'])
+            callback_data='check_text'
         )
     )
     return keyboard
