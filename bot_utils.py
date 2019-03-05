@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
-import aiohttp
 import xml.etree.ElementTree as Etree
 from aiogram import types
 from datetime import datetime
@@ -9,6 +8,7 @@ from urllib.parse import quote
 from music_api import radioboss_api
 from base64 import b64decode, b64encode
 from config import *
+from typing import Union
 
 
 TEXT = {
@@ -99,7 +99,7 @@ keyboard_what_playing.add(types.InlineKeyboardButton(text='Предыдущие 
                           types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
 
-def get_music_path(day, time=False, archive=False) -> Path:
+def get_music_path(day: int, time: int = None, archive: bool = None) -> Path:
     t = Path('D:/Вещание Радио/')
     t /= 'Эфир' if archive else 'Заказы'
     t /= '0{0}_{1}'.format(day + 1, TEXT['days1'][day])
@@ -117,7 +117,7 @@ def get_music_path(day, time=False, archive=False) -> Path:
     return t
 
 
-def get_break_num(time=None):
+def get_break_num(time: datetime = None) -> Union[False, int]:
     if not time:
         time = datetime.now()
         day = datetime.today().weekday()
@@ -157,12 +157,12 @@ def is_break_now(day: int, time: int) -> bool:
     return day == datetime.today().weekday() and time == get_break_num()
 
 
-def keyboard_day():
+def keyboard_day() -> types.InlineKeyboardMarkup:
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
     day = datetime.today().weekday()
 
-    if get_break_num():
+    if get_break_num() is not False:
         btns.append(types.InlineKeyboardButton(
             text=TEXT['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
 
@@ -179,9 +179,9 @@ def keyboard_day():
     return keyboard
 
 
-def keyboard_time(day):
+def keyboard_time(day: int) -> types.InlineKeyboardMarkup:
 
-    def get_btn(time):
+    def get_btn(time: int) -> types.InlineKeyboardButton:
         return types.InlineKeyboardButton(
                 text=get_break_name(time),
                 callback_data=f'predlozka-|-{day}-|-{time}'
@@ -208,7 +208,7 @@ def keyboard_time(day):
     return keyboard
 
 
-def keyboard_admin(day: int, time: int, audio_name, user_id):
+def keyboard_admin(day: int, time: int, audio_name: str, user_id: int) -> types.InlineKeyboardMarkup:
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(
         types.InlineKeyboardButton(
@@ -231,7 +231,7 @@ def keyboard_admin(day: int, time: int, audio_name, user_id):
     return keyboard
 
 
-def get_audio_name(audio):
+def get_audio_name(audio: types.Audio) -> str:
     if not audio.performer and not audio.title:
         name = 'Названия нету :('
     else:
@@ -240,11 +240,11 @@ def get_audio_name(audio):
     return name
 
 
-def get_user_name(user_obj):
+def get_user_name(user_obj: types.User) -> str:
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
 
 
-def create_dirs(to):
+def create_dirs(to: Union[str, Path]) -> None:
     dirname = os.path.dirname(to)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -252,24 +252,7 @@ def create_dirs(to):
         return
 
 
-async def save_file(url, to):
-    create_dirs(to)
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                assert resp.status == 200
-                with open(to, 'wb') as fd:
-                    while True:
-                        chunk = await resp.content.read(512)
-                        if not chunk:
-                            break
-                        fd.write(chunk)
-        logging.info(f'saved file: {to}')
-    except Exception as ex:
-        logging.error(f'save file: {ex} {to}')
-
-
-def delete_file(path: Path):
+def delete_file(path: Path) -> None:
     if not path.exists():
         return
     try:
@@ -278,7 +261,7 @@ def delete_file(path: Path):
         logging.error(f'delete file: {ex} {path}')
 
 
-async def write_sender_tag(path, user_obj):
+async def write_sender_tag(path: Path, user_obj: types.User) -> None:
     tags = await radioboss_api(action='readtag', fn=path)
     name = get_user_name(user_obj)
     name = b64encode(name.encode('utf-8')).decode('utf-8')
@@ -287,7 +270,7 @@ async def write_sender_tag(path, user_obj):
     await radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 
-async def read_sender_tag(path):
+async def read_sender_tag(path: Path) -> Union[False, str]:
     tags = await radioboss_api(action='readtag', fn=path)
     name = tags[0].attrib['Comment']
     try:
@@ -297,7 +280,7 @@ async def read_sender_tag(path):
     return name
 
 
-def check_bad_words(text):
+def check_bad_words(text: str) -> str:
     if 'Ошибка' in text:
         return text
 
@@ -324,20 +307,6 @@ def check_bad_words(text):
         return "Нашел это: " + ' '.join(answ)
 
 
-#
-# def auto_check_bad_words(msg):
-#     name = get_audio_name(msg.audio)
-#     text = search_text(name)
-#     res = check_bad_words(text)
-#     if 'Нашел' not in res:
-#         return
-#     new_text = msg.caption + '\n⚠️Наша крутая нейронная сеть проанализировала песню и возможно она содержит матюки.
-#     Подумай дважды перед тем как отправить.'
-#     bot.edit_message_caption(chat_id=msg.chat.id, message_id=msg.message_id,
-#                              caption=new_text, reply_markup=keyboard_day())
-
-
-def reboot():
+def reboot() -> None:
     os.system(r'cmd.exe /C start ' + os.getcwd() + '\\update.bat')
 
-# TODO покормить Кешу
