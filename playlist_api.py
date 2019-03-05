@@ -61,7 +61,6 @@ async def next_get():
     return answer
 
 
-
 async def now_get():
     answer = []
     playback = await radioboss_api(action='playbackinfo')

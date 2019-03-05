@@ -166,7 +166,7 @@ async def admin_reply(message):
 
     if message.reply_to_message.forward_from:  # на отзыв
         to = message.reply_to_message.forward_from.id
-        txt = "  На ваше сообщение ответили: "
+        txt = "На ваше сообщение ответили: "
 
     await bot.send_message(to, txt)
     if message.audio:
