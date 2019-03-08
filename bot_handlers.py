@@ -12,7 +12,6 @@ import core
 
 dp = Dispatcher(bot)
 
-
 @dp.message_handler(commands=['start'])
 async def start_handler(message):
     db.add(message.chat.id)
