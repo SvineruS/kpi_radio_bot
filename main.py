@@ -62,7 +62,7 @@ async def on_startup(app):
             await bot.delete_webhook()
         await bot.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
 
-    await scheduler.start()
+    # await scheduler.start()
 
 
 async def on_shutdown(app):
