@@ -2,6 +2,7 @@ import sys
 import traceback
 import ssl
 import logging
+import asyncio
 from aiohttp import web
 from aiogram import types, Dispatcher
 from config import *
@@ -62,7 +63,7 @@ async def on_startup(app):
             await bot.delete_webhook()
         await bot.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
 
-    # await scheduler.start()
+    asyncio.ensure_future(scheduler.start())
 
 
 async def on_shutdown(app):
