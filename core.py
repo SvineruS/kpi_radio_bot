@@ -228,7 +228,7 @@ async def inline_search(inline_query):
         )
         articles.append(
             types.InlineQueryResultAudio(
-                id=str(i),
+                id=hash(audio['url']),
                 audio_url=url,
                 performer=audio['artist'],
                 title=audio['title']
