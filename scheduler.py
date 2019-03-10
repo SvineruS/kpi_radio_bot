@@ -8,12 +8,9 @@ from core import send_live_begin
 
 
 async def start():
-    aioschedule.every().day.at("23:00").do(delete_old_orders)
+    aioschedule.every().day.at("23:00").do(delete_old_orders())
 
-    for index, time in enumerate(('10:05', '12:00', '13:55', '15:50', None, '17:50')):
-        if not time:
-            continue
-
+    for index, time in enumerate(('7:00', '10:05', '12:00', '13:55', '15:50', '17:50')):
         for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
             getattr(aioschedule.every(), day).at(time).do(lambda time_=index: send_live_begin(time_))
 
