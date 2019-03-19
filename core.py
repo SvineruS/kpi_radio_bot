@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import urllib.parse
 from datetime import datetime
@@ -174,7 +173,7 @@ async def admin_reply(message):
     elif message.sticker:
         await bot.send_sticker(to, message.sticker.file_id)
     elif message.photo:
-        await bot.send_photo(to, message.photo.file_id)
+        await bot.send_photo(to, message.photo[-1].file_id)
     else:
         await bot.send_message(to, message.text, parse_mode='markdown')
 
@@ -266,7 +265,7 @@ async def send_history(fields):
 
     sender_name = await bot_utils.read_sender_tag(fields['path'])
     sender_name = 'Заказал(а) ' + sender_name if sender_name else \
-                  'От команды РадиоКпи'
+        'От команды РадиоКпи'
 
     f = open(fields['path'], 'rb')
     await bot.send_audio(HISTORY_CHAT_ID, f, sender_name,
