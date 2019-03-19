@@ -157,6 +157,13 @@ def song_format(playback):
     return '\n'.join(text)
 
 
+def help_change(query, key):
+    try:
+        await bot.edit_message_text(bot_utils.TEXT['HELP'][key], query.message.chat.id, query.message.message_id)
+    except:
+        pass
+
+
 async def admin_reply(message):
     if message.reply_to_message.audio:  # на заказ
         to = message.reply_to_message.caption_entities[0].user.id

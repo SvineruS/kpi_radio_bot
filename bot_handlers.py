@@ -23,11 +23,6 @@ async def start_handler(message):
     await bot.send_message(message.chat.id, bot_utils.TEXT['menu'], reply_markup=bot_utils.keyboard_start)
 
 
-@dp.message_handler(commands=['help'])
-async def help_handler(message):
-    await bot.send_message(message.chat.id, bot_utils.TEXT['help'])
-
-
 @dp.message_handler(commands=['cancel'])
 async def cancel(message):
     await bot.send_message(message.chat.id, bot_utils.TEXT['menu'], reply_markup=bot_utils.keyboard_start)
@@ -89,7 +84,14 @@ async def callback_query_handler(query):
     elif cmd[0] == 'song_next':
         await core.song_next(query)
 
-    await bot.answer_callback_query(query.id)
+    # Кнопка в сообщении с инструкцией
+    elif cmd[0] == 'help':
+        await core.help_change(query, int(cmd[1]))
+
+    try:
+        await bot.answer_callback_query(query.id)
+    except:
+        pass
 
 
 @dp.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
@@ -142,8 +144,12 @@ async def message_handler(message):
                                reply_markup=bot_utils.keyboard_predlozka_inline)
 
     # Кнопка 'Хочу в команду'
-    elif message.text == bot_utils.btn['feedback_v_komandu']:
+    elif message.text == bot_utils.btn['feedback']:
         await bot.send_message(message.chat.id, bot_utils.TEXT['feedback'], reply_markup=types.ForceReply())
+
+    elif message.text == bot_utils.btn['help'] or message.text == '/help':
+        await bot.send_message(message.chat.id, bot_utils.TEXT['help']['first_msg'],
+                               reply_markup=bot_utils.keyboard_help)
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
