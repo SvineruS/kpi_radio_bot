@@ -38,7 +38,7 @@ async def next_get():
         time_max = datetime.strptime('22:00', '%H:%M').time()
     else:
         m = 10*60+25 + (bn-1)*115
-        time_max = datetime(1,1,1, hour=m//60, minute=m%60).time()
+        time_max = datetime(1, 1, 1, hour=m//60, minute=m % 60).time()
 
     i = 0
     for track in playlist:

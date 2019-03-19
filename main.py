@@ -27,7 +27,7 @@ async def gettext(request):
 
 @routes.get("/playlist")
 async def history_save(request):
-    # https://HOST:PORT /history/save?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
+    # https://HOST:PORT/playlist?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
@@ -49,7 +49,7 @@ async def webhook_handle(request):
     Dispatcher.set_current(dp)
     try:
         await dp.process_update(update)
-    except Exception as ex:
+    except Exception:
         traceback.print_exception(*sys.exc_info())
 
     return web.Response(text='ok')
