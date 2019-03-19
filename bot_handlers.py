@@ -86,7 +86,7 @@ async def callback_query_handler(query):
 
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
-        await core.help_change(query, int(cmd[1]))
+        await core.help_change(query, cmd[1])
 
     try:
         await bot.answer_callback_query(query.id)
