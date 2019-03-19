@@ -248,7 +248,7 @@ async def admin_ban(message):
         message.reply_to_message.forward_from
     ban_time = int(cmd[1]) if len(cmd) >= 2 else \
         60 * 24
-    reason = " Бан по причине: <i>" + (' '.join(cmd[2:]) if len(cmd) >= 3 else "") + "</i>"
+    reason = (" Бан по причине: <i>" + ' '.join(cmd[2:]) + "</i>") if len(cmd) >= 3  else ""
     ban_time = str(ban.ban_user(user.id, ban_time))
 
     if ban_time == "0":
