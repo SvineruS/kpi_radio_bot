@@ -159,7 +159,8 @@ def song_format(playback):
 
 async def help_change(query, key):
     try:
-        await bot.edit_message_text(bot_utils.TEXT['help'][key], query.message.chat.id, query.message.message_id)
+        await bot.edit_message_text(bot_utils.TEXT['help'][key], query.message.chat.id, query.message.message_id,
+                                    reply_markup=bot_utils.keyboard_help)
     except:
         pass
 
