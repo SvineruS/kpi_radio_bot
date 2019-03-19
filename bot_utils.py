@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import shutil
 import xml.etree.ElementTree as Etree
 from aiogram import types
 from datetime import datetime
@@ -86,6 +87,12 @@ btn = {
     'feedback_v_komandu': '🖌Обратная связь',
 }
 
+paths = {
+    'orders': Path('D:/Вещание Радио/Заказы'),
+    'archive': Path('D:/Вещание Радио/Архив'),
+    'ether': Path('D:/Вещание Радио/Эфир'),
+}
+
 keyboard_predlozka_inline = types.InlineKeyboardMarkup()
 keyboard_predlozka_inline.add(types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat=""))
 
@@ -99,9 +106,8 @@ keyboard_what_playing.add(types.InlineKeyboardButton(text='Предыдущие 
                           types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
 
-def get_music_path(day: int, time: int = None, archive: bool = None) -> Path:
-    t = Path('D:/Вещание Радио/')
-    t /= 'Эфир' if archive else 'Заказы'
+def get_music_path(day: int, time: int = False) -> Path:
+    t = paths['orders']
     t /= '0{0}_{1}'.format(day + 1, TEXT['days1'][day])
 
     if time is False:  # сука 0 считается как False
@@ -278,6 +284,22 @@ async def read_sender_tag(path: Path) -> Union[bool, str]:
     except:
         return False
     return name
+
+
+def delete_old_orders() -> None:
+    wd = datetime.now().weekday()
+    src = str(get_music_path(wd))  # заказы
+    dst = str(paths['archive'])  # архив
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+
+    for src_dir, dirs, files in os.walk(src):
+        for file_ in files:
+            src_file = os.path.join(src_dir, file_)
+            dst_file = os.path.join(dst, file_)
+            if not os.path.exists(dst_file):
+                shutil.move(src_file, dst_file)
 
 
 def check_bad_words(text: str) -> str:

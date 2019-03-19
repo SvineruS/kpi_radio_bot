@@ -1,10 +1,7 @@
 import asyncio
 import aioschedule
-from datetime import datetime
-from bot_utils import get_music_path
-from shutil import move, rmtree
-from os import makedirs
 from core import send_live_begin
+from bot_utils import delete_old_orders
 
 
 async def start():
@@ -20,23 +17,3 @@ async def start():
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(10)
-
-
-def delete_old_orders():
-    wd = datetime.now().weekday()
-    src = str(get_music_path(wd, False, False))
-    dst = str(get_music_path(wd, False, True).parent.parent / 'Архив')
-    try:
-        move(src, dst)
-    except:
-        pass
-    try:
-        rmtree(src)
-    except:
-        pass
-    for i in range(1, 6):
-        src = str(get_music_path(wd, i, False))
-        try:
-            makedirs(src)
-        except:
-            pass
