@@ -45,9 +45,6 @@ async def ban_handler(message):
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
 
-    if query.from_user.username == 'henkilo':
-        return
-
     # выбрали день
     if cmd[0] == 'predlozka_day':
         await core.predlozka_day(query, int(cmd[1]))
