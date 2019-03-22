@@ -173,7 +173,7 @@ def get_break_name(time: int) -> str:
 
 
 def is_break_now(day: int, time: int) -> bool:
-    return day == datetime.today().weekday() and time == get_break_num()
+    return day == datetime.today().weekday() and time is get_break_num()
 
 
 def keyboard_day() -> types.InlineKeyboardMarkup:
