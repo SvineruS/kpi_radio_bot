@@ -11,8 +11,8 @@ async def start():
         for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
             getattr(aioschedule.every(), day).at(time).do(lambda time_=index: send_live_begin(time_))
 
-    aioschedule.every().sunday.at('10:00').do(lambda: send_live_begin(0))
-    aioschedule.every().sunday.at('18:00').do(lambda: send_live_begin(5))
+    aioschedule.every().sunday.at('10:00').do(send_live_begin(0))
+    aioschedule.every().sunday.at('18:00').do(send_live_begin(5))
 
     while True:
         await aioschedule.run_pending()
