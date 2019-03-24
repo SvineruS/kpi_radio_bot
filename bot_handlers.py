@@ -5,9 +5,10 @@
 
 from aiogram import Dispatcher, types, executor
 from config import *
-import bot_utils
 import db
+import bot_utils
 import playlist_api
+import music_api
 import core
 
 dp = Dispatcher(bot)
@@ -28,10 +29,14 @@ async def cancel(message):
     await bot.send_message(message.chat.id, bot_utils.TEXT['menu'], reply_markup=bot_utils.keyboard_start)
 
 
-@dp.message_handler(commands=['update'])
+@dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['next'])
+async def next_track_handler(message):
+    r = await music_api.radioboss_api(cmd='next')
+    await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
+
+
+@dp.message_handler(lambda m: m.from_user.id == 185520398, commands=['update'])
 async def update_handler(message):
-    if message.from_user.id != 185520398:
-        return
     await bot.send_message(message.chat.id, 'Ребутаюсь..')
     bot_utils.reboot()
 
