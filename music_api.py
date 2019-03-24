@@ -38,7 +38,6 @@ async def search_text(name, attempt2=False):
             assert resp.status == 200
 
             s = await resp.json()
-
             s = s['response']['sections']
             for t in s:
                 if t['type'] == 'song':
@@ -49,7 +48,7 @@ async def search_text(name, attempt2=False):
                 if attempt2:
                     return 'Ошибка поиска'
                 name = name.split('- ')[-1]
-                return search_text(name, True)
+                return await search_text(name, True)
 
             s = s['hits'][0]['result']
             title = s['full_title']
