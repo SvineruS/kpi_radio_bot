@@ -311,11 +311,10 @@ async def delete_old_orders() -> None:
         for file_ in files:
             src_file = os.path.join(src_dir, file_)
             dst_file = os.path.join(dst, file_)
-            if not os.path.exists(dst_file):
-                try:
-                    shutil.move(src_file, dst_file)
-                except Exception as ex:
-                    logging.error(f'move file: {ex} {src_file}')
+            try:
+                shutil.move(src_file, dst_file)
+            except Exception as ex:
+                logging.error(f'move file: {ex} {src_file}')
 
 
 def check_bad_words(text: str) -> str:
