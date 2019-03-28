@@ -299,7 +299,7 @@ async def read_sender_tag(path: Path) -> Union[bool, str]:
     return name
 
 
-def delete_old_orders() -> None:
+async def delete_old_orders() -> None:
     wd = datetime.now().weekday()
     src = str(get_music_path(wd))  # заказы
     dst = str(paths['archive'])  # архив
