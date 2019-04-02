@@ -3,6 +3,7 @@ import logging
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from config import *
+import urllib.parse
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 
 
@@ -18,6 +19,16 @@ async def search(name):
         return False
 
 
+def get_download_url(url, artist=None, title=None, bitrate=64):
+    url = f'http://svinua.cf/api/music/?download={url}&bitrate={bitrate}'
+    if artist:
+        url += '&artist=' + urllib.parse.quote_plus(artist)
+    if title:
+        url += '&title=' + urllib.parse.quote_plus(title)
+    return url
+
+
+#  deprecated
 async def download(url):
     url = f'http://svinua.cf/api/music/?download={url}'
     try:

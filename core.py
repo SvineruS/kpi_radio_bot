@@ -1,5 +1,4 @@
 import logging
-import urllib.parse
 from datetime import datetime
 from aiogram import types
 from config import *
@@ -132,9 +131,7 @@ async def predlozka_cancel(query):
 async def song_prev(query):
     playback = await playlist_api.prev_get()
     if not playback:
-        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_prev'],
-                                      reply_markup=bot_utils.keyboard_start)
-
+        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_prev'])
     text = song_format(playback)
     await bot.send_message(query.message.chat.id, text)
 
@@ -142,9 +139,7 @@ async def song_prev(query):
 async def song_next(query):
     playback = await playlist_api.next_get()
     if not playback:
-        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_next'],
-                                      reply_markup=bot_utils.keyboard_start)
-
+        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_next'])
     text = song_format(playback)
     await bot.send_message(query.message.chat.id, text)
 
@@ -197,19 +192,10 @@ async def search_audio(message):
     else:
         audio = audio[0]
         try:
-            # скачивание файла шоб поставить норм имя песне
-            audio_file = await music_api.download(audio['url'])
-
-            # это почему то не работает
-            # url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
-            #    urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
-            # )
-
             await bot.send_audio(
-                message.chat.id, audio_file,
+                message.chat.id,
+                music_api.get_download_url(audio['url'], audio['artist'], audio['title']),
                 'Выбери день (или отредактируй название)',
-                performer=audio['artist'],
-                title=audio['title'],
                 reply_markup=bot_utils.keyboard_day()
             )
 
@@ -230,13 +216,10 @@ async def inline_search(inline_query):
         audio = music[i]
         if not audio or not audio['url']:
             continue
-        url = 'http://svinua.cf/api/music/?name={}&download={}'.format(
-            urllib.parse.quote_plus(audio['artist'] + ' - ' + audio['title']), audio['url']
-        )
         articles.append(
             types.InlineQueryResultAudio(
-                id=hash(audio['url']),
-                audio_url=url,
+                id=str(hash(audio['url'])),
+                audio_url=music_api.get_download_url(audio['url'], audio['artist'], audio['title']),
                 performer=audio['artist'],
                 title=audio['title']
             )
