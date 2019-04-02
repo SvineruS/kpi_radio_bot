@@ -20,6 +20,8 @@ async def search(name):
 
 
 def get_download_url(url, artist=None, title=None, bitrate=64):
+    return f'http://svinua.cf/api/music/?download={url}'
+    # old download
     url = f'http://svinua.cf/api/music/?download={url}&bitrate={bitrate}'
     if artist:
         url += '&artist=' + urllib.parse.quote_plus(artist)
