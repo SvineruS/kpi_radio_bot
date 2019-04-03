@@ -10,6 +10,7 @@ import bot_utils
 import playlist_api
 import music_api
 import core
+import json
 
 dp = Dispatcher(bot)
 
@@ -35,7 +36,7 @@ async def next_track_handler(message):
     await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
 
 
-@dp.message_handler(lambda m: m.from_user.id == 185520398, commands=['update'])
+@dp.message_handler(lambda m: m.from_user.id in [185520398, 152950074], commands=['update'])
 async def update_handler(message):
     await bot.send_message(message.chat.id, 'Ребутаюсь..')
     bot_utils.reboot()
@@ -131,7 +132,7 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == bot_utils.btn['what_playing']:
-        playback = await playlist_api.now_get()
+        playback = await playlist_api.get_now()
         if not playback:
             await bot.send_message(message.chat.id, "Не знаю(", reply_markup=bot_utils.keyboard_what_playing)
         else:

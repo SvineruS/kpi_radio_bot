@@ -103,10 +103,12 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         bot_utils.create_dirs(to)
         await query.message.audio.download(to, timeout=60)
         await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
-
         if bot_utils.is_break_now(day, time):
-            await music_api.radioboss_api(action='inserttrack', filename=to, pos=-2)
-            await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok_next'].format(name))
+            position = await playlist_api.get_suggestion_index()
+            msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if position == -2
+                                                             else 'через несколько треков 🙃')
+            await music_api.radioboss_api(action='inserttrack', filename=to, pos=position)
+            await bot.send_message(user_id, msg)
         else:
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok'].format(name))
     else:
@@ -129,7 +131,7 @@ async def predlozka_cancel(query):
 
 
 async def song_prev(query):
-    playback = await playlist_api.prev_get()
+    playback = await playlist_api.get_prev()
     if not playback:
         return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_prev'])
     text = song_format(playback)
@@ -137,7 +139,7 @@ async def song_prev(query):
 
 
 async def song_next(query):
-    playback = await playlist_api.next_get()
+    playback = await playlist_api.get_next()
     if not playback:
         return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_next'])
     text = song_format(playback)

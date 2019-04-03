@@ -3,10 +3,8 @@ from datetime import datetime
 from bot_utils import get_break_num
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / 'Stuff/history.db'
 
-
-async def prev_get():
+async def get_prev():
     answer = []
     playback = await radioboss_api(action='getlastplayed')
     if not playback:
@@ -22,12 +20,27 @@ async def prev_get():
     return answer
 
 
-async def next_get():
+async def get_playlist():
     answer = []
-
     playlist = await radioboss_api(action='getplaylist2')
     if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop ':
         return answer
+    for track in playlist:
+        if not track.attrib['STARTTIME']: # в конце эфира STARTTIME=""
+            continue
+        item = {
+            'title': track.attrib['CASTTITLE'],
+            'time_start': track.attrib['STARTTIME'],
+            'filename': track.attrib['FILENAME'],
+            'index': int(track.attrib['INDEX'])
+        }
+        answer.append(item)
+    return answer
+
+
+async def get_next():
+    answer = []
+    playlist = await get_playlist()
 
     dt_now = datetime.now()
     time_min = dt_now.time()
@@ -42,26 +55,17 @@ async def next_get():
 
     i = 0
     for track in playlist:
-        if not track.attrib['STARTTIME']:
-            continue
         if i >= 5:
             break
-        time_start = datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S').time()
+        time_start = datetime.strptime(track["time_start"], '%H:%M:%S').time()
         if not time_min < time_start < time_max:
             continue
-
-        item = {
-            'title': track.attrib['CASTTITLE'],
-            'time_start': track.attrib['STARTTIME']
-        }
         i += 1
-            
-        answer.append(item)  
-
+        answer.append(track)
     return answer
 
 
-async def now_get():
+async def get_now():
     answer = []
     playback = await radioboss_api(action='playbackinfo')
     if not playback or \
@@ -70,6 +74,18 @@ async def now_get():
     for i in range(3):
         answer.append(playback[i][0].attrib['CASTTITLE'])
     return answer
+
+
+async def get_suggestion_index() -> int:
+    index = -2 # Поставить следующим
+    playlist = await get_playlist()
+    dt_now = datetime.now()
+    time_min = dt_now.time()
+    for track in playlist:
+        time_start = datetime.strptime(track["time_start"], '%H:%M:%S').time()
+        if "Заказы" in track["filename"] and time_start > time_min:
+            index = track["index"] + 1
+    return index
 
 
 async def next_move(n1, n2):
