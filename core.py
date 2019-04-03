@@ -104,10 +104,10 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         await query.message.audio.download(to, timeout=60)
         await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
         if bot_utils.is_break_now(day, time):
-            position = await playlist_api.get_suggestion_index()
-            msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if position == -2
-                                                             else 'через несколько треков 🙃')
-            await music_api.radioboss_api(action='inserttrack', filename=to, pos=position)
+            data = await playlist_api.get_suggestion_data()
+            msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if data[0] == -2
+                                                             else f'примерно через {data[1]} минут.')
+            await music_api.radioboss_api(action='inserttrack', filename=to, pos=data[0])
             await bot.send_message(user_id, msg)
         else:
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok'].format(name))
