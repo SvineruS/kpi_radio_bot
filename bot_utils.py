@@ -173,6 +173,15 @@ def get_break_name(time: int) -> str:
     return TEXT['times'][time]
 
 
+def case_by_num(num, c1, c2, c3):
+    if 11 <= num <= 14:
+        return c3
+    if num % 10 == 1:
+        return c1
+    if 2 <= num % 10 <= 4:
+        return c2
+    return c3
+
 def is_break_now(day: int, time: int) -> bool:
     return day == datetime.today().weekday() and time is get_break_num()
 

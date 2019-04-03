@@ -95,7 +95,7 @@ async def get_suggestion_data() -> tuple:
             last_order = track
 
     if last_order:
-        wait_time = str(last_order['time_end'] - dt_now).split(":")[1]
+        wait_time = int(str(last_order['time_end'] - dt_now).split(":")[1])
         index = last_order['index'] + 1
 
     return index, wait_time
