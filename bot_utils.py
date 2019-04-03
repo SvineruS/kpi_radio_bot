@@ -11,6 +11,7 @@ from config import *
 from typing import Union
 
 
+
 TEXT = {
     'start': '''Привет, это бот РадиоКПИ. 
 Ты можешь:
@@ -71,7 +72,7 @@ TEXT = {
 
     'predlozka_moderating': 'Спасибо за заказ ({0}), ожидайте модерации!',  # время
     'predlozka_ok': 'Ваш заказ ({0}) принят!',  # название песни
-    'predlozka_ok_next': 'Ваш заказ ({0}) принят и заиграет прямо сейчас!',
+    'predlozka_ok_next': 'Ваш заказ ({0}) принят и заиграет {1}',
     'predlozka_neok': 'Ваш заказ ({0}) отклонен(',
 
     'what_playing': """⏮ <b>Предыдущий трек: </b> {0}, 
@@ -278,6 +279,8 @@ def delete_file(path: Path) -> None:
         path.unlink()
     except Exception as ex:
         logging.error(f'delete file: {ex} {path}')
+
+
 
 
 async def write_sender_tag(path: Path, user_obj: types.User) -> None:
