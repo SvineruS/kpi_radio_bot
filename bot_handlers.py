@@ -10,7 +10,6 @@ import bot_utils
 import playlist_api
 import music_api
 import core
-import json
 
 dp = Dispatcher(bot)
 

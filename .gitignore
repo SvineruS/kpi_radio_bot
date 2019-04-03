@@ -5,3 +5,5 @@ config.py
 *.pyc
 *.pem
 ./git_backup
+test.py
+./stuff
