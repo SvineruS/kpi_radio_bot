@@ -106,8 +106,8 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         if bot_utils.is_break_now(day, time):
             data = await playlist_api.get_suggestion_data()
             msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if data[0] == -2
-                                                             else f'примерно через {data[1]} ' +
-                                                             bot_utils.case_by_num(data[1],'минуту', 'минуты', 'минут'))
+            else f'примерно через {data[1]} ' +
+                 bot_utils.case_by_num(data[1], 'минуту', 'минуты', 'минут'))
             await music_api.radioboss_api(action='inserttrack', filename=to, pos=data[0])
             await bot.send_message(user_id, msg)
         else:
@@ -179,7 +179,8 @@ async def admin_reply(message):
     elif message.sticker:
         await bot.send_sticker(to, message.sticker.file_id)
     elif message.photo:
-        await bot.send_photo(to, message.photo[-1].file_id)
+        await bot.send_photo(to, message.photo[-1].file_id,
+                             caption=message.caption if hasattr(message, "caption") else "")
     else:
         await bot.send_message(to, message.text, parse_mode='markdown')
 
