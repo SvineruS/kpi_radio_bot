@@ -6,18 +6,11 @@ from pathlib import Path
 
 async def get_prev():
     answer = []
-    playback = await radioboss_api(action='getlastplayed')
+    playback = await get_playlist()
     if not playback:
         return answer
 
-    for i in range(min(5, len(playback))):
-        track = playback[i].attrib
-        answer.append({
-            'time_start': track['STARTTIME'].split(' ')[1],
-            'title': track['CASTTITLE']
-        })
-
-    return answer
+    return playback[:min(5, len(playback))]
 
 
 async def get_playlist():

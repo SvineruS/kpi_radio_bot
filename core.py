@@ -149,7 +149,7 @@ async def song_next(query):
 
 def song_format(playback):
     text = [
-        f"🕖<b>{track['time_start']}</b> {track['title']}"
+        f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
         for track in playback
     ]
     return '\n'.join(text)
