@@ -179,8 +179,7 @@ async def admin_reply(message):
     elif message.sticker:
         await bot.send_sticker(to, message.sticker.file_id)
     elif message.photo:
-        await bot.send_photo(to, message.photo[-1].file_id,
-                             caption=message.caption if hasattr(message, "caption") else "")
+        await bot.send_photo(to, message.photo[-1].file_id, caption=message.caption)
     else:
         await bot.send_message(to, message.text, parse_mode='markdown')
 

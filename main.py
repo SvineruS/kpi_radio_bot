@@ -63,7 +63,7 @@ async def on_startup(app):
             await bot.delete_webhook()
         await bot.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
 
-    asyncio.ensure_future(scheduler.start())
+    asyncio.ensure_future(scheduler.start())  # its ok
 
 
 async def on_shutdown(app):

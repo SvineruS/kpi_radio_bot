@@ -42,3 +42,6 @@ def read_ban():
         banned[int(b[0])] = int(b[1])
     f.close()
     return banned
+
+
+# todo переделайте это ну ебта

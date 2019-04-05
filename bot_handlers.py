@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Модуль бота кпи радио by Владислав Свинкин 2к!8 - 2к19 t.me/svinerus
+# Кпи Радио Бот by Владислав Свинки, Ripll 2к!8 - 2к19 t.me/svinerus
 
 
 from aiogram import Dispatcher, types, executor

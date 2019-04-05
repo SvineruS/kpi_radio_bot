@@ -11,6 +11,7 @@ from config import *
 from typing import Union
 
 
+# todo вынести константы в отдельный модуль
 
 TEXT = {
     'start': '''Привет, это бот РадиоКПИ. 

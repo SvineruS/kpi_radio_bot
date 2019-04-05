@@ -1,7 +1,6 @@
 from music_api import radioboss_api
 from datetime import datetime
 from bot_utils import get_break_num
-from pathlib import Path
 
 
 async def get_prev():
@@ -67,8 +66,7 @@ async def get_next():
 async def get_now():
     answer = []
     playback = await radioboss_api(action='playbackinfo')
-    if not playback or \
-            playback[3].attrib['state'] == 'stop':
+    if not playback or playback[3].attrib['state'] == 'stop':
         return answer
     for i in range(3):
         answer.append(playback[i][0].attrib['CASTTITLE'])
@@ -92,8 +90,3 @@ async def get_suggestion_data() -> tuple:
         index = last_order['index'] + 1
 
     return index, wait_time
-
-
-async def next_move(n1, n2):
-    playback = await radioboss_api(action='move', pos1=n1, pos2=n2)
-    print(playback)
