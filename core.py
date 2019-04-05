@@ -93,6 +93,10 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         callback_data='-|-'.join(['admin_cancel', str(day), str(time), 'ok' if status else 'neok'])
     ))
 
+    await bot.edit_message_caption(caption=new_text,
+                                   chat_id=query.message.chat.id, message_id=query.message.message_id,
+                                   reply_markup=keyboard_cancel
+                                   )
 
     if status:
         to = bot_utils.get_music_path(day, time) / (name + '.mp3')
@@ -102,25 +106,19 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
         if bot_utils.is_break_now(day, time):
             # получаем позицию [0] и время ожидания [1]
             data = await playlist_api.get_suggestion_data()
-            waiting_time = bot_utils.case_by_num(data[1], 'минуту', 'минуты', 'минут')
-            # + к админскому сообщению
-            new_text += f"\nОжидание: {waiting_time}"
-            # сообщение юзеру
+            waiting_time = str(data[1]) + bot_utils.case_by_num(data[1], ' минуту', ' минуты', ' минут')
             msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if data[0] == -2
-                                                             else f'примерно через {data[1]} ' +
-                                                             waiting_time)
+                                                             else f'примерно через {waiting_time}')
             await music_api.radioboss_api(action='inserttrack', filename=to, pos=data[0])
+            await bot.edit_message_caption(caption=new_text + f"\nОжидание: {waiting_time}",
+                                           chat_id=query.message.chat.id, message_id=query.message.message_id,
+                                           reply_markup=keyboard_cancel
+                                           )
             await bot.send_message(user_id, msg)
         else:
             await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok'].format(name))
     else:
         await bot.send_message(user_id, bot_utils.TEXT['predlozka_neok'].format(name))
-
-    # редактирование админского сообщения
-    await bot.edit_message_caption(caption=new_text,
-                                   chat_id=query.message.chat.id, message_id=query.message.message_id,
-                                   reply_markup=keyboard_cancel
-                                   )
 
 
 async def predlozka_day_back(query):
@@ -171,6 +169,10 @@ async def help_change(query, key):
 
 
 async def admin_reply(message):
+    # игнор ответа
+    if message.text and message.text.startswith("!"):
+        return
+
     if message.reply_to_message.audio:  # на заказ
         to = message.reply_to_message.caption_entities[0].user.id
         txt = "На ваш заказ <i>(" + bot_utils.get_audio_name(
@@ -188,8 +190,7 @@ async def admin_reply(message):
     elif message.photo:
         await bot.send_photo(to, message.photo[-1].file_id, caption=message.caption)
     else:
-        if not message.text.startswith("!"):
-            await bot.send_message(to, message.text, parse_mode='markdown')
+        await bot.send_message(to, message.text, parse_mode='markdown')
 
 
 async def search_audio(message):
