@@ -1,14 +1,13 @@
 import aiohttp
 import logging
 from bs4 import BeautifulSoup
-from urllib.parse import quote
+from urllib.parse import quote_plus
 from config import *
-import urllib.parse
 import xml.etree.ElementTree as Etree  # для апи радиобосса
 
 
 async def search(name):
-    url = "http://svinua.cf/api/music/?search={}".format(quote(name))
+    url = "http://svinua.cf/api/music/?search={}".format(quote_plus(name))
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
@@ -22,14 +21,14 @@ async def search(name):
 def get_download_url(url, artist=None, title=None):
     url = f'http://svinua.cf/api/music/?download={url}'
     if artist:
-        url += '&artist=' + urllib.parse.quote_plus(artist)
+        url += '&artist=' + quote_plus(artist)
     if title:
-        url += '&title=' + urllib.parse.quote_plus(title)
+        url += '&title=' + quote_plus(title)
     return url
 
 
 async def search_text(name, attempt2=False):
-    url = "https://genius.com/api/search/multi?q=" + quote(name)
+    url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
@@ -65,7 +64,7 @@ async def search_text(name, attempt2=False):
 async def radioboss_api(**kwargs):
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
     for key in kwargs:
-        url += '&{0}={1}'.format(key, quote(str(kwargs[key])))
+        url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
     t = 'Еще даже не подключился к радиобоссу а уже эксепшены(('
     try:
         async with aiohttp.ClientSession() as session:
