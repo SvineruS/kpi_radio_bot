@@ -101,14 +101,16 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
     if status:
         to = bot_utils.get_music_path(day, time) / (name + '.mp3')
         bot_utils.create_dirs(to)
+        
         await query.message.audio.download(to, timeout=60)
         await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
+        
         if bot_utils.is_break_now(day, time):
-            # получаем позицию [0] и время ожидания [1]
-            data = await playlist_api.get_suggestion_data()
+            data = await playlist_api.get_suggestion_data()  # получаем позицию [0] и время ожидания [1]
             waiting_time = str(data[1]) + bot_utils.case_by_num(data[1], ' минуту', ' минуты', ' минут')
             msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if data[0] == -2
                                                              else f'примерно через {waiting_time}')
+            
             await music_api.radioboss_api(action='inserttrack', filename=to, pos=data[0])
             await bot.edit_message_caption(caption=new_text + f"\nОжидание: {waiting_time}",
                                            chat_id=query.message.chat.id, message_id=query.message.message_id,
