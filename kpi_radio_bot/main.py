@@ -13,7 +13,6 @@ import scheduler
 from bot_handlers import dp
 from config import *
 
-
 app = web.Application()
 routes = web.RouteTableDef()
 

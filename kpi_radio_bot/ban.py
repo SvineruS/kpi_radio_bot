@@ -1,4 +1,5 @@
 from time import time
+
 from config import STUFF_PATH
 
 DB_PATH = STUFF_PATH / 'banned.db'

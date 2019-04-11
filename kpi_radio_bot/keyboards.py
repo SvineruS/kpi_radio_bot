@@ -1,6 +1,8 @@
-from urllib.parse import quote_plus
 from datetime import datetime
+from urllib.parse import quote_plus
+
 from aiogram import types
+
 import consts
 from bot_utils import get_break_num, get_break_name
 from config import HOST

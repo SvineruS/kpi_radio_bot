@@ -1,9 +1,11 @@
-import aiohttp
 import logging
-from bs4 import BeautifulSoup
-from urllib.parse import quote_plus
-from config import *
 import xml.etree.ElementTree as Etree  # для апи радиобосса
+from urllib.parse import quote_plus
+
+import aiohttp
+from bs4 import BeautifulSoup
+
+from config import *
 
 
 async def search(name):
