@@ -1,7 +1,7 @@
 from urllib.parse import quote_plus
 from datetime import datetime
 from aiogram import types
-from consts import TEXT
+import consts
 from bot_utils import get_break_num, get_break_name
 from config import HOST
 
@@ -27,7 +27,7 @@ keyboard_what_playing.add(types.InlineKeyboardButton(text='Предыдущие 
                           types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
 keyboard_help = types.InlineKeyboardMarkup(row_width=1)
-for k, v in TEXT['help']['btns'].items():
+for k, v in consts.help['btns'].items():
     keyboard_help.add(types.InlineKeyboardButton(text=v, callback_data=f'help-|-{k}'))
 
 
@@ -38,15 +38,15 @@ def keyboard_day() -> types.InlineKeyboardMarkup:
 
     if get_break_num() is not False:
         btns.append(types.InlineKeyboardButton(
-            text=TEXT['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
+            text=consts.TEXT['days2'][3], callback_data='predlozka-|-' + str(day) + '-|-' + str(get_break_num())))
 
     if datetime.now().hour < 22:
         btns.append(types.InlineKeyboardButton(
-            text=TEXT['days2'][0], callback_data='predlozka_day-|-' + str(day)))
+            text=consts.TEXT['days2'][0], callback_data='predlozka_day-|-' + str(day)))
 
     for i in range(1, 3):
         btns.append(types.InlineKeyboardButton(
-            text=TEXT['days2'][i], callback_data='predlozka_day-|-' + str((day + i) % 7)))
+            text=consts.TEXT['days2'][i], callback_data='predlozka_day-|-' + str((day + i) % 7)))
 
     btns.append(types.InlineKeyboardButton(text='Отмена', callback_data='predlozka_cancel'))
     keyboard.add(*btns)

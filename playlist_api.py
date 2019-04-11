@@ -42,14 +42,7 @@ async def get_next():
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-    bn = get_break_num()
-    if bn == -1:
-        time_max = datetime.strptime(['18:00', '22:00'][bn - 1], '%H:%M').time()
-    elif bn == 5:
-        time_max = datetime.strptime('22:00', '%H:%M').time()
-    else:
-        m = 10 * 60 + 25 + (bn - 1) * 115
-        time_max = datetime(1, 1, 1, hour=m // 60, minute=m % 60).time()
+
 
     i = 0
     for track in playlist:

@@ -150,7 +150,7 @@ async def message_handler(message):
         await bot.send_message(message.chat.id, consts.TEXT['feedback'], reply_markup=types.ForceReply())
 
     elif message.text == keyboards.btn['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.TEXT['help']['first_msg'],
+        await bot.send_message(message.chat.id, consts.help['first_msg'],
                                reply_markup=keyboards.keyboard_help)
 
     else:

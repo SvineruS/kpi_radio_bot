@@ -23,7 +23,7 @@ def get_music_path(day: int, time: int = False) -> Path:
     elif time < 5:       # До вечернего эфира
         t /= '{0}.{1}'.format(time, consts.TEXT['times'][time])
     else:                # Вечерний эфир
-        t /= '({0}){1}\\'.format(day + 1, consts.TEXT['days1'][day])
+        t /= '({0}){1}'.format(day + 1, consts.TEXT['days1'][day])
 
     return t
 
@@ -36,18 +36,18 @@ def get_break_num(time: datetime = None) -> Union[bool, int]:
         day = time.weekday()
     time = time.hour * 60 + time.minute
 
-    if time > 22 * 60 or time < 7 * 60:
+    if time > 22 * 60 or time < 7 * 60:     # точно не время эфира
         return False
 
     if day == 6:                            # Воскресенье
-        if 11 * 60 + 15 < time < 18 * 60:   # Утренний эфир
-            return 0
         if time > 18 * 60:                  # Вечерний эфир
             return 5
+        if time > 11 * 60 + 15:             # Утренний эфир
+            return 0
+        return False                        # Не эфир
 
     if time <= 8 * 60 + 30:                 # Утренний эфир
         return 0
-
     if time >= 17 * 60 + 50:                # Вечерний эфир
         return 5
 
@@ -55,7 +55,7 @@ def get_break_num(time: datetime = None) -> Union[bool, int]:
         if 0 <= time - (10 * 60 + 5 + i * 115) <= 20:
             return i + 1
 
-    return False                            # Не перерыв
+    return False                            # Не эфир
 
 
 def get_break_name(time: int) -> str:
@@ -144,7 +144,7 @@ async def delete_old_orders() -> None:
 
 
 def check_bad_words(text: str) -> str:
-    if 'Ошибка' in text:
+    if 'Ошибка' in text:  # хуевый мув, да. срабатывает на "ошибка поиска"
         return text
 
     bad_words = ['пизд',
