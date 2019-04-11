@@ -1,68 +1,10 @@
 import xml.etree.ElementTree as Etree
-from datetime import datetime
 from base64 import b64decode, b64encode
+from datetime import datetime
+
+import consts
 from bot_utils import get_break_num, get_user_name
 from music_api import radioboss_api
-
-
-async def get_prev():
-    answer = []
-    playback = await get_playlist()
-    if not playback:
-        return answer
-
-    return playback[:min(5, len(playback))]
-
-
-async def get_playlist():
-    answer = []
-    playlist = await radioboss_api(action='getplaylist2')
-    if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop ':
-        return answer
-    for track in playlist:
-        if not track.attrib['STARTTIME']:  # в конце эфира STARTTIME=""
-            continue
-
-        item = {
-            'title': track.attrib['CASTTITLE'],
-            'time_start': datetime.strptime(track.attrib['STARTTIME'], '%H:%M:%S'),
-            'filename': track.attrib['FILENAME'],
-            'index': int(track.attrib['INDEX']),
-        }
-        try:
-            item['time_end'] = item['time_start'] + datetime.strptime(track.attrib['DURATION'], '%M:%S')
-        except:
-            item['time_end'] = item['time_start']
-
-        answer.append(item)
-    return answer
-
-
-async def get_next():
-    answer = []
-    playlist = await get_playlist()
-
-    dt_now = datetime.now()
-    time_min = dt_now.time()
-    bn = get_break_num()
-    if bn == -1:
-        time_max = datetime.strptime(['18:00', '22:00'][bn - 1], '%H:%M').time()
-    elif bn == 5:
-        time_max = datetime.strptime('22:00', '%H:%M').time()
-    else:
-        m = 10 * 60 + 25 + (bn - 1) * 115
-        time_max = datetime(1, 1, 1, hour=m // 60, minute=m % 60).time()
-
-    i = 0
-    for track in playlist:
-        if i >= 5:
-            break
-        time_start = track["time_start"].time()
-        if not time_min < time_start < time_max:
-            continue
-        i += 1
-        answer.append(track)
-    return answer
 
 
 async def get_now():
@@ -72,6 +14,66 @@ async def get_now():
         return answer
     for i in range(3):
         answer.append(playback[i][0].attrib['CASTTITLE'])
+    return answer
+
+
+async def get_prev():
+    answer = []
+    playback = await radioboss_api(action='getlastplayed')
+    if not playback:
+        return []
+
+    for i in range(min(5, len(playback))):
+        track = playback[i].attrib
+        answer.append({
+            'time_start': datetime.strptime(track['STARTTIME'].split(' ')[1], '%H:%M:%S'),
+            'title': track['CASTTITLE']
+        })
+
+    return answer
+
+
+async def get_next():
+    answer = []
+    playlist = await get_playlist()
+    bn = get_break_num()
+    if not playlist or bn is False:
+        return []
+
+    dt_now = datetime.now()
+    time_min = dt_now.time()
+    time_max = consts.broadcast_times['sunday' if dt_now.day == 6 else 'elseday'][bn][1]
+    time_max = datetime.strptime(time_max, '%H:%M').time()
+
+    for track in playlist:
+        if len(answer) >= 5:
+            break
+        time_start = track["time_start"].time()
+        if time_min < time_start < time_max:
+            answer.append(track)
+
+    return answer
+
+
+async def get_playlist():
+    answer = []
+    playlist = await radioboss_api(action='getplaylist2')
+    if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop ':   # todo тут точно с пробелом?
+        return []
+
+    for track in playlist:
+        track = track.attrib
+        if not track['STARTTIME']:  # в конце эфира STARTTIME=""
+            continue
+
+        item = {
+            'title': track['CASTTITLE'],
+            'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
+            'filename': track['FILENAME'],
+            'index': int(track['INDEX']),
+        }
+        answer.append(item)
+
     return answer
 
 
