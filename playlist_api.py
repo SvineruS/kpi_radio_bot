@@ -1,6 +1,8 @@
-from music_api import radioboss_api
+import xml.etree.ElementTree as Etree
 from datetime import datetime
-from bot_utils import get_break_num
+from base64 import b64decode, b64encode
+from bot_utils import get_break_num, get_user_name
+from music_api import radioboss_api
 
 
 async def get_prev():
@@ -42,7 +44,14 @@ async def get_next():
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-
+    bn = get_break_num()
+    if bn == -1:
+        time_max = datetime.strptime(['18:00', '22:00'][bn - 1], '%H:%M').time()
+    elif bn == 5:
+        time_max = datetime.strptime('22:00', '%H:%M').time()
+    else:
+        m = 10 * 60 + 25 + (bn - 1) * 115
+        time_max = datetime(1, 1, 1, hour=m // 60, minute=m % 60).time()
 
     i = 0
     for track in playlist:
@@ -83,3 +92,22 @@ async def get_suggestion_data() -> tuple:
         index = last_order['index'] + 1
 
     return index, wait_time
+
+
+async def write_sender_tag(path, user_obj):
+    tags = await radioboss_api(action='readtag', fn=path)
+    name = get_user_name(user_obj)
+    name = b64encode(name.encode('utf-8')).decode('utf-8')
+    tags[0].attrib['Comment'] = name
+    xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
+    await radioboss_api(action='writetag', fn=path, data=xmlstr)
+
+
+async def read_sender_tag(path):
+    tags = await radioboss_api(action='readtag', fn=path)
+    name = tags[0].attrib['Comment']
+    try:
+        name = b64decode(name).decode('utf-8')
+    except:
+        return False
+    return name

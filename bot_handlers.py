@@ -7,7 +7,6 @@ import db
 import bot_utils
 import keyboards
 import consts
-import playlist_api
 import music_api
 import core
 
@@ -20,13 +19,13 @@ async def start_handler(message):
     if message.chat.id < 0:
         return
 
-    await bot.send_message(message.chat.id, consts.TEXT['start'])
-    await bot.send_message(message.chat.id, consts.TEXT['menu'], reply_markup=keyboards.keyboard_start)
+    await bot.send_message(message.chat.id, consts.text['start'])
+    await bot.send_message(message.chat.id, consts.text['menu'], reply_markup=keyboards.start)
 
 
 @dp.message_handler(commands=['cancel'])
 async def cancel(message):
-    await bot.send_message(message.chat.id, consts.TEXT['menu'], reply_markup=keyboards.keyboard_start)
+    await bot.send_message(message.chat.id, consts.text['menu'], reply_markup=keyboards.start)
 
 
 @dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['next'])
@@ -100,8 +99,8 @@ async def callback_query_handler(query):
 async def message_handler(message):
     # Пользователь скинул аудио
     if message.audio and message.chat.id != ADMINS_CHAT_ID:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, 'Теперь выбери день',
-                                    reply_markup=keyboards.keyboard_day())
+        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.text['choice_day'],
+                                    reply_markup=keyboards.choice_day())
 
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await bot.me).id:
@@ -113,13 +112,12 @@ async def message_handler(message):
                 await core.admin_reply(message)
 
         # Ввод названия песни
-        if message.reply_to_message.text == consts.TEXT['predlozka_choose_song']:
+        if message.reply_to_message.text == consts.text['predlozka_choose_song']:
             await core.search_audio(message)
 
         # Обратная связь
-        if message.reply_to_message.text == consts.TEXT['feedback']:
-            await bot.send_message(message.chat.id, consts.TEXT['feedback_thanks'],
-                                   reply_markup=keyboards.keyboard_start)
+        if message.reply_to_message.text == consts.text['feedback']:
+            await bot.send_message(message.chat.id, consts.text['feedback_thanks'], reply_markup=keyboards.start)
             await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
 
         return
@@ -131,31 +129,25 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == keyboards.btn['what_playing']:
-        playback = await playlist_api.get_now()
-        if not playback:
-            await bot.send_message(message.chat.id, "Не знаю(", reply_markup=keyboards.keyboard_what_playing)
-        else:
-            await bot.send_message(message.chat.id, consts.TEXT['what_playing'].format(*playback),
-                                   reply_markup=keyboards.keyboard_what_playing)
+        await core.song_now(message)
 
     # Кнопка 'Предложить песню'
     elif message.text == keyboards.btn['predlozka'] or message.text == '/song':
-        await bot.send_message(message.chat.id, consts.TEXT['predlozka_choose_song'],
-                               reply_markup=types.ForceReply())
-        await bot.send_message(message.chat.id, consts.TEXT['predlozka_inline_search'],
-                               reply_markup=keyboards.keyboard_predlozka_inline)
+        await bot.send_message(message.chat.id, consts.text['predlozka_choose_song'], reply_markup=types.ForceReply())
+        await bot.send_message(message.chat.id, consts.text['predlozka_inline_search'],
+                               reply_markup=keyboards.predlozka_inline)
 
-    # Кнопка 'Хочу в команду'
+    # Кнопка 'Обратная связь'
     elif message.text == keyboards.btn['feedback']:
-        await bot.send_message(message.chat.id, consts.TEXT['feedback'], reply_markup=types.ForceReply())
+        await bot.send_message(message.chat.id, consts.text['feedback'], reply_markup=types.ForceReply())
 
+    # Кнопка 'Помощь'
     elif message.text == keyboards.btn['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.help['first_msg'],
-                               reply_markup=keyboards.keyboard_help)
+        await bot.send_message(message.chat.id, consts.help['first_msg'], reply_markup=keyboards.choice_help)
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        await bot.send_message(message.chat.id, consts.TEXT['unknown_cmd'], reply_markup=keyboards.keyboard_start)
+        await bot.send_message(message.chat.id, consts.text['unknown_cmd'], reply_markup=keyboards.start)
 
 
 @dp.inline_handler()
@@ -165,9 +157,8 @@ async def query_text(inline_query):
 
 @dp.edited_message_handler()
 async def edited_message(message):
-    if message.reply_to_message is None:
-        return
-    if message.reply_to_message.text == consts.TEXT['predlozka_choose_song']:
+    if message.reply_to_message is not None and \
+       message.reply_to_message.text == consts.text['predlozka_choose_song']:
         await message_handler(message)
 
 

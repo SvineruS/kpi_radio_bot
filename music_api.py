@@ -32,7 +32,8 @@ async def search_text(name, attempt2=False):
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
-            assert resp.status == 200
+            if resp.status != 200:
+                return False
 
             s = await resp.json()
             s = s['response']['sections']
@@ -43,7 +44,7 @@ async def search_text(name, attempt2=False):
 
             if not s['hits']:
                 if attempt2:
-                    return 'Ошибка поиска'
+                    return False
                 name = name.split('- ')[-1]
                 return await search_text(name, True)
 
@@ -51,7 +52,8 @@ async def search_text(name, attempt2=False):
             title = s['full_title']
 
             async with session.get(s['url']) as resp2:
-                assert resp.status == 200
+                if resp2.status != 200:
+                    return False
 
                 t = await resp2.text()
                 t = BeautifulSoup(t, "html.parser")
