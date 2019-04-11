@@ -1,15 +1,17 @@
+import asyncio
+import logging
+import ssl
 import sys
 import traceback
-import ssl
-import logging
-import asyncio
-from aiohttp import web
+
 from aiogram import types, Dispatcher
-from config import *
-from bot_handlers import dp
+from aiohttp import web
+
 import core
 import music_api
 import scheduler
+from bot_handlers import dp
+from config import *
 
 app = web.Application()
 routes = web.RouteTableDef()
@@ -22,7 +24,10 @@ async def gettext(request):
     name = request.match_info.get('name')
     if not name:
         return web.Response(text="")
-    return web.Response(text=await music_api.search_text(name))
+    text = await music_api.search_text(name)
+    if not text:
+        text = 'Ошибка поиска'
+    return web.Response(text=text)
 
 
 @routes.get("/playlist")
@@ -45,8 +50,8 @@ async def history_save(request):
 async def webhook_handle(request):
     update = await request.json()
     update = types.Update(**update)
-    Bot.set_current(dp.bot)
-    Dispatcher.set_current(dp)
+    Bot.set_current(dp.bot)     # todo test without this
+    Dispatcher.set_current(dp)  # todo and this
     try:
         await dp.process_update(update)
     except Exception:

@@ -1,5 +1,6 @@
 import pymongo
-from config import *
+
+from config import DB_URL
 
 client = pymongo.MongoClient(DB_URL)
 db = client.get_database()["kpiradio"]
