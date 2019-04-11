@@ -1,5 +1,5 @@
 from datetime import datetime
-from urllib.parse import quote_plus
+from urllib.parse import quote
 
 from aiogram import types
 
@@ -104,7 +104,7 @@ def admin(day: int, time: int, audio_name: str, user_id: int) -> types.InlineKey
         ),
         types.InlineKeyboardButton(
             text='Посмотреть текст',
-            url=f'https://{HOST}/gettext/{quote_plus(audio_name[0:100])}'
+            url=f'https://{HOST}/gettext/{quote(audio_name[0:100])}'
         ),
         types.InlineKeyboardButton(
             text='Проверить',
