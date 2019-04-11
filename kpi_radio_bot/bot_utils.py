@@ -122,5 +122,5 @@ def check_bad_words(text: str) -> str:
 
 
 def reboot() -> None:
-    os.system(r'cmd.exe /C start ' + os.getcwd() + '\\update.bat')
+    os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
 

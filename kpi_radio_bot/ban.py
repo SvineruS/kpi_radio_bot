@@ -1,8 +1,8 @@
 from time import time
 
-from config import STUFF_PATH
+from config import PATH_STUFF
 
-DB_PATH = STUFF_PATH / 'banned.db'
+DB_PATH = PATH_STUFF / 'banned.db'
 
 
 def ban_user(user_id, ban_time_min):
