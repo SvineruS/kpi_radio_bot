@@ -6,13 +6,15 @@ import bot_utils
 import ban
 import music_api
 import playlist_api
+import keyboards
+import consts
 
 
 async def predlozka_day(query, day: int):
     await bot.edit_message_caption(
         chat_id=query.message.chat.id, message_id=query.message.message_id,
-        caption=bot_utils.TEXT['days1'][day] + ', отлично. Теперь выбери время',
-        reply_markup=bot_utils.keyboard_time(day)
+        caption=consts.TEXT['days1'][day] + ', отлично. Теперь выбери время',
+        reply_markup=keyboards.keyboard_time(day)
     )
 
 
@@ -25,22 +27,22 @@ async def predlozka_time(query, day: int, time: int):
         return await bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
                                       datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M"))
 
-    admin_keyboard = bot_utils.keyboard_admin(day, time, name, user.id)
+    admin_keyboard = keyboards.keyboard_admin(day, time, name, user.id)
     now = bot_utils.is_break_now(day, time)
-    text_datetime = bot_utils.TEXT['days1'][day] + ', ' + bot_utils.get_break_name(time)
+    text_datetime = consts.TEXT['days1'][day] + ', ' + bot_utils.get_break_name(time)
     text_admin = ('‼️' if now else '❗️') + \
                  'Новый заказ - ' + text_datetime + \
                  (' (сейчас!)' if now else '') + \
                  ' от ' + bot_utils.get_user_name(user)
 
     await bot.edit_message_caption(
-        caption=bot_utils.TEXT['predlozka_moderating'].format(text_datetime),
+        caption=consts.TEXT['predlozka_moderating'].format(text_datetime),
         chat_id=query.message.chat.id,
         message_id=query.message.message_id,
         reply_markup=types.InlineKeyboardMarkup()
     )
 
-    await bot.send_message(user.id, bot_utils.TEXT['menu'], reply_markup=bot_utils.keyboard_start)
+    await bot.send_message(user.id, consts.TEXT['menu'], reply_markup=keyboards.keyboard_start)
 
     await bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, text_admin,
                          reply_markup=admin_keyboard)
@@ -50,9 +52,9 @@ async def admin_cancel(query, day: int, time: int, status: bool):
     user = query.message.caption_entities[0].user
     name = bot_utils.get_audio_name(query.message.audio)
 
-    admin_keyboard = bot_utils.keyboard_admin(day, time, name, user.id)
+    admin_keyboard = keyboards.keyboard_admin(day, time, name, user.id)
     now = bot_utils.is_break_now(day, time)
-    text_datetime = bot_utils.TEXT['days1'][day] + ', ' + bot_utils.get_break_name(time)
+    text_datetime = consts.TEXT['days1'][day] + ', ' + bot_utils.get_break_name(time)
     text_admin = ('‼️' if now else '❗️') + \
                  'Новый заказ - ' + text_datetime + \
                  (' (сейчас!)' if now else '') + \
@@ -101,16 +103,16 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
     if status:
         to = bot_utils.get_music_path(day, time) / (name + '.mp3')
         bot_utils.create_dirs(to)
-        
+
         await query.message.audio.download(to, timeout=60)
         await bot_utils.write_sender_tag(to, query.message.caption_entities[0].user)
-        
+
         if bot_utils.is_break_now(day, time):
             data = await playlist_api.get_suggestion_data()  # получаем позицию [0] и время ожидания [1]
             waiting_time = str(data[1]) + bot_utils.case_by_num(data[1], ' минуту', ' минуты', ' минут')
-            msg = bot_utils.TEXT['predlozka_ok_next'].format(name, 'прямо сейчас!' if data[0] == -2
-                                                             else f'примерно через {waiting_time}')
-            
+            msg = consts.TEXT['predlozka_ok_next'].format(
+                name, 'прямо сейчас!' if data[0] == -2 else f'примерно через {waiting_time}')
+
             await music_api.radioboss_api(action='inserttrack', filename=to, pos=data[0])
             await bot.edit_message_caption(caption=new_text + f"\nОжидание: {waiting_time}",
                                            chat_id=query.message.chat.id, message_id=query.message.message_id,
@@ -118,15 +120,15 @@ async def admin_choice(query, status: bool, user_id, day: int, time: int):
                                            )
             await bot.send_message(user_id, msg)
         else:
-            await bot.send_message(user_id, bot_utils.TEXT['predlozka_ok'].format(name))
+            await bot.send_message(user_id, consts.TEXT['predlozka_ok'].format(name))
     else:
-        await bot.send_message(user_id, bot_utils.TEXT['predlozka_neok'].format(name))
+        await bot.send_message(user_id, consts.TEXT['predlozka_neok'].format(name))
 
 
 async def predlozka_day_back(query):
     await bot.edit_message_caption(
         chat_id=query.message.chat.id, message_id=query.message.message_id,
-        caption='Выбери день', reply_markup=bot_utils.keyboard_day()
+        caption='Выбери день', reply_markup=keyboards.keyboard_day()
     )
 
 
@@ -135,13 +137,13 @@ async def predlozka_cancel(query):
         chat_id=query.message.chat.id, message_id=query.message.message_id,
         caption='Ну ок(', reply_markup=types.InlineKeyboardMarkup()
     )
-    await bot.send_message(query.message.chat.id, bot_utils.TEXT['menu'], reply_markup=bot_utils.keyboard_start)
+    await bot.send_message(query.message.chat.id, consts.TEXT['menu'], reply_markup=keyboards.keyboard_start)
 
 
 async def song_prev(query):
     playback = await playlist_api.get_prev()
     if not playback:
-        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_prev'])
+        return await bot.send_message(query.message.chat.id, consts.TEXT['song_no_prev'])
     text = song_format(playback)
     await bot.send_message(query.message.chat.id, text)
 
@@ -149,7 +151,7 @@ async def song_prev(query):
 async def song_next(query):
     playback = await playlist_api.get_next()
     if not playback:
-        return await bot.send_message(query.message.chat.id, bot_utils.TEXT['song_no_next'])
+        return await bot.send_message(query.message.chat.id, consts.TEXT['song_no_next'])
     text = song_format(playback)
     await bot.send_message(query.message.chat.id, text)
 
@@ -164,8 +166,8 @@ def song_format(playback):
 
 async def help_change(query, key):
     try:
-        await bot.edit_message_text(bot_utils.TEXT['help'][key], query.message.chat.id, query.message.message_id,
-                                    reply_markup=bot_utils.keyboard_help)
+        await bot.edit_message_text(consts.TEXT['help'][key], query.message.chat.id, query.message.message_id,
+                                    reply_markup=keyboards.keyboard_help)
     except:
         pass
 
@@ -202,7 +204,7 @@ async def search_audio(message):
     if not audio:
         await bot.send_message(message.chat.id, 'Ничего не нашел( \n'
                                                 'Можешь загрузить свое аудио сам или переслать от другого бота!',
-                               reply_markup=bot_utils.keyboard_start)
+                               reply_markup=keyboards.keyboard_start)
     else:
         audio = audio[0]
         try:
@@ -210,13 +212,13 @@ async def search_audio(message):
                 message.chat.id,
                 music_api.get_download_url(audio['url'], audio['artist'], audio['title']),
                 'Выбери день (или отредактируй название)',
-                reply_markup=bot_utils.keyboard_day()
+                reply_markup=keyboards.keyboard_day()
             )
 
         except Exception as ex:
             logging.error(f'send audio: {ex} {audio["url"]}')
-            await bot.send_message(message.chat.id, bot_utils.TEXT['error'],
-                                   reply_markup=bot_utils.keyboard_start)
+            await bot.send_message(message.chat.id, consts.TEXT['error'],
+                                   reply_markup=keyboards.keyboard_start)
 
 
 async def inline_search(inline_query):
