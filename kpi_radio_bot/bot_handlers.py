@@ -2,13 +2,14 @@
 
 
 from aiogram import Dispatcher, types, executor
-from config import *
-import db
+
 import bot_utils
-import keyboards
 import consts
-import music_api
 import core
+import db
+import keyboards
+import music_api
+from config import *
 
 dp = Dispatcher(bot)
 

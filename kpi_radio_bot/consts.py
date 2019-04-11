@@ -122,12 +122,12 @@ paths = {
 
 def _time(s):
     h, m = s.split(':')
-    return h*60 + m
+    return int(h)*60 + int(m)
 
 
 broadcast_times_ = {
     day_k: {
-        (_time(time) for time in num_v)
+        num_k: tuple(_time(time) for time in num_v)
         for num_k, num_v in day_v.items()
     } for day_k, day_v in broadcast_times.items()
 }

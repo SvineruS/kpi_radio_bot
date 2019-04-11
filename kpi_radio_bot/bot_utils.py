@@ -65,7 +65,7 @@ def get_user_name(user_obj: types.User) -> str:
     return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
 
 
-def case_by_num(num, c1, c2, c3):
+def case_by_num(num: int, c1: str, c2: str, c3: str) -> str:
     if 11 <= num <= 14:
         return c3
     if num % 10 == 1:

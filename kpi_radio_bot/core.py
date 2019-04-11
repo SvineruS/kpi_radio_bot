@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime
+
 from aiogram import types
-from config import *
-import bot_utils
+
 import ban
+import bot_utils
+import consts
+import keyboards
 import music_api
 import playlist_api
-import keyboards
-import consts
+from config import *
 
 
 async def predlozka_day(query, day: int):

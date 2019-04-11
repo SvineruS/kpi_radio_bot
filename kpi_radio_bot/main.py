@@ -1,15 +1,18 @@
+import asyncio
 import logging
+import ssl
 import sys
 import traceback
-import ssl
-import asyncio
-from aiohttp import web
+
 from aiogram import types, Dispatcher
-from config import *
-from bot_handlers import dp
+from aiohttp import web
+
 import core
 import music_api
 import scheduler
+from bot_handlers import dp
+from config import *
+
 
 app = web.Application()
 routes = web.RouteTableDef()
