@@ -10,7 +10,6 @@ def ban_user(user_id, ban_time_min):
     banned = read_ban()
     banned[user_id] = ban_time
     write_ban(banned)
-    return int(ban_time_min)
 
 
 def chek_ban(user_id):

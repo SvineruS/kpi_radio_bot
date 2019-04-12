@@ -7,6 +7,7 @@ from typing import Union
 from aiogram import types
 
 import consts
+import playlist_api
 from config import *
 
 
@@ -50,6 +51,23 @@ def get_break_name(time: int) -> str:
 
 def is_break_now(day: int, time: int) -> bool:
     return day == datetime.today().weekday() and time is get_break_num()
+
+
+async def order_time_left(day, time):
+    break_start, break_finish = consts.broadcast_times_['sunday' if day == 6 else 'elseday'][time]
+    if is_break_now(day, time):
+        last_order = await playlist_api.get_new_order_pos()
+        if not last_order:
+            return 0
+        start = last_order['time_start'].hour * 60 + last_order['time_start'].minute
+    else:
+        try:
+            music_count = len(list(get_music_path(day, time).iterdir()))
+        except FileNotFoundError:
+            music_count = 0
+        start = break_start + music_count * 3   # 3 минуты - средняя длина музычки
+
+    return max(0, break_finish - start)
 
 
 def get_audio_name(audio: types.Audio) -> str:
@@ -119,6 +137,23 @@ def check_bad_words(text: str) -> str:
     if answ:
         return "Нашел это: " + ' '.join(answ)
     return "Все ок вродь"
+
+
+def write_sender_tag(path, user_obj):
+    name = get_user_name(user_obj)
+    playlist_api.write_tag(path, name)
+
+
+def read_sender_tag(path):
+    return playlist_api.read_tag(path)
+
+
+def song_format(playback):
+    text = [
+        f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
+        for track in playback
+    ]
+    return '\n'.join(text)
 
 
 def reboot() -> None:

@@ -2,17 +2,18 @@ import asyncio
 import aioschedule
 from core import send_live_begin
 from bot_utils import delete_old_orders
+from consts import broadcast_times
 
 
 async def start():
     aioschedule.every().day.at("23:00").do(delete_old_orders)
 
-    for index, time in enumerate(('8:00', '10:05', '12:00', '13:55', '15:50', '17:50')):
+    for num, (time, _) in broadcast_times['elseday'].items():
         for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
-            getattr(aioschedule.every(), day).at(time).do(send_live_begin, index)
+            getattr(aioschedule.every(), day).at(time).do(send_live_begin, num)
 
-    aioschedule.every().sunday.at('10:00').do(send_live_begin, 0)
-    aioschedule.every().sunday.at('18:00').do(send_live_begin, 5)
+    for num, (time, _) in broadcast_times['sunday'].items():
+        aioschedule.every().sunday.at(time).do(send_live_begin, num)
 
     while True:
         await aioschedule.run_pending()
