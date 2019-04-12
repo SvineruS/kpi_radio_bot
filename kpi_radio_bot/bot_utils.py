@@ -138,7 +138,7 @@ def delete_file(path: Path) -> None:
         logging.error(f'delete file: {ex} {path}')
 
 
-async def delete_old_orders(day=None) -> None:
+def delete_old_orders(day=None) -> None:
     if not day:
         day = datetime.now().weekday()
     src = str(get_music_path(day))       # заказы

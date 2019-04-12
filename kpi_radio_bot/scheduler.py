@@ -6,7 +6,7 @@ from consts import broadcast_times
 
 
 async def start():
-    aioschedule.every().day.at("23:00").do(delete_old_orders)
+    aioschedule.every().day.at("23:00").do(delete_old_orders_)
 
     for num, (time, _) in broadcast_times['elseday'].items():
         for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
@@ -18,3 +18,7 @@ async def start():
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(10)
+
+
+async def delete_old_orders_():  # пиздец
+    delete_old_orders()
