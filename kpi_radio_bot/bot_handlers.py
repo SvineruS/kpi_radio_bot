@@ -95,7 +95,11 @@ async def callback_query_handler(query):
         await core.help_change(query, cmd[1])
 
     try:
-        await bot.answer_callback_query(query.id)
+        await bot.answer_callback_query(query.id,
+                                        "Радио сейчас активно обновляется. Если у вас не работает какая либо кнопка - "
+                                        "вероятно она устарела (или произошла какая то ошибка). Повторите желаемое "
+                                        "действие сначала (/start), нажимая на актульные кнопки :) "
+                                        "Если ошибка все еще появляется - отпишите)", show_alert=True)  # todo убрать
     except:
         pass
 
@@ -163,7 +167,7 @@ async def query_text(inline_query):
 @dp.edited_message_handler()
 async def edited_message(message):
     if message.reply_to_message is not None and \
-       message.reply_to_message.text == consts.text['order_choose_song']:
+            message.reply_to_message.text == consts.text['order_choose_song']:
         await message_handler(message)
 
 
