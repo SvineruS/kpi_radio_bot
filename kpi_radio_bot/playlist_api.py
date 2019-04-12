@@ -47,8 +47,11 @@ async def get_next():
 
     for track in playlist:
         time_start = track["time_start"].time()
-        if time_min < time_start < time_max:
-            answer.append(track)
+        if time_start < time_min:
+            continue
+        if time_start > time_max:
+            break
+        answer.append(track)
 
     return answer
 
@@ -76,6 +79,8 @@ async def get_playlist():
 
 async def get_new_order_pos():
     playlist = await get_next()
+    if not playlist:
+        return False
     for i in range(len(playlist)-1, -1, -1):
         track = playlist[i]
         if "Заказы" in track["filename"]:
