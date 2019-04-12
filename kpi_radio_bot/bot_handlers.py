@@ -50,34 +50,37 @@ async def ban_handler(message):
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
 
-    # выбрали день
-    if cmd[0] == 'predlozka_day':
-        await core.predlozka_day(query, int(cmd[1]))
+    #
+    # Выбрали день
+    if cmd[0] == 'order_day':
+        await core.order_day_choiced(query, int(cmd[1]))
 
-    # выбрали время
-    elif cmd[0] == 'predlozka':
-        await core.predlozka_time(query, int(cmd[1]), int(cmd[2]))
-
-    # Принять \ подтвердить
-    elif cmd[0] == 'predlozka_answ':
-        await core.admin_choice(query, cmd[1] == 'ok', int(cmd[2]), int(cmd[3]), int(cmd[4]))
-
-    # Отменить выбор
-    elif cmd[0] == 'admin_cancel':
-        await core.admin_cancel(query, int(cmd[1]), int(cmd[2]), cmd[3] == 'ok')
-
-    # Проверить текст
-    if cmd[0] == 'check_text':
-        await core.admin_check_text(query)
+    # Выбрали время
+    elif cmd[0] == 'order_time':
+        await core.order_time_choiced(query, int(cmd[1]), int(cmd[2]))
 
     # Кнопка назад при выборе времени
-    elif cmd[0] == 'predlozka_back_day':
-        await core.predlozka_day_back(query)
+    elif cmd[0] == 'order_back_day':
+        await core.oder_day_unchoiced(query)
 
     # Кнопка отмены при выборе дня
-    elif cmd[0] == 'predlozka_cancel':
-        await core.predlozka_cancel(query)
+    elif cmd[0] == 'order_cancel':
+        await core.order_cancel(query)
 
+    # Выбрал время но туда не влезет
+    elif cmd[0] == 'order_notime':
+        await bot.answer_callback_query(query.id, consts.text['order_notime'])
+
+    #
+    # Принять / отклонить
+    elif cmd[0] == 'admin_choice':
+        await core.admin_choice(query, int(cmd[1]), int(cmd[2]), cmd[3])
+
+    # Отменить выбор
+    elif cmd[0] == 'admin_unchoice':
+        await core.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
+
+    #
     # Кнопка "предыдущие треки" в сообщении "что играет"
     elif cmd[0] == 'song_prev':
         await core.song_prev(query)
@@ -86,12 +89,17 @@ async def callback_query_handler(query):
     elif cmd[0] == 'song_next':
         await core.song_next(query)
 
+    #
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
         await core.help_change(query, cmd[1])
 
     try:
-        await bot.answer_callback_query(query.id)
+        await bot.answer_callback_query(query.id,
+                                        "Радио сейчас активно обновляется. Если у вас не работает какая либо кнопка - "
+                                        "вероятно она устарела (или произошла какая то ошибка). Повторите желаемое "
+                                        "действие сначала (/start), нажимая на актульные кнопки :) "
+                                        "Если ошибка все еще появляется - отпишите)", show_alert=True)  # todo убрать
     except:
         pass
 
@@ -100,8 +108,8 @@ async def callback_query_handler(query):
 async def message_handler(message):
     # Пользователь скинул аудио
     if message.audio and message.chat.id != ADMINS_CHAT_ID:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.text['choice_day'],
-                                    reply_markup=keyboards.choice_day())
+        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.text['order_choose_day'],
+                                    reply_markup=await keyboards.choice_day())
 
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await bot.me).id:
@@ -113,7 +121,7 @@ async def message_handler(message):
                 await core.admin_reply(message)
 
         # Ввод названия песни
-        if message.reply_to_message.text == consts.text['predlozka_choose_song']:
+        if message.reply_to_message.text == consts.text['order_choose_song']:
             await core.search_audio(message)
 
         # Обратная связь
@@ -133,10 +141,10 @@ async def message_handler(message):
         await core.song_now(message)
 
     # Кнопка 'Предложить песню'
-    elif message.text == keyboards.btn['predlozka'] or message.text == '/song':
-        await bot.send_message(message.chat.id, consts.text['predlozka_choose_song'], reply_markup=types.ForceReply())
-        await bot.send_message(message.chat.id, consts.text['predlozka_inline_search'],
-                               reply_markup=keyboards.predlozka_inline)
+    elif message.text == keyboards.btn['order'] or message.text == '/song':
+        await bot.send_message(message.chat.id, consts.text['order_choose_song'], reply_markup=types.ForceReply())
+        await bot.send_message(message.chat.id, consts.text['order_inline_search'],
+                               reply_markup=keyboards.order_inline)
 
     # Кнопка 'Обратная связь'
     elif message.text == keyboards.btn['feedback']:
@@ -144,7 +152,7 @@ async def message_handler(message):
 
     # Кнопка 'Помощь'
     elif message.text == keyboards.btn['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.help['first_msg'], reply_markup=keyboards.choice_help)
+        await bot.send_message(message.chat.id, consts.helps['first_msg'], reply_markup=keyboards.choice_help)
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
@@ -159,7 +167,7 @@ async def query_text(inline_query):
 @dp.edited_message_handler()
 async def edited_message(message):
     if message.reply_to_message is not None and \
-       message.reply_to_message.text == consts.text['predlozka_choose_song']:
+            message.reply_to_message.text == consts.text['order_choose_song']:
         await message_handler(message)
 
 
