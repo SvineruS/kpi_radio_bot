@@ -50,8 +50,8 @@ async def history_save(request):
 async def webhook_handle(request):
     update = await request.json()
     update = types.Update(**update)
-    Bot.set_current(dp.bot)     # todo test without this
-    Dispatcher.set_current(dp)  # todo and this
+    Bot.set_current(dp.bot)  # без этого не работает
+    Dispatcher.set_current(dp)
     try:
         await dp.process_update(update)
     except Exception:
