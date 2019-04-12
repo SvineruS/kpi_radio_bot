@@ -67,21 +67,18 @@ async def callback_query_handler(query):
     elif cmd[0] == 'order_cancel':
         await core.order_cancel(query)
 
+    # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
         await bot.answer_callback_query(query.id, consts.text['order_notime'])
 
     #
     # Принять / отклонить
     elif cmd[0] == 'admin_choice':
-        await core.admin_choice(query, cmd[1], int(cmd[2]), int(cmd[3]), int(cmd[4]))
+        await core.admin_choice(query, int(cmd[1]), int(cmd[2]), cmd[3])
 
     # Отменить выбор
     elif cmd[0] == 'admin_unchoice':
         await core.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
-
-    # Проверить текст
-    if cmd[0] == 'check_text':
-        await core.admin_check_text(query)
 
     #
     # Кнопка "предыдущие треки" в сообщении "что играет"
@@ -151,7 +148,7 @@ async def message_handler(message):
 
     # Кнопка 'Помощь'
     elif message.text == keyboards.btn['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.help['first_msg'], reply_markup=keyboards.choice_help)
+        await bot.send_message(message.chat.id, consts.helps['first_msg'], reply_markup=keyboards.choice_help)
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)

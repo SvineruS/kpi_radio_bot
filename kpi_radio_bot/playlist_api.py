@@ -76,12 +76,13 @@ async def get_playlist():
 
 async def get_new_order_pos():
     playlist = await get_next()
-    for i, track in enumerate(playlist):
+    for i in range(len(playlist)-1, -1, -1):
+        track = playlist[i]
         if "Заказы" in track["filename"]:
             if i == 0:              # если последний трек что успеет проиграть это заказ то пизда, вернем False
                 return False
-            return playlist[i-1]    # иначе вернем трек которй будет играть после заказа
-    return playlist[-1]             # если нету заказов - вернуть самый первый трек в очереди
+            return playlist[i+1]    # иначе вернем трек которй будет играть после заказа
+    return playlist[0]              # если нету заказов - вернуть самый первый трек в очереди
 
 
 async def write_tag(path, tag):
