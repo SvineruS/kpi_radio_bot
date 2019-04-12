@@ -37,13 +37,14 @@ for k, v in consts.helps['btns'].items():
 
 async def choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
+    bn = bot_utils.get_break_num()
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
 
-    if bot_utils.get_break_num() is not False:  # кнопка сейчас
+    if bn is not False and (await bot_utils.order_time_left(day, bn)) is not False:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][3],
-            callback_data=_callback('order_time', day, bot_utils.get_break_num())
+            callback_data=_callback('order_time', day, bn)
         ))
     if datetime.now().hour < 22:      # кнопка сегодня
         btns.append(types.InlineKeyboardButton(
