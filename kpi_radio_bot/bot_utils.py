@@ -13,21 +13,11 @@ import music_api
 from config import *
 
 
-# TODO переименовать все нахуй, что это блядь такое
 def get_music_path(day: int, time: int = False) -> Path:
     t = consts.paths['orders']
-    t /= '0{0}_{1}'.format(day + 1, consts.times_name['week_days'][day])
-
-    if time is False:    # сука 0 считается как False
-        return t
-
-    if day == 6:         # В воскресенье только утренний(0) и вечерний эфир(5)
-        t /= consts.times_name['times'][time]
-    elif time < 5:       # До вечернего эфира
-        t /= '{0}.{1}'.format(time, consts.times_name['times'][time])
-    else:                # Вечерний эфир
-        t /= '({0}){1}'.format(day + 1, consts.times_name['week_days'][day])
-
+    t /= '{0} {1}'.format(day + 1, consts.times_name['week_days'][day])
+    if time is not False:    # сука 0 считается как False
+        t /= '{0} {1}'.format(time, consts.times_name['times'][time])
     return t
 
 
