@@ -95,11 +95,7 @@ async def callback_query_handler(query):
         await core.help_change(query, cmd[1])
 
     try:
-        await bot.answer_callback_query(query.id,
-                                        "Радио сейчас активно обновляется. Если у вас не работает какая либо кнопка - "
-                                        "вероятно она устарела (или произошла какая то ошибка). Повторите желаемое "
-                                        "действие сначала (/start), нажимая на актульные кнопки :) "
-                                        "Если ошибка все еще появляется - отпишите)", show_alert=True)  # todo убрать
+        await bot.answer_callback_query(query.id)
     except:
         pass
 
