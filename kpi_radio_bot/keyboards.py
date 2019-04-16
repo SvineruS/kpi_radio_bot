@@ -41,7 +41,7 @@ async def choice_day() -> types.InlineKeyboardMarkup:
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
 
-    if bn is not False and (await bot_utils.order_time_left(day, bn)) is not False:  # кнопка сейчас если эфир+успевает
+    if bn is not False and (await bot_utils.order_time_left(day, bn)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][3],
             callback_data=_callback('order_time', day, bn)
