@@ -108,7 +108,7 @@ times_name = {
 broadcast_times = {
     #  num  start     stop
     'sunday': {
-        0: ('11:15', '18:00'),
+        0: ('12:00', '18:00'),
         5: ('18:00', '22:00')
     },
     'elseday': {
