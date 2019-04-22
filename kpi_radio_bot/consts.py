@@ -90,7 +90,7 @@ bad_words = [
     'пидор', 'пидар',
     'сука', 'суку',
     'гандон',
-    'fuck'
+    'fuck', 'bitch', 'shit', 'dick'
 ]
 
 times_name = {
