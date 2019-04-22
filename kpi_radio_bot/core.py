@@ -143,7 +143,8 @@ async def admin_ban(message):
         return await bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
     cmd = message.get_args()
-    user = message.reply_to.caption_entities[0].user if message.reply_to.audio else message.reply_to.forward_from
+    user = message.reply_to_message.caption_entities[0].user \
+        if message.reply_to_message.audio else message.reply_to_message.forward_from
     ban_time = int(cmd[1]) if len(cmd) >= 1 else 60 * 24
     reason = (" Бан по причине: <i>" + ' '.join(cmd[2:]) + "</i>") if len(cmd) >= 2 else ""
     ban.ban_user(user.id, ban_time)
