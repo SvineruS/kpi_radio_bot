@@ -61,14 +61,14 @@ async def choice_day() -> types.InlineKeyboardMarkup:
     return keyboard
 
 
-async def choice_time(day: int) -> types.InlineKeyboardMarkup:
+async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
 
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
         free_mins = await bot_utils.order_time_left(day, time_)
-        if free_mins == 0:
+        if free_mins == 0 and attempts > 0:
             return types.InlineKeyboardButton(
                 text='❌' + bot_utils.get_break_name(time_),
-                callback_data=_callback('order_notime')
+                callback_data=_callback('order_notime', day, attempts)
             )
         return types.InlineKeyboardButton(
                 text=('⚠' if free_mins < 5 else '') + bot_utils.get_break_name(time_),

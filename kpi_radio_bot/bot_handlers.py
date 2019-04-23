@@ -69,6 +69,8 @@ async def callback_query_handler(query):
 
     # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
+        await bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
+                                            reply_markup=keyboards.choice_time(int(cmd[1]), int(cmd[2])-1))
         await bot.answer_callback_query(query.id, consts.text['order_notime'])
 
     #
