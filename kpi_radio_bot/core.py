@@ -37,13 +37,7 @@ async def order_time_choiced(query, day: int, time: int):
     await bot.send_message(query.message.chat.id, consts.text['menu'], reply_markup=keyboards.start)
     await bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                          reply_markup=keyboards.admin_choose(day, time))
-
-    await bot.send_message(query.message.chat.id, """
- Привет, спасибо, за заказ! У тебя ведь есть свободные <i>5</i> минут для любимого КПИ, пока мы модерируем песню?
- Нет, серьезно, нам нужно <b>2к голосов</b> на <a href="https://gb.kyivcity.gov.ua/projects/11/2149">этом проекте</a>.
- Только подумай, насколько удобно будет посидеть с розеточкой, вайфачиком на мягеньких пуфиках! Если уже проголосовал - кинь другу. ❤️
- """)
-
+    
 
 async def oder_day_unchoiced(query):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
