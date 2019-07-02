@@ -29,7 +29,7 @@ def get_break_num(time: datetime = None) -> Union[bool, int]:
         day = time.weekday()
     time = time.hour * 60 + time.minute
 
-    times = consts.broadcast_times_['sunday' if day == 6 else 'elseday']
+    times = consts.broadcast_times_[day]
     for num, (time_start, time_stop) in times.items():
         if time_start < time < time_stop:
             return num
@@ -46,7 +46,7 @@ def is_break_now(day: int, time: int) -> bool:
 
 
 async def order_time_left(day, time):
-    break_start, break_finish = consts.broadcast_times_['sunday' if day == 6 else 'elseday'][time]
+    break_start, break_finish = consts.broadcast_times_[day][time]
     if is_break_now(day, time):
         last_order = await playlist_api.get_new_order_pos()
         if not last_order:

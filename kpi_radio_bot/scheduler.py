@@ -8,12 +8,9 @@ from consts import broadcast_times
 async def start():
     aioschedule.every().day.at("23:00").do(delete_old_orders_)
 
-    for num, (time, _) in broadcast_times['elseday'].items():
-        for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'):
-            getattr(aioschedule.every(), day).at(time).do(send_live_begin, num)
-
-    for num, (time, _) in broadcast_times['sunday'].items():
-        aioschedule.every().sunday.at(time).do(send_live_begin, num)
+    for day_num, day_name in enumerate(('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')):
+        for break_num, (break_time_start, _) in broadcast_times[day_num].items():
+            getattr(aioschedule.every(), day_name).at(break_time_start).do(send_live_begin, break_num)
 
     while True:
         await aioschedule.run_pending()

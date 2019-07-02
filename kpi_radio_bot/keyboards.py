@@ -77,7 +77,7 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
 
     today = day == datetime.today().weekday()
     time = datetime.now().hour * 60 + datetime.now().minute
-    times = consts.broadcast_times_['sunday' if day == 6 else 'elseday']
+    times = consts.broadcast_times_[day]
 
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     btns = []

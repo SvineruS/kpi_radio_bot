@@ -42,7 +42,7 @@ async def get_next():
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-    time_max = consts.broadcast_times['sunday' if dt_now.weekday() == 6 else 'elseday'][bn][1]
+    time_max = consts.broadcast_times[dt_now.weekday()][bn][1]
     time_max = datetime.strptime(time_max, '%H:%M').time()
 
     for track in playlist:

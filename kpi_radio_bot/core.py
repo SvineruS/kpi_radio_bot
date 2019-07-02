@@ -69,6 +69,8 @@ async def admin_choice(query, day: int, time: int, status: str):
     if not also['now']:  # если щас не этот эфир то похуй
         return await bot.send_message(user.id, consts.text['order_ok'].format(audio_name))
 
+    # todo check doubles
+
     when_playing = ''
     if status == 'now':  # следующим
         when_playing = 'прямо сейчас!'
@@ -142,7 +144,7 @@ async def admin_ban(message):
     if message.reply_to_message is None:
         return await bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
-    cmd = message.get_args().split(' ', 2)
+    cmd = message.get_args().split(' ', 1)
     user = message.reply_to_message.caption_entities[0].user \
         if message.reply_to_message.audio else message.reply_to_message.forward_from
     ban_time = int(cmd[0]) if len(cmd) >= 1 else 60 * 24
