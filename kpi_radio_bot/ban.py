@@ -12,7 +12,7 @@ def ban_user(user_id, ban_time_min):
     write_ban(banned)
 
 
-def chek_ban(user_id):
+def check_ban(user_id):
     banned = read_ban()
     if user_id not in banned:
         return False

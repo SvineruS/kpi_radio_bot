@@ -61,7 +61,7 @@ async def callback_query_handler(query):
 
     # Кнопка назад при выборе времени
     elif cmd[0] == 'order_back_day':
-        await core.oder_day_unchoiced(query)
+        await core.order_day_unchoiced(query)
 
     # Кнопка отмены при выборе дня
     elif cmd[0] == 'order_cancel':

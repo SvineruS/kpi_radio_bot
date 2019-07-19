@@ -23,7 +23,7 @@ async def order_day_choiced(query, day: int):
 async def order_time_choiced(query, day: int, time: int):
     user = query.from_user
 
-    is_ban = ban.chek_ban(user.id)
+    is_ban = ban.check_ban(user.id)
     if is_ban:
         return await bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
                                       datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M"))
@@ -39,7 +39,7 @@ async def order_time_choiced(query, day: int, time: int):
                          reply_markup=keyboards.admin_choose(day, time))
     
 
-async def oder_day_unchoiced(query):
+async def order_day_unchoiced(query):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
                                    caption='Выбери день', reply_markup=await keyboards.choice_day())
 
