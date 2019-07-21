@@ -20,13 +20,13 @@ async def start_handler(message):
     if message.chat.id < 0:
         return
 
-    await bot.send_message(message.chat.id, consts.text['start'])
-    await bot.send_message(message.chat.id, consts.text['menu'], reply_markup=keyboards.start)
+    await bot.send_message(message.chat.id, consts.TextConstants.START)
+    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
 
 
 @dp.message_handler(commands=['cancel'])
 async def cancel(message):
-    await bot.send_message(message.chat.id, consts.text['menu'], reply_markup=keyboards.start)
+    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
 
 
 @dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['next'])
@@ -71,7 +71,7 @@ async def callback_query_handler(query):
     elif cmd[0] == 'order_notime':
         await bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
                                             reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2])-1))
-        await bot.answer_callback_query(query.id, consts.text['order_notime'])
+        await bot.answer_callback_query(query.id, consts.TextConstants.ORDER_ERR_TOOLATE)
 
     #
     # Принять / отклонить
@@ -106,7 +106,7 @@ async def callback_query_handler(query):
 async def message_handler(message):
     # Пользователь скинул аудио
     if message.audio and message.chat.id != ADMINS_CHAT_ID:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.text['order_choose_day'],
+        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.TextConstants.ORDER_CHOOSE_DAY,
                                     reply_markup=await keyboards.choice_day())
 
     # Форс реплаи
@@ -119,12 +119,12 @@ async def message_handler(message):
                 await core.admin_reply(message)
 
         # Ввод названия песни
-        if message.reply_to_message.text == consts.text['order_choose_song']:
+        if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
             await core.search_audio(message)
 
         # Обратная связь
-        if message.reply_to_message.text == consts.text['feedback']:
-            await bot.send_message(message.chat.id, consts.text['feedback_thanks'], reply_markup=keyboards.start)
+        if message.reply_to_message.text == consts.TextConstants.FEEDBACK:
+            await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS, reply_markup=keyboards.start)
             await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
 
         return
@@ -140,21 +140,21 @@ async def message_handler(message):
 
     # Кнопка 'Предложить песню'
     elif message.text == keyboards.btn['order'] or message.text == '/song':
-        await bot.send_message(message.chat.id, consts.text['order_choose_song'], reply_markup=types.ForceReply())
-        await bot.send_message(message.chat.id, consts.text['order_inline_search'],
+        await bot.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+        await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
                                reply_markup=keyboards.order_inline)
 
     # Кнопка 'Обратная связь'
     elif message.text == keyboards.btn['feedback']:
-        await bot.send_message(message.chat.id, consts.text['feedback'], reply_markup=types.ForceReply())
+        await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
     elif message.text == keyboards.btn['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.helps['first_msg'], reply_markup=keyboards.choice_help)
+        await bot.send_message(message.chat.id, consts.HelpConstants.FIRST_MSG, reply_markup=keyboards.choice_help)
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        await bot.send_message(message.chat.id, consts.text['unknown_cmd'], reply_markup=keyboards.start)
+        await bot.send_message(message.chat.id, consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
 
 
 @dp.inline_handler()
@@ -165,7 +165,7 @@ async def query_text(inline_query):
 @dp.edited_message_handler()
 async def edited_message(message):
     if message.reply_to_message is not None and \
-            message.reply_to_message.text == consts.text['order_choose_song']:
+            message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
         await message_handler(message)
 
 
