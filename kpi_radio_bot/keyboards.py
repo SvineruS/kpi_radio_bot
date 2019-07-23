@@ -31,7 +31,7 @@ what_playing.add(types.InlineKeyboardButton(text='Предыдущие трек�
                  types.InlineKeyboardButton(text='Следующие треки', callback_data='song_next'))
 
 choice_help = types.InlineKeyboardMarkup(row_width=1)
-for k, v in consts.helps['btns'].items():
+for k, v in consts.HelpConstants.BTNS.items():
     choice_help.add(types.InlineKeyboardButton(text=v, callback_data=_callback('help', k)))
 
 
