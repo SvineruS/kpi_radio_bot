@@ -157,6 +157,22 @@ async def admin_ban(message):
     await bot.send_message(user.id, f"Вы были забанены на {ban_time} минут. {reason}")
 
 
+async def admin_set_volume(message):
+    if message.chat.id != ADMINS_CHAT_ID:
+        return
+
+    cmd = message.get_args().split()
+    try:
+        volume_percent = int(cmd[0]) if len(cmd) >= 1 else 100
+        if volume_percent < 0 or volume_percent > 100:
+            raise ValueError
+        await music_api.radioboss_api(cmd=f'setvol {volume_percent}')
+        await message.reply(text=f'Громкость выставлена в {volume_percent}!')
+    except ValueError:
+        await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не `{cmd[0]}`',
+                            parse_mode='Markdown')
+
+
 async def song_now(message):
     playback = await playlist_api.get_now()
     if not playback:

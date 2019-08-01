@@ -46,6 +46,11 @@ async def ban_handler(message):
     await core.admin_ban(message)
 
 
+@dp.message_handler(commands=['vol', 'volume'])
+async def volume_handler(message):
+    await core.admin_set_volume(message)
+
+
 @dp.callback_query_handler()
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
