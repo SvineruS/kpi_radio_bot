@@ -47,7 +47,7 @@ async def ban_handler(message):
 
 
 @dp.message_handler(commands=['vol', 'volume'])
-async def ban_handler(message):
+async def volume_handler(message):
     await core.admin_set_volume(message)
 
 
