@@ -202,9 +202,9 @@ async def timetable(message):
         for break_num, (start, stop) in consts.broadcast_times[day_num].items():
             t += f" {break_num}    {start} {stop} \n"
 
-        # todo
-        # t += "До ближайшего эфира ..."
-        t += "пацаны я потом доделаю спать капец хочу"
+    # todo
+    # t += "До 0ближайшего эфира ..."
+    t += "пацаны я потом доделаю спать капец хочу"
 
     await bot.send_message(message.chat.id, t)
 
