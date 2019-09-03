@@ -195,6 +195,20 @@ async def song_next(query):
     await bot.send_message(query.message.chat.id, bot_utils.song_format(playback[:5]))
 
 
+async def timetable(message):
+    t = ''
+    for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
+        t += f"{day_name} \n"
+        for break_num, (start, stop) in consts.broadcast_times[day_num].items():
+            t += f" {break_num}    {start} {stop} \n"
+
+        # todo
+        # t += "До ближайшего эфира ..."
+        t += "пацаны я потом доделаю спать капец хочу"
+
+    await bot.send_message(message.chat.id, t)
+
+
 async def help_change(query, key):
     try:
         await bot.edit_message_text(getattr(consts.HelpConstants, key.upper()), query.message.chat.id,

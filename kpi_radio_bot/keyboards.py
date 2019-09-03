@@ -14,6 +14,7 @@ btn = {
     'order': '📝Заказать песню',
     'what_playing': '🎧Что играет?',
     'help': '⁉️Помощь',
+    'timetable': '⏱Расписание эфиров',
     'feedback': '🖌Обратная связь',
 }
 
@@ -21,9 +22,9 @@ btn = {
 order_inline = types.InlineKeyboardMarkup()
 order_inline.add(types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat=""))
 
-start = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+start = types.ReplyKeyboardMarkup(resize_keyboard=True)
 start.add(types.KeyboardButton(btn['what_playing']), types.KeyboardButton(btn['order']))
-start.add(types.KeyboardButton(btn['feedback']), types.KeyboardButton(btn['help']))
+start.add(types.KeyboardButton(btn['feedback']), types.KeyboardButton(btn['help']), types.KeyboardButton(btn['timetable']))
 
 what_playing = types.InlineKeyboardMarkup(row_width=2)
 what_playing.add(types.InlineKeyboardButton(text='История', url='https://t.me/rkpi_music'))

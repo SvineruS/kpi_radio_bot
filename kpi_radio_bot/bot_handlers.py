@@ -157,6 +157,10 @@ async def message_handler(message):
     elif message.text == keyboards.btn['help'] or message.text == '/help':
         await bot.send_message(message.chat.id, consts.HelpConstants.FIRST_MSG, reply_markup=keyboards.choice_help)
 
+    # Кнопка 'Расписание'
+    elif message.text == keyboards.btn['timetable']:
+        await core.timetable(message)
+
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
         await bot.send_message(message.chat.id, consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
