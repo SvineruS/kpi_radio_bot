@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import json
 from datetime import datetime
 from typing import Union
 from urllib.parse import quote
@@ -74,7 +75,11 @@ def get_audio_name(audio: types.Audio) -> str:
 
 
 def get_user_name(user_obj: types.User) -> str:
-    return '<a href="tg://user?id={0}">{1}</a>'.format(user_obj.id, user_obj.first_name)
+    return get_user_name_(user_obj.id, user_obj.first_name)
+
+
+def get_user_name_(id_, name):
+    return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
 
 
 async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
@@ -155,14 +160,23 @@ def check_bad_words(text: str) -> list:
     return answ
 
 
-async def write_sender_tag(path, user_obj):
+async def write_sender_tag(path, user_obj, moderation_id):
     # todo сюда айди сообщения в админке, айди заказавшего, имя заказавшего и наверное что то еще
-    name = get_user_name(user_obj)
-    await playlist_api.write_tag(path, name)
+    tag = {
+        'id': user_obj.id,
+        'name': user_obj.first_name,
+        'moderation_id': moderation_id
+    }
+    tag = json.dumps(tag)
+    await playlist_api.write_tag(path, tag)
 
 
 async def read_sender_tag(path):
-    return await playlist_api.read_tag(path)
+    tag = await playlist_api.read_tag(path)
+    try:
+        return json.loads(tag)
+    except:
+        return None
 
 
 def song_format(playback):

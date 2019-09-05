@@ -64,7 +64,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     to = bot_utils.get_music_path(day, time) / (audio_name + '.mp3')
     bot_utils.create_dirs(to)
     await query.message.audio.download(to, timeout=60)
-    await bot_utils.write_sender_tag(to, user)
+    await bot_utils.write_sender_tag(to, user, query.message.message_id)
 
     if not also['now']:  # если щас не этот эфир то похуй
         return await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED.format(audio_name))
@@ -262,8 +262,12 @@ async def send_history(fields):
     if not fields['artist'] and not fields['title']:
         fields['title'] = fields['casttitle']
 
-    sender_name = await bot_utils.read_sender_tag(fields['path'])
-    sender_name = 'Заказал(а) ' + sender_name if sender_name else 'От команды РадиоКпи'
+    sender_name = ''
+    tag = await bot_utils.read_sender_tag(fields['path'])
+
+    if tag:
+        sender_name = bot_utils.get_user_name_(tag['id'], tag['name'])
+        # todo уведомленеи юзеру и редактирование сообщения tag['moderation_id']
 
     f = open(fields['path'], 'rb')
     await bot.send_audio(HISTORY_CHAT_ID, f, sender_name, performer=fields['artist'], title=fields['title'])
