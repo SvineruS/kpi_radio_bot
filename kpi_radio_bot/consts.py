@@ -91,7 +91,8 @@ times_name = {
               'Вечерний эфир'],
 }
 
-broadcast_times = {
+
+broadcast_times = {  # todo короче эту тему лучше сделать как функцию геттер имхо
     #  day:
     #       num:  start, stop
 

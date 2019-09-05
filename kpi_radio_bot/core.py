@@ -200,11 +200,11 @@ async def timetable(message):
     for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
         t += f"{day_name} \n"
         for break_num, (start, stop) in consts.broadcast_times[day_num].items():
-            t += f" {break_num}    {start} {stop} \n"
+            break_name = consts.times_name['times'][break_num]
+            t += f"  {break_name}: {start} - {stop} \n"
 
     # todo
-    # t += "До 0ближайшего эфира ..."
-    t += "пацаны я потом доделаю спать капец хочу"
+    # t += "До ближайшего эфира ..."
 
     await bot.send_message(message.chat.id, t)
 
