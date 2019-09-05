@@ -266,11 +266,11 @@ async def send_history(fields):
     tag = await bot_utils.read_sender_tag(fields['path'])
 
     if tag:
-        sender_name = 'Заказал(а)' + bot_utils.get_user_name_(tag['id'], tag['name'])
+        sender_name = 'Заказал(а) ' + bot_utils.get_user_name_(tag['id'], tag['name'])
         if True:  # todo проверить настройки уведомлений этого юзера
             await bot.send_message(tag['id'], f"Ваш трек {fields['artist']} - {fields['title']} заиграл! \n"
                 "<i>Вы сможете отключить уведомления когда кодеры допишут такой функционал</i>")
-        await bot.edit_message_caption(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
+        await bot.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
     with open(fields['path'], 'rb') as f:
         await bot.send_audio(HISTORY_CHAT_ID, f, sender_name, performer=fields['artist'], title=fields['title'])
