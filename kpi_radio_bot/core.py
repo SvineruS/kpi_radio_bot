@@ -264,6 +264,7 @@ async def send_history(fields):
 
     sender_name = ''
     tag = await bot_utils.read_sender_tag(fields['path'])
+    await playlist_api.write_tag(fields['path'], '')  # Очистить тег что бы уведомление не пришло еще раз
 
     if tag:
         sender_name = 'Заказал(а) ' + bot_utils.get_user_name_(tag['id'], tag['name'])
