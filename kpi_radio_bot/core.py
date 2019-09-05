@@ -268,7 +268,7 @@ async def send_history(fields):
     if tag:
         sender_name = 'Заказал(а) ' + bot_utils.get_user_name_(tag['id'], tag['name'])
         if True:  # todo проверить настройки уведомлений этого юзера
-            await bot.send_message(tag['id'], f"Ваш трек \"<b>{fields['artist']} - {fields['title']}</b>\" заиграл!")
+            await bot.send_message(tag['id'], consts.TextConstants.ORDER_PLAYING.format(f"{fields['artist']} - {fields['title']}"))
         await bot.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
     with open(fields['path'], 'rb') as f:

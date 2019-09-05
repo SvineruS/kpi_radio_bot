@@ -25,6 +25,7 @@ class TextConstants:
     ORDER_ERR_DENIED = 'Ваш заказ <b>{0}</b> отклонен('
     ORDER_ERR_TOOLATE = 'На это время уже точно не успеет'
     ORDER_ERR_ACCEPTED_TOOLATE = 'Мы хотели принять ваш заказ <b>{0}</b>, но он уже не влезет в эфир(('
+    ORDER_PLAYING = 'Ваш заказ <b>{0}</b>" заиграл!'
     WHAT_PLAYING = '⏮ <b>Предыдущий трек: </b> {0}\n'\
         '▶ <b>Сейчас играет: </b> {1}\n'\
         '⏭ <b>Следующий трек: </b> {2}'
