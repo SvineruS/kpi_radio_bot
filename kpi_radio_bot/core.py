@@ -200,8 +200,7 @@ async def timetable(message):
     for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
         t += f"{day_name} \n"
         for break_num, (start, stop) in consts.broadcast_times[day_num].items():
-            break_name = consts.times_name['times'][break_num]
-            t += f"   {start} - {stop}   {break_name} \n"
+            t += f"   {start} - {stop}   {bot_utils.get_break_name(break_num)} \n"
 
     # todo
     # t += "До ближайшего эфира ..."
