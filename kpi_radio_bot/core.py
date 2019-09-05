@@ -41,12 +41,12 @@ async def order_time_choiced(query, day: int, time: int):
 
 async def order_day_unchoiced(query):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption='Выбери день', reply_markup=await keyboards.choice_day())
+                                   caption=consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
 
 async def order_cancel(query):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption='Ну ок(', reply_markup=types.InlineKeyboardMarkup())
+                                   caption=consts.TextConstants.ORDER_CANCELED, reply_markup=types.InlineKeyboardMarkup())
     await bot.send_message(query.message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
 
 
@@ -169,8 +169,7 @@ async def admin_set_volume(message):
         await music_api.radioboss_api(cmd=f'setvol {volume_percent}')
         await message.reply(text=f'Громкость выставлена в {volume_percent}!')
     except ValueError:
-        await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не `{cmd[0]}`',
-                            parse_mode='Markdown')
+        await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
 
 
 async def song_now(message):
@@ -221,21 +220,18 @@ async def search_audio(message):
     audio = await music_api.search(message.text)
 
     if not audio:
-        await bot.send_message(message.chat.id, 'Ничего не нашел( \n'
-                                                'Можешь загрузить свое аудио сам или переслать от другого бота!',
-                               reply_markup=keyboards.start)
-    else:
-        audio = audio[0]
-        try:
-            await bot.send_audio(
-                message.chat.id,
-                music_api.get_download_url(audio['url'], audio['artist'], audio['title']),
-                'Выбери день (или отредактируй название)',
-                reply_markup=await keyboards.choice_day()
-            )
-        except Exception as ex:
-            logging.error(f'send audio: {ex} {audio["url"]}')
-            await bot.send_message(message.chat.id, consts.TextConstants.ERROR, reply_markup=keyboards.start)
+        return await bot.send_message(message.chat.id, consts.TextConstants.SEARCH_FAILED, reply_markup=keyboards.start)
+
+    audio = audio[0]
+    try:
+        await bot.send_audio(
+            message.chat.id,
+            music_api.get_download_url(audio['url'], audio['artist'], audio['title']),
+            consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day()
+        )
+    except Exception as ex:
+        logging.error(f'send audio: {ex} {audio["url"]}')
+        await bot.send_message(message.chat.id, consts.TextConstants.ERROR, reply_markup=keyboards.start)
 
 
 async def inline_search(inline_query):
@@ -267,7 +263,7 @@ async def send_history(fields):
     await playlist_api.write_tag(fields['path'], '')  # Очистить тег что бы уведомление не пришло еще раз
 
     if tag:
-        sender_name = 'Заказал(а) ' + bot_utils.get_user_name_(tag['id'], tag['name'])
+        sender_name = consts.TextConstants.HISTORY_TITLE.format(bot_utils.get_user_name_(tag['id'], tag['name']))
         if True:  # todo проверить настройки уведомлений этого юзера
             await bot.send_message(tag['id'], consts.TextConstants.ORDER_PLAYING.format(f"{fields['artist']} - {fields['title']}"))
         await bot.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)

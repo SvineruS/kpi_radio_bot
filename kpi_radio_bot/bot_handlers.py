@@ -171,12 +171,5 @@ async def query_text(inline_query):
     await core.inline_search(inline_query)
 
 
-@dp.edited_message_handler()
-async def edited_message(message):
-    if message.reply_to_message is not None and \
-            message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
-        await message_handler(message)
-
-
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
