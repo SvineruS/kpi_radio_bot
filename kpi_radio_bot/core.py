@@ -266,7 +266,7 @@ async def send_history(fields):
     tag = await bot_utils.read_sender_tag(fields['path'])
 
     if tag:
-        sender_name = bot_utils.get_user_name_(tag['id'], tag['name'])
+        sender_name = 'Заказал(а)' + bot_utils.get_user_name_(tag['id'], tag['name'])
         # todo уведомленеи юзеру и редактирование сообщения tag['moderation_id']
 
     f = open(fields['path'], 'rb')
