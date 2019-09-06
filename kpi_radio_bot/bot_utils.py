@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import json
+import csv
 from datetime import datetime
 from typing import Union
 from urllib.parse import quote
@@ -17,7 +18,7 @@ from config import *
 def get_music_path(day: int, time: int = False) -> Path:
     t = consts.paths['orders']
     t /= '{0} {1}'.format(day + 1, consts.times_name['week_days'][day])
-    if time is not False:    # сука 0 считается как False
+    if time is not False:  # сука 0 считается как False
         t /= '{0} {1}'.format(time, consts.times_name['times'][time])
     return t
 
@@ -58,7 +59,7 @@ async def order_time_left(day, time):
             music_count = len(list(get_music_path(day, time).iterdir()))
         except FileNotFoundError:
             music_count = 0
-        start = break_start + music_count * 3   # 3 минуты - средняя длина музычки
+        start = break_start + music_count * 3  # 3 минуты - средняя длина музычки
 
     return max(0, break_finish - start)
 
@@ -83,7 +84,6 @@ def get_user_name_(id_, name):
 
 
 async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
-
     async def get_bad_words():
         t = await music_api.search_text(audio_name)
         bw = check_bad_words(t) if t else False
@@ -136,8 +136,8 @@ def delete_file(path: Path) -> None:
 def delete_old_orders(day=None) -> None:
     if not day:
         day = datetime.now().weekday()
-    src = str(get_music_path(day))       # заказы
-    dst = str(consts.paths['archive'])   # архив
+    src = str(get_music_path(day))  # заказы
+    dst = str(consts.paths['archive'])  # архив
 
     if not os.path.exists(dst):
         os.makedirs(dst)
@@ -185,6 +185,12 @@ def song_format(playback):
         for track in playback
     ]
     return '\n'.join(text)
+
+
+def add_moder_stats(*data):
+    with open(PATH_STUFF / 'stats.csv', "w", newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        writer.writerow(data)
 
 
 def reboot() -> None:
