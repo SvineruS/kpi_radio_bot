@@ -148,7 +148,7 @@ async def admin_ban(message):
     cmd = message.get_args().split(' ', 1)
     user = message.reply_to_message.caption_entities[0].user \
         if message.reply_to_message.audio else message.reply_to_message.forward_from
-    ban_time = int(cmd[0]) if len(cmd) >= 1 else 60 * 24
+    ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
     reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
     db.ban_set(user.id, ban_time)
 
@@ -237,13 +237,13 @@ async def search_audio(message):
 
 async def inline_search(inline_query):
     name = inline_query.query
-    audio = await music.search(name)
-    if not audio:
+    audios = await music.search(name)
+    if not audios:
         return await bot.answer_inline_query(inline_query.id, [])
 
     articles = []
-    for i in range(min(50, len(audio))):
-        audio = audio[i]
+    for i in range(min(50, len(audios))):
+        audio = audios[i]
         if not audio or not audio['url']:
             continue
         articles.append(types.InlineQueryResultAudio(

@@ -13,7 +13,7 @@ from config import *
 from utils import broadcast
 
 
-async def radioboss_api(**kwargs) -> Union[Etree, bool]:
+async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
     for key in kwargs:
         url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
