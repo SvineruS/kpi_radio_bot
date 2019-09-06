@@ -49,7 +49,7 @@ async def volume_handler(message):
     await core.admin_set_volume(message)
 
 
-@dp.message_handler(commands=['notification'])
+@dp.message_handler(commands=['notify'])
 async def volume_handler(message):
     status = db.notification_get(message.from_user.id)
     db.notification_set(message.from_user.id, not status)
