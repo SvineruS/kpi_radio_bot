@@ -7,3 +7,6 @@ config.py
 ./git_backup
 test.py
 stuff
+./stuff/*
+
+# научите пользоваться этим умоляю
