@@ -80,7 +80,3 @@ def add_moder_stats(*data):
 
 def reboot() -> None:
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
-
-
-add_moder_stats('kek')
-add_moder_stats('lol')
