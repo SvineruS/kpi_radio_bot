@@ -177,7 +177,9 @@ async def message_handler(message):
 
     else:
         await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-        await bot.send_message(message.chat.id, consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+        await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
+                                caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+
 
 
 @dp.inline_handler()
