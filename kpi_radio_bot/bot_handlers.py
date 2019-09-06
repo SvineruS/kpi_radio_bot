@@ -49,6 +49,15 @@ async def volume_handler(message):
     await core.admin_set_volume(message)
 
 
+@dp.message_handler(commands=['notification'])
+async def volume_handler(message):
+    status = db.notification_get(message.from_user.id)
+    db.notification_set(message.from_user.id, not status)
+    text = "Уведомления <b>отключены</b> \n /notify - включить" if status else \
+           "Уведомления <b>включены</b> \n /notify - выключить"
+    await bot.send_message(message.chat.id, text)
+
+
 @dp.callback_query_handler()
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
