@@ -53,8 +53,8 @@ async def volume_handler(message):
 async def volume_handler(message):
     status = db.notification_get(message.from_user.id)
     db.notification_set(message.from_user.id, not status)
-    text = "Уведомления <b>отключены</b> \n /notify - включить" if status else \
-           "Уведомления <b>включены</b> \n /notify - выключить"
+    text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
+           "Уведомления <b>выключены</b> \n /notify - включить"
     await bot.send_message(message.chat.id, text)
 
 
