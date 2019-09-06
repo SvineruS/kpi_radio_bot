@@ -73,10 +73,14 @@ def song_format(playback):
 
 
 def add_moder_stats(*data):
-    with open(PATH_STUFF / 'stats.csv', "w", newline='') as csv_file:
+    with open(PATH_STUFF / 'stats.csv', "a", newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(data)
 
 
 def reboot() -> None:
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
+
+
+add_moder_stats('kek')
+add_moder_stats('lol')
