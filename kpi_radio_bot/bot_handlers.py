@@ -50,12 +50,19 @@ async def volume_handler(message):
 
 
 @dp.message_handler(commands=['notify'])
-async def volume_handler(message):
+async def notify_handler(message):
     status = db.notification_get(message.from_user.id)
     db.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
            "Уведомления <b>выключены</b> \n /notify - включить"
     await bot.send_message(message.chat.id, text)
+
+
+@dp.message_handler(commands=['stats'])
+async def stats_handler(message):
+    if message.chat.id == ADMINS_CHAT_ID:
+        with open(PATH_STUFF / 'stats.csv') as file:
+            await bot.send_file(message.chat.id, file)
 
 
 @dp.callback_query_handler()
