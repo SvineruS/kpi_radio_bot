@@ -62,7 +62,7 @@ async def notify_handler(message):
 async def stats_handler(message):
     if message.chat.id == ADMINS_CHAT_ID:
         with open(PATH_STUFF / 'stats.csv') as file:
-            await bot.send_file(message.chat.id, file)
+            await bot.send_document(message.chat.id, file)
 
 
 @dp.callback_query_handler()
