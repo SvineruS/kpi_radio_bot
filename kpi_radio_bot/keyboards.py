@@ -3,28 +3,22 @@ from datetime import datetime
 from aiogram import types
 
 import consts
-import bot_utils
+from utils import broadcast
 
 
 def _callback(*args):
     return '-|-'.join([str(i) for i in args])
 
 
-btn = {
-    'order': '📝Заказать песню',
-    'what_playing': '🎧Что играет?',
-    'help': '⁉️Помощь',
-    'timetable': '⏱Расписание эфиров',
-    'feedback': '🖌Обратная связь',
-}
-
+btn = consts.MAIN_MENU_BTNS
 
 order_inline = types.InlineKeyboardMarkup()
 order_inline.add(types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat=""))
 
 start = types.ReplyKeyboardMarkup(resize_keyboard=True)
 start.add(types.KeyboardButton(btn['what_playing']), types.KeyboardButton(btn['order']))
-start.add(types.KeyboardButton(btn['feedback']), types.KeyboardButton(btn['help']), types.KeyboardButton(btn['timetable']))
+start.add(types.KeyboardButton(btn['feedback']), types.KeyboardButton(btn['help']),
+          types.KeyboardButton(btn['timetable']))
 
 what_playing = types.InlineKeyboardMarkup(row_width=2)
 what_playing.add(types.InlineKeyboardButton(text='История', url='https://t.me/rkpi_music'))
@@ -38,21 +32,21 @@ for k, v in consts.HelpConstants.BTNS.items():
 
 async def choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
-    bn = bot_utils.get_break_num()
+    bn = broadcast.get_broadcast_num()
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
 
-    if bn is not False and (await bot_utils.order_time_left(day, bn)) != 0:  # кнопка сейчас если эфир+успевает
+    if bn is not False and (await broadcast.get_broadcast_freetime(day, bn)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][3],
             callback_data=_callback('order_time', day, bn)
         ))
-    if datetime.now().hour < 22:      # кнопка сегодня
+    if datetime.now().hour < 22:  # кнопка сегодня
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][0],
             callback_data=_callback('order_day', day)
         ))
-    for i in range(1, 3):             # завтра (1), послезавтра (2)
+    for i in range(1, 3):  # завтра (1), послезавтра (2)
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][i],
             callback_data=_callback('order_day', (day + i) % 7)
@@ -63,18 +57,17 @@ async def choice_day() -> types.InlineKeyboardMarkup:
 
 
 async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
-
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
-        free_mins = await bot_utils.order_time_left(day, time_)
+        free_mins = await broadcast.get_broadcast_freetime(day, time_)
         if free_mins == 0 and attempts > 0:
             return types.InlineKeyboardButton(
-                text='❌' + bot_utils.get_break_name(time_),
+                text='❌' + broadcast.get_broadcast_name(time_),
                 callback_data=_callback('order_notime', day, attempts)
             )
         return types.InlineKeyboardButton(
-                text=('⚠' if free_mins < 5 else '') + bot_utils.get_break_name(time_),
-                callback_data=_callback('order_time', day, time_)
-            )
+            text=('⚠' if free_mins < 5 else '') + broadcast.get_broadcast_name(time_),
+            callback_data=_callback('order_time', day, time_)
+        )
 
     today = day == datetime.today().weekday()
     time = datetime.now().hour * 60 + datetime.now().minute

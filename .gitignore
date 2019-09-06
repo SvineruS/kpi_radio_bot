@@ -6,4 +6,4 @@ config.py
 *.pem
 ./git_backup
 test.py
-./stuff
+stuff

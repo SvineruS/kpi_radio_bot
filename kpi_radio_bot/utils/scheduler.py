@@ -1,12 +1,14 @@
 import asyncio
+
 import aioschedule
-from core import send_live_begin
-from bot_utils import delete_old_orders
+
 from consts import broadcast_times
+from core import send_live_begin
+from utils.files import move_to_archive
 
 
 async def start():
-    aioschedule.every().day.at("23:00").do(delete_old_orders_)
+    aioschedule.every().day.at("23:00").do(move_to_archive_)
 
     for day_num, day_name in enumerate(('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')):
         for break_num, (break_time_start, _) in broadcast_times[day_num].items():
@@ -17,5 +19,5 @@ async def start():
         await asyncio.sleep(10)
 
 
-async def delete_old_orders_():  # пиздец
-    delete_old_orders()
+async def move_to_archive_():  # пиздец
+    move_to_archive()

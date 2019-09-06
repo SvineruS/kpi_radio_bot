@@ -3,13 +3,11 @@
 
 from aiogram import Dispatcher, types, executor
 
-import bot_utils
 import consts
 import core
-import db
 import keyboards
-import music_api
 from config import *
+from utils import other, db, radioboss
 
 dp = Dispatcher(bot)
 
@@ -31,14 +29,14 @@ async def cancel(message):
 
 @dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['next'])
 async def next_track_handler(message):
-    r = await music_api.radioboss_api(cmd='next')
+    r = await radioboss.radioboss_api(cmd='next')
     await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
 
 
 @dp.message_handler(lambda m: m.from_user.id in [185520398, 152950074], commands=['update'])
 async def update_handler(message):
     await bot.send_message(message.chat.id, 'Ребутаюсь..')
-    bot_utils.reboot()
+    other.reboot()
 
 
 @dp.message_handler(commands=['ban'])
@@ -75,7 +73,7 @@ async def callback_query_handler(query):
     # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
         await bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
-                                            reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2])-1))
+                                            reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2]) - 1))
         await bot.answer_callback_query(query.id, consts.TextConstants.ORDER_ERR_TOOLATE)
 
     #

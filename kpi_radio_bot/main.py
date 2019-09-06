@@ -8,10 +8,9 @@ from aiogram import types, Dispatcher
 from aiohttp import web
 
 import core
-import music_api
-import scheduler
 from bot_handlers import dp
 from config import *
+from utils import music, scheduler
 
 app = web.Application()
 routes = web.RouteTableDef()
@@ -24,7 +23,7 @@ async def gettext(request):
     name = request.match_info.get('name')
     if not name:
         return web.Response(text="")
-    text = await music_api.search_text(name)
+    text = await music.search_text(name)
     if not text:
         text = 'Ошибка поиска'
     return web.Response(text=text)
@@ -60,7 +59,7 @@ async def webhook_handle(request):
     return web.Response(text='ok')
 
 
-async def on_startup(app):
+async def on_startup(_):
     webhook = await bot.get_webhook_info()
     print(await bot.me)
     if webhook.url != WEBHOOK_URL:
@@ -71,7 +70,7 @@ async def on_startup(app):
     asyncio.ensure_future(scheduler.start())  # its ok
 
 
-async def on_shutdown(app):
+async def on_shutdown(_):
     pass
 
 

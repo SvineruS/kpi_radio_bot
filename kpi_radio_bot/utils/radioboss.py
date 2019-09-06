@@ -1,10 +1,36 @@
+import json
+import logging
 import xml.etree.ElementTree as Etree
 from base64 import b64decode, b64encode
 from datetime import datetime
+from urllib.parse import quote_plus
+from typing import Union
+
+import aiohttp
 
 import consts
-import bot_utils
-from music_api import radioboss_api
+from config import *
+from utils import broadcast
+
+
+async def radioboss_api(**kwargs) -> Union[Etree, bool]:
+    url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
+    for key in kwargs:
+        url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
+    t = ''
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                resp.encoding = 'utf-8'
+                t = await resp.text()
+                if not t:
+                    return False
+                if t == 'OK':
+                    return True
+                return Etree.fromstring(t)
+    except Exception as e:
+        logging.error(f'radioboss: {e} {t} {url}')
+        return False
 
 
 async def get_now():
@@ -36,7 +62,7 @@ async def get_prev():
 async def get_next():
     answer = []
     playlist = await get_playlist()
-    bn = bot_utils.get_break_num()
+    bn = broadcast.get_broadcast_num()
     if not playlist or bn is False:
         return []
 
@@ -81,13 +107,13 @@ async def get_new_order_pos():
     playlist = await get_next()
     if not playlist:
         return False
-    for i in range(len(playlist)-1, -1, -1):
+    for i in range(len(playlist) - 1, -1, -1):
         track = playlist[i]
         if "Заказы" in track["filename"]:
-            if i == len(playlist)-1:  # если последний трек что успеет проиграть это заказ то пизда, вернем False
+            if i == len(playlist) - 1:  # если последний трек что успеет проиграть это заказ то пизда, вернем False
                 return False
-            return playlist[i+1]      # иначе вернем трек которй будет играть после заказа
-    return playlist[0]                # если нету заказов - вернуть самый первый трек в очереди
+            return playlist[i + 1]  # иначе вернем трек которй будет играть после заказа
+    return playlist[0]  # если нету заказов - вернуть самый первый трек в очереди
 
 
 async def write_tag(path, tag):
@@ -106,3 +132,21 @@ async def read_tag(path):
     except:
         return False
     return tag
+
+
+async def write_sender_tag(path, user_obj, moderation_id):
+    tag = {
+        'id': user_obj.id,
+        'name': user_obj.first_name,
+        'moderation_id': moderation_id
+    }
+    tag = json.dumps(tag)
+    await write_tag(path, tag)
+
+
+async def read_sender_tag(path):
+    tag = await read_tag(path)
+    try:
+        return json.loads(tag)
+    except:
+        return None
