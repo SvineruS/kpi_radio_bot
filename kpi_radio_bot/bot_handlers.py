@@ -60,9 +60,8 @@ async def notify_handler(message):
 
 @dp.message_handler(commands=['stats'])
 async def stats_handler(message):
-    return
     if message.chat.id == ADMINS_CHAT_ID:
-        with open(PATH_STUFF / 'stats.csv') as file:
+        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
             await bot.send_document(message.chat.id, file)
 
 
