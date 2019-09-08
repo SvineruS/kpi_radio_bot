@@ -73,7 +73,7 @@ def song_format(playback):
 
 
 def add_moder_stats(*data):
-    with open(PATH_STUFF / 'stats.csv', "a", newline='') as csv_file:
+    with open(PATH_STUFF / 'stats.csv', "a", newline='', encoding='utf-8') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(data)
 
