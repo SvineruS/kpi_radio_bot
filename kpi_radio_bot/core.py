@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from datetime import datetime
 
 from aiogram import types
@@ -273,5 +274,18 @@ async def send_history(fields):
         await bot.send_audio(HISTORY_CHAT_ID, f, sender_name, performer=fields['artist'], title=fields['title'])
 
 
-async def send_live_begin(time):
+async def broadcast_begin(time):
     await bot.send_message(HISTORY_CHAT_ID, broadcast.get_broadcast_name(time))
+
+
+async def broadcast_end(day, time):
+    files = broadcast.get_broadcast_path(day, time).iterdir()
+    for file_path in files:
+        tag = await radioboss.read_sender_tag(file)
+        if not tag:
+            continue
+        with open(str(file_path), 'rb') as file:
+            await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
+                                 reply_markup=keyboards.choice_day())
+        asyncio.sleep(3)
+
