@@ -281,7 +281,7 @@ async def broadcast_begin(time):
 async def broadcast_end(day, time):
     files = broadcast.get_broadcast_path(day, time).iterdir()
     for file_path in files:
-        tag = await radioboss.read_sender_tag(file)
+        tag = await radioboss.read_sender_tag(file_path)
         if not tag:
             continue
         with open(str(file_path), 'rb') as file:
