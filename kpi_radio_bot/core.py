@@ -286,6 +286,6 @@ async def broadcast_end(day, time):
             continue
         with open(str(file_path), 'rb') as file:
             await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
-                                 reply_markup=keyboards.choice_day())
+                                 reply_markup=await keyboards.choice_day())
         await asyncio.sleep(3)
 
