@@ -66,7 +66,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     to = broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
     files.create_dirs(to)
     await query.message.audio.download(to, timeout=60)
-    await radioboss.write_sender_tag(to, user, query.message.message_id)
+    await radioboss.write_track_additional_info(to, user, query.message.message_id)
 
     if not also['now']:  # если щас не этот эфир то похуй
         return await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED.format(audio_name))
@@ -261,8 +261,8 @@ async def send_history(fields):
         fields['title'] = fields['casttitle']
 
     sender_name = ''
-    tag = await radioboss.read_sender_tag(fields['path'])
-    await radioboss.write_tag(fields['path'], '')  # Очистить тег что бы уведомление не пришло еще раз
+    tag = await radioboss.read_track_additional_info(fields['path'])
+    await radioboss.clear_track_additional_info(fields['path'])  # Очистить тег что бы уведомление не пришло еще раз
 
     if tag:
         sender_name = consts.TextConstants.HISTORY_TITLE.format(other.get_user_name_(tag['id'], tag['name']))
@@ -281,7 +281,7 @@ async def broadcast_begin(time):
 async def broadcast_end(day, time):
     files = broadcast.get_broadcast_path(day, time).iterdir()
     for file_path in files:
-        tag = await radioboss.read_sender_tag(file_path)
+        tag = await radioboss.read_track_additional_info(file_path)
         if not tag:
             continue
         with open(str(file_path), 'rb') as file:

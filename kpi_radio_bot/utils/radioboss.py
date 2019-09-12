@@ -59,7 +59,7 @@ async def get_prev():
     return answer
 
 
-async def get_next():  # todo выделять треки юзера от которого пришел реквест
+async def get_next():
     answer = []
     playlist = await get_playlist()
     bn = broadcast.get_broadcast_num()
@@ -98,7 +98,6 @@ async def get_playlist():
             'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
             'filename': track['FILENAME'],
             'index': int(track['INDEX']),
-            'sender': parse_sender_tag(track['COMMENT']),
             'is_order': consts.paths['orders'] in track["filename"]
 
         })
@@ -119,31 +118,36 @@ async def get_new_order_pos():
     return playlist[0]  # если нету заказов - вернуть самый первый трек в очереди
 
 
-# todo тут не только инфа отправителя, надо как нить переименовать и переструктурировать
-async def write_sender_tag(path, user_obj, moderation_id):
+# todo тут не только инфа отправителя, надо как нить переименовать (зачеркнуто) и переструктурировать
+async def write_track_additional_info(path, user_obj, moderation_id):
     tag = {
         'id': user_obj.id,
         'name': user_obj.first_name,
         'moderation_id': moderation_id
     }
     tag = json.dumps(tag)
-    tag = b64encode(tag.encode('utf-8')).decode('utf-8')
+    await write_comment_tag(path, tag)
 
+
+async def read_track_additional_info(path):
+    tags = await radioboss_api(action='readtag', fn=path)
+    tag = tags[0].attrib['Comment']
+    try:
+        tag = b64decode(tag).decode('utf-8')
+    except: pass
+    try:
+        return json.loads(tag)
+    except: pass
+
+    # боже какой пиздец, надо убрать это 15.09 todo
+
+
+async def clear_track_additional_info(path):
+    await write_comment_tag(path, '')
+
+
+async def write_comment_tag(path, tag):
     tags = await radioboss_api(action='readtag', fn=path)
     tags[0].attrib['Comment'] = tag
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
     await radioboss_api(action='writetag', fn=path, data=xmlstr)
-
-
-async def read_sender_tag(path):
-    tags = await radioboss_api(action='readtag', fn=path)
-    tag = tags[0].attrib['Comment']
-    return parse_sender_tag(tag)
-
-
-def parse_sender_tag(tag):
-    try:
-        tag = b64decode(tag).decode('utf-8')
-        return json.loads(tag)
-    except:
-        return None
