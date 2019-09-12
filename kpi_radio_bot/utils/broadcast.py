@@ -28,7 +28,7 @@ def is_broadcast_now(day: int, time: int) -> bool:
     return day == datetime.today().weekday() and time is get_broadcast_num()
 
 
-async def get_broadcast_freetime(day, time):
+async def get_broadcast_freetime(day: int, time: int) -> int:
     broadcast_start, broadcast_finish = consts.broadcast_times_[day][time]
     if is_broadcast_now(day, time):
         last_order = await radioboss.get_new_order_pos()
@@ -36,11 +36,8 @@ async def get_broadcast_freetime(day, time):
             return 0
         last_order_start = last_order['time_start'].hour * 60 + last_order['time_start'].minute
     else:
-        try:
-            tracks_count = len(list(get_broadcast_path(day, time).iterdir()))
-        except FileNotFoundError:
-            tracks_count = 0
-        last_order_start = broadcast_start + tracks_count * 3  # 3 минуты - средняя длина трека todo считать нормально
+        tracks_duration = calculate_tracks_duration(get_broadcast_path(day, time))
+        last_order_start = broadcast_start + tracks_duration
 
     return max(0, broadcast_finish - last_order_start)
 
@@ -51,3 +48,17 @@ def get_broadcast_path(day: int, time: int = False) -> Path:
     if time is not False:  # так и должно быть
         t /= '{0} {1}'.format(time, consts.times_name['times'][time])
     return t
+
+
+async def calculate_tracks_duration(path: Path) -> float:
+    try:
+        files = path.iterdir()
+    except FileNotFoundError:
+        return 0
+
+    duration = 0
+    for file in files:
+        tags = await radioboss.radioboss_api(action='readtag', fn=file)
+        duration += int(tags.attrib['Duration'])
+
+    return duration / 1000 / 60  # minutes
