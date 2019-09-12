@@ -40,7 +40,7 @@ async def get_broadcast_freetime(day, time):
             tracks_count = len(list(get_broadcast_path(day, time).iterdir()))
         except FileNotFoundError:
             tracks_count = 0
-        last_order_start = broadcast_start + tracks_count * 3  # 3 минуты - средняя длина трека
+        last_order_start = broadcast_start + tracks_count * 3  # 3 минуты - средняя длина трека todo считать нормально
 
     return max(0, broadcast_finish - last_order_start)
 

@@ -59,7 +59,7 @@ async def get_prev():
     return answer
 
 
-async def get_next():
+async def get_next():  # todo выделять треки юзера от которого пришел реквест
     answer = []
     playlist = await get_playlist()
     bn = broadcast.get_broadcast_num()
@@ -98,6 +98,9 @@ async def get_playlist():
             'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
             'filename': track['FILENAME'],
             'index': int(track['INDEX']),
+            'sender': parse_sender_tag(track['COMMENT']),
+            'is_order': consts.paths['orders'] in track["filename"]
+
         })
 
     return answer
@@ -109,31 +112,14 @@ async def get_new_order_pos():
         return False
     for i in range(len(playlist) - 1, -1, -1):
         track = playlist[i]
-        if "Заказы" in track["filename"]:
+        if track["is_order"]:
             if i == len(playlist) - 1:  # если последний трек что успеет проиграть это заказ то пизда, вернем False
                 return False
             return playlist[i + 1]  # иначе вернем трек которй будет играть после заказа
     return playlist[0]  # если нету заказов - вернуть самый первый трек в очереди
 
 
-async def write_tag(path, tag):
-    tags = await radioboss_api(action='readtag', fn=path)
-    tag = b64encode(tag.encode('utf-8')).decode('utf-8')
-    tags[0].attrib['Comment'] = tag
-    xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
-    await radioboss_api(action='writetag', fn=path, data=xmlstr)
-
-
-async def read_tag(path):
-    tags = await radioboss_api(action='readtag', fn=path)
-    tag = tags[0].attrib['Comment']
-    try:
-        tag = b64decode(tag).decode('utf-8')
-    except:
-        return False
-    return tag
-
-
+# todo тут не только инфа отправителя, надо как нить переименовать и переструктурировать
 async def write_sender_tag(path, user_obj, moderation_id):
     tag = {
         'id': user_obj.id,
@@ -141,12 +127,23 @@ async def write_sender_tag(path, user_obj, moderation_id):
         'moderation_id': moderation_id
     }
     tag = json.dumps(tag)
-    await write_tag(path, tag)
+    tag = b64encode(tag.encode('utf-8')).decode('utf-8')
+
+    tags = await radioboss_api(action='readtag', fn=path)
+    tags[0].attrib['Comment'] = tag
+    xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
+    await radioboss_api(action='writetag', fn=path, data=xmlstr)
 
 
 async def read_sender_tag(path):
-    tag = await read_tag(path)
+    tags = await radioboss_api(action='readtag', fn=path)
+    tag = tags[0].attrib['Comment']
+    return parse_sender_tag(tag)
+
+
+def parse_sender_tag(tag):
     try:
+        tag = b64decode(tag).decode('utf-8')
         return json.loads(tag)
     except:
         return None
