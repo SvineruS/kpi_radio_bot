@@ -61,7 +61,8 @@ async def admin_choice(query, day: int, time: int, status: str):
     other.add_moder_stats(audio_name, query.from_user.username, user.username, status, str(datetime.now()))
 
     if status == 'reject':  # отмена
-        return await bot.send_message(user.id, consts.TextConstants.ORDER_ERR_DENIED.format(audio_name))
+        return await bot.send_message(user.id,
+                                      consts.TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
 
     to = broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
     files.create_dirs(to)
@@ -69,7 +70,8 @@ async def admin_choice(query, day: int, time: int, status: str):
     await radioboss.write_track_additional_info(to, user, query.message.message_id)
 
     if not also['now']:  # если щас не этот эфир то похуй
-        return await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED.format(audio_name))
+        return await bot.send_message(user.id,
+                                      consts.TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
 
     # todo check doubles
 
@@ -83,7 +85,8 @@ async def admin_choice(query, day: int, time: int, status: str):
         last_track = await radioboss.get_new_order_pos()
         if not last_track:  # нету места
             when_playing = 'не успел :('
-            await bot.send_message(user.id, consts.TextConstants.ORDER_ERR_TOOLATE.format(audio_name))
+            await bot.send_message(user.id,
+                                   consts.TextConstants.ORDER_ERR_TOOLATE.format(audio_name, also['text_datetime']))
         else:  # есть место
             minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
             when_playing = f'через {minutes_left} ' + other.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
