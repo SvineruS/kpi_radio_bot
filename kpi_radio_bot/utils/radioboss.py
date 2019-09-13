@@ -98,7 +98,7 @@ async def get_playlist():
             'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
             'filename': track['FILENAME'],
             'index': int(track['INDEX']),
-            'is_order': consts.paths['orders'] in track["FILENAME"]
+            'is_order': str(consts.paths['orders']) in track["FILENAME"]
 
         })
 
