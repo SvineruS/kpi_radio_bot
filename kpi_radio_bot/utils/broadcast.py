@@ -36,7 +36,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
             return 0
         last_order_start = last_order['time_start'].hour * 60 + last_order['time_start'].minute
     else:
-        tracks_duration = calculate_tracks_duration(get_broadcast_path(day, time))
+        tracks_duration = await calculate_tracks_duration(get_broadcast_path(day, time))
         last_order_start = broadcast_start + tracks_duration
 
     return max(0, broadcast_finish - last_order_start)
