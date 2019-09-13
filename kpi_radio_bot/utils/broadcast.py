@@ -59,6 +59,6 @@ async def calculate_tracks_duration(path: Path) -> float:
     duration = 0
     for file in files:
         tags = await radioboss.radioboss_api(action='readtag', fn=file)
-        duration += int(tags.attrib['Duration'])
+        duration += int(tags[0].attrib['Duration'])
 
     return duration / 1000 / 60  # minutes
