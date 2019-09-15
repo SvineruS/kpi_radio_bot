@@ -1,7 +1,6 @@
 import json
 import logging
 import xml.etree.ElementTree as Etree
-from base64 import b64decode, b64encode
 from datetime import datetime
 from urllib.parse import quote_plus
 from typing import Union
@@ -133,13 +132,8 @@ async def read_track_additional_info(path):
     tags = await radioboss_api(action='readtag', fn=path)
     tag = tags[0].attrib['Comment']
     try:
-        tag = b64decode(tag).decode('utf-8')
-    except: pass
-    try:
         return json.loads(tag)
     except: pass
-
-    # боже какой пиздец, надо убрать это 15.09 todo
 
 
 async def clear_track_additional_info(path):
