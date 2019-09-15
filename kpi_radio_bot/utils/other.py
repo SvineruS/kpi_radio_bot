@@ -45,7 +45,8 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
     if not status:
         is_now_mark = '‼️' if now else '❗️'
         bad_words = await get_bad_words()
-        text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words}'
+        is_anime = '🅰️' if await music.is_anime(audio_name) else''
+        text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
     else:
         status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
         moder_name = get_user_name(moder)
@@ -80,3 +81,5 @@ def add_moder_stats(*data):
 
 def reboot() -> None:
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
+
+

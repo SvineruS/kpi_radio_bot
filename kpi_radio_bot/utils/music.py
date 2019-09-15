@@ -1,17 +1,21 @@
 import logging
+from json import loads
 from urllib.parse import quote_plus
 
-import aiohttp
-from bs4 import BeautifulSoup
+from requests_html import AsyncHTMLSession
+
+import consts
+
+asession = AsyncHTMLSession()
 
 
 async def search(name):
-    url = "http://svinua.cf/api/music/?search={}".format(quote_plus(name))
+    url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
+    resp = await asession.get(url)
+    if resp.status_code != 200:
+        return False
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                assert resp.status == 200
-                return await resp.json()
+        return loads(resp.text)
     except Exception as e:
         logging.error(f'search song: {e} {name}')
         return False
@@ -28,35 +32,45 @@ def get_download_url(url, artist=None, title=None):
 
 async def search_text(name, attempt2=False):
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
+    resp = await asession.get(url)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            if resp.status != 200:
-                return False
+    if resp.status_code != 200:
+        return False
 
-            s = await resp.json()
-            s = s['response']['sections']
-            for t in s:
-                if t['type'] == 'song':
-                    s = t
-                    break
+    s = loads(resp.text)
+    s = s['response']['sections']
+    for t in s:
+        if t['type'] == 'song':
+            s = t
+            break
 
-            if not s['hits']:
-                if attempt2:
-                    return False
-                name = name.split('- ')[-1]
-                return await search_text(name, True)
+    if not s['hits']:
+        if attempt2:
+            return False
+        name = name.split('- ')[-1]
+        return await search_text(name, True)
 
-            s = s['hits'][0]['result']
-            title = s['full_title']
+    s = s['hits'][0]['result']
+    title = s['full_title']
 
-            async with session.get(s['url']) as resp2:
-                if resp2.status != 200:
-                    return False
+    resp2 = await asession.get(s['url'])
 
-                t = await resp2.text()
-                t = BeautifulSoup(t, "html.parser")
-                t = t.find("div", class_="lyrics")
-                t = t.get_text()
+    if resp2.status_code != 200:
+        return False
 
-                return title + '\n\n' + t
+    t = resp2.html.find("div.lyrics", first=True).text
+
+    return title + '\n\n' + t
+
+
+async def is_anime(audio_name):
+    youtube = (await asession.get(f"https://www.youtube.com/results?search_query={audio_name}")).text.lower()
+    google = (await asession.get(f"https://www.google.com.ua/search?q={audio_name}")).text.lower()
+
+    return any(anime_word in text
+               for anime_word in consts.anime_words
+               for text in (google, youtube))
+
+
+
+
