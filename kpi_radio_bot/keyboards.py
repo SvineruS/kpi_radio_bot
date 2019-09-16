@@ -38,7 +38,7 @@ async def choice_day() -> types.InlineKeyboardMarkup:
 
     if bn is not False and (await broadcast.get_broadcast_freetime(day, bn)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
-            text=consts.times_name['next_days'][3],
+            text=consts.times_name['next_days'][-1],
             callback_data=_callback('order_time', day, bn)
         ))
     if datetime.now().hour < 22:  # кнопка сегодня
@@ -46,7 +46,7 @@ async def choice_day() -> types.InlineKeyboardMarkup:
             text=consts.times_name['next_days'][0],
             callback_data=_callback('order_day', day)
         ))
-    for i in range(1, 3):  # завтра (1), послезавтра (2)
+    for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
         btns.append(types.InlineKeyboardButton(
             text=consts.times_name['next_days'][i],
             callback_data=_callback('order_day', (day + i) % 7)
