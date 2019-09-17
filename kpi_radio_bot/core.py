@@ -191,7 +191,7 @@ async def admin_set_volume(message):
         await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
 
 
-def admin_stats(message):
+async def admin_stats(message):
     if message.chat.id != ADMINS_CHAT_ID:
         return
 
