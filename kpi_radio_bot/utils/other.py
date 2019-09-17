@@ -84,7 +84,7 @@ def add_moder_stats(*data):
 
 
 def gen_stats_graph():
-    file = open(PATH_STUFF / 'stats.csv')
+    file = open(PATH_STUFF / 'stats.csv', encoding='utf-8-sig')
     records = list(csv.reader(file, delimiter=','))
     file.close()
     dates = set()
