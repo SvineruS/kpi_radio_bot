@@ -83,23 +83,21 @@ def add_moder_stats(*data):
         writer.writerow(data)
 
 
-def gen_stats_graph():
-    file = open(PATH_STUFF / 'stats.csv', encoding='utf-8-sig')
-    records = list(csv.reader(file, delimiter=','))
-    file.close()
-    dates = set()
-    for record in records:
-        dates.add(record[-1][:10])
-        pass
-    dates = sorted(list(dates))
+def gen_stats_graph(n_days=7):
+    with open(PATH_STUFF / 'stats.csv', encoding='utf-8-sig') as file:
+        records = list(csv.reader(file, delimiter=','))
+
+    last_n_days = set(record[-1][:10] for record in records)  # гениальное изобретение by hatomist
+    last_n_days = sorted(list(last_n_days))[-n_days:]  # лист с последними n_days встречающимися датами (yyyy-mm-dd)
 
     cnt = Counter()
-    for record in (record for record in records if record[-1][:10] in dates[-7:]):
-        cnt[record[1]] += 1
+    for record in records:
+        if record[-1][:10] in last_n_days:
+            cnt[record[1]] += 1
+
     fig: figure.Figure = plt.figure(figsize=(12, 10))
     plt.barh(list(cnt.keys()), list(cnt.values()), height=0.8)
-    print(len(cnt.values()))
-    plt.savefig('stats.png', dpi=300)
+    plt.savefig(PATH_STUFF / 'stats.png', dpi=300)
 
 
 def reboot() -> None:

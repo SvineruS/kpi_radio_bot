@@ -191,6 +191,20 @@ async def admin_set_volume(message):
         await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
 
 
+def admin_stats(message):
+    if message.chat.id != ADMINS_CHAT_ID:
+        return
+
+    if 'csv' in message.get_args():
+        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
+            await bot.send_document(message.chat.id, file)
+    else:
+        days = int(message.get_args()) if message.get_args().isdigit() else 7
+        other.gen_stats_graph(days)
+        with open(PATH_STUFF / 'stats.png', 'rb') as file:
+            await bot.send_photo(message.chat.id, file, caption=f'Стата за {days} дн.')
+
+
 async def song_now(message):
     playback = await radioboss.get_now()
     if not playback:

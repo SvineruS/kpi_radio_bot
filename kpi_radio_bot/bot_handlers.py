@@ -51,15 +51,7 @@ async def volume_handler(message):
 
 @dp.message_handler(commands=['stats'])
 async def stats_csv_handler(message):
-    if message.chat.id != ADMINS_CHAT_ID:
-        return
-    if 'csv' in message.get_args():
-        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
-            await bot.send_document(message.chat.id, file)
-    else:
-        other.gen_stats_graph()
-        with open(PATH_STUFF / 'stats.png', 'rb') as file:
-            await bot.send_photo(message.chat.id, file)
+    await core.admin_stats(message)
 
 
 @dp.message_handler(commands=['notify'])
