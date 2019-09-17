@@ -41,7 +41,7 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
             return f'<a href="https://{HOST}/gettext/{quote(audio_name[0:100])}">⚠ </a>' + ', '.join(bw)
         return ''
 
-    now = broadcast.is_broadcast_now(day, time)
+    now = broadcast.is_this_broadcast_now(day, time)
     is_now_text = ' (сейчас!)' if now else ''
     user_name = get_user_name(user)
     text_datetime = consts.times_name['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)

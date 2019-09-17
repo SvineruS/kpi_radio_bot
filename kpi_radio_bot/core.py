@@ -180,15 +180,17 @@ async def admin_set_volume(message):
     if message.chat.id != ADMINS_CHAT_ID:
         return
 
+    if not broadcast.is_broadcast_right_now():
+        await message.reply(text="Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
+
     cmd = message.get_args().split()
-    try:
-        volume_percent = int(cmd[0]) if len(cmd) >= 1 else 100
-        if volume_percent < 0 or volume_percent > 100:
-            raise ValueError
-        await radioboss.radioboss_api(cmd=f'setvol {volume_percent}')
-        await message.reply(text=f'Громкость выставлена в {volume_percent}!')
-    except ValueError:
-        await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
+    if message.get_args().isdigit():
+        volume = int(message.get_args())
+        if 0 < volume < 100:
+            await radioboss.radioboss_api(cmd=f'setvol {volume}')
+            return await message.reply(text=f'Громкость выставлена в {volume}!')
+
+    await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
 
 
 async def admin_stats(message):

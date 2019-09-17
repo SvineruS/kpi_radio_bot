@@ -24,13 +24,17 @@ def get_broadcast_name(time: int) -> str:
     return consts.times_name['times'][time]
 
 
-def is_broadcast_now(day: int, time: int) -> bool:
+def is_this_broadcast_now(day: int, time: int) -> bool:
     return day == datetime.today().weekday() and time is get_broadcast_num()
+
+
+def is_broadcast_right_now() -> bool:
+    return get_broadcast_num() is not False
 
 
 async def get_broadcast_freetime(day: int, time: int) -> int:
     broadcast_start, broadcast_finish = consts.broadcast_times_[day][time]
-    if is_broadcast_now(day, time):
+    if is_this_broadcast_now(day, time):
         last_order = await radioboss.get_new_order_pos()
         if not last_order:
             return 0
