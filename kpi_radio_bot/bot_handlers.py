@@ -176,8 +176,8 @@ async def message_handler(message):
         await core.timetable(message)
 
     else:
-        # await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-        #                         caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+        await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
+                                caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
         await core.feedback(message)
 
 
