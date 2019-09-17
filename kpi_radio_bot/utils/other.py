@@ -94,6 +94,7 @@ def gen_stats_graph(n_days=7):
     for record in records:
         if record[-1][:10] in last_n_days:
             cnt[record[1]] += 1
+    cnt = dict(cnt.most_common())  # сортировка
 
     fig: figure.Figure = plt.figure(figsize=(12, 10))
     plt.barh(list(cnt.keys()), list(cnt.values()), height=0.8)
