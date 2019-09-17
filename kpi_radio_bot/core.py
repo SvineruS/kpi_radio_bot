@@ -169,10 +169,10 @@ async def admin_ban(message):
     elif message.reply_to_message.forward_date:
         if message.reply_to_message.forward_from:
             user = message.reply_to_message.forward_from
-        elif message.message_id in USER2ADMINS_MESSAGES:
+        elif message.reply_to_message.message_id in USER2ADMINS_MESSAGES:
             user, _ = USER2ADMINS_MESSAGES[message.message_id]
         else:
-            return message.reply("Бля, не могу забанить")
+            return await message.reply("Бля, не могу забанить")
     else:
         return
 
