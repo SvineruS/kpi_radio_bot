@@ -279,6 +279,9 @@ async def inline_search(inline_query):
 
 
 async def send_history(fields):
+    if str(consts.paths['archive'] in fields['path']):  # песни с архива не играют на политехнической, только на ютубе
+        return
+
     if not fields['artist'] and not fields['title']:
         fields['title'] = fields['casttitle']
 
