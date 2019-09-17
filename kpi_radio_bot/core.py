@@ -186,7 +186,7 @@ async def admin_set_volume(message):
     cmd = message.get_args().split()
     if message.get_args().isdigit():
         volume = int(message.get_args())
-        if 0 < volume < 100:
+        if 0 <= volume <= 100:
             await radioboss.radioboss_api(cmd=f'setvol {volume}')
             return await message.reply(text=f'Громкость выставлена в {volume}!')
 
