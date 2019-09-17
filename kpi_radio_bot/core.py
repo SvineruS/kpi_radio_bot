@@ -10,6 +10,16 @@ from config import *
 from utils import other, radioboss, music, broadcast, files, db
 
 
+# key value db: admins_message_id: (user_id, user_message_id)
+USER2ADMINS_MESSAGES = {}
+
+
+def add_to_user2admins(admin_msg, user_id, user_msg):
+    USER2ADMINS_MESSAGES[admin_msg] = (user_id, user_msg)
+    while len(USER2ADMINS_MESSAGES) > 500:
+        del USER2ADMINS_MESSAGES[list(USER2ADMINS_MESSAGES.keys())[0]]
+
+
 async def order_day_choiced(query, day: int):
     await bot.edit_message_caption(
         query.message.chat.id, query.message.message_id,
@@ -33,8 +43,9 @@ async def order_time_choiced(query, day: int, time: int):
                                    caption=consts.TextConstants.ORDER_ON_MODERATION.format(also['text_datetime']),
                                    reply_markup=types.InlineKeyboardMarkup())
     await bot.send_message(query.message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
-    await bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
-                         reply_markup=keyboards.admin_choose(day, time))
+    admin_message = await bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
+                                         reply_markup=keyboards.admin_choose(day, time))
+    add_to_user2admins(admin_message.message_id, query.message.chat.id, query.message.message_id)
 
 
 async def order_day_unchoiced(query):
@@ -122,25 +133,28 @@ async def admin_reply(message):
     if message.text and message.text.startswith("!"):  # игнор ответа
         return
 
-    to = txt = None
-    if message.reply_to_message.audio:  # на заказ
-        to = message.reply_to_message.caption_entities[0].user.id
-        txt = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили:"
-
-    if message.reply_to_message.forward_from:  # на отзыв
-        to = message.reply_to_message.forward_from.id
-        txt = "На ваше сообщение ответили: "
-
-    await bot.send_message(to, txt)
+    if message.reply_to_message.message_id in USER2ADMINS_MESSAGES:
+        user, reply_to = USER2ADMINS_MESSAGES[message.reply_to_message.message_id]
+    else:
+        if message.reply_to_message.audio:  # на заказ
+            user = message.reply_to_message.caption_entities[0].user.id
+            txt = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили:"
+        elif message.reply_to_message.forward_from:  # на отзыв
+            user = message.reply_to_message.forward_from.id
+            txt = "На ваше сообщение ответили: "
+        else:
+            return
+        reply_to = None
+        await bot.send_message(user, txt)
 
     if message.audio:
-        await bot.send_audio(to, message.audio.file_id)
+        await bot.send_audio(user, message.audio.file_id, reply_to_message_id=reply_to)
     elif message.sticker:
-        await bot.send_sticker(to, message.sticker.file_id)
+        await bot.send_sticker(user, message.sticker.file_id, reply_to_message_id=reply_to)
     elif message.photo:
-        await bot.send_photo(to, message.photo[-1].file_id, caption=message.caption)
+        await bot.send_photo(user, message.photo[-1].file_id, reply_to_message_id=reply_to, caption=message.caption)
     else:
-        await bot.send_message(to, message.text, parse_mode='markdown')
+        await bot.send_message(user, message.text, reply_to_message_id=reply_to, parse_mode='markdown')
 
 
 async def admin_ban(message):
@@ -218,6 +232,11 @@ async def help_change(query, key):
                                     query.message.message_id, reply_markup=keyboards.choice_help)
     except:
         pass
+
+
+async def feedback(message):
+    admin_message = await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
+    add_to_user2admins(admin_message.message_id, message.chat.id, message.message_id)
 
 
 async def search_audio(message):

@@ -144,7 +144,7 @@ async def message_handler(message):
         # Обратная связь
         if message.reply_to_message.text == consts.TextConstants.FEEDBACK:
             await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS, reply_markup=keyboards.start)
-            await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
+            await core.feedback(message)
 
         return
 
@@ -176,10 +176,9 @@ async def message_handler(message):
         await core.timetable(message)
 
     else:
-        await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
         await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
                                 caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
-
+        await core.feedback(message)
 
 
 @dp.inline_handler()
