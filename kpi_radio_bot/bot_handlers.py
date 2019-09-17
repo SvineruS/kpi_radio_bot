@@ -49,6 +49,12 @@ async def volume_handler(message):
     await core.admin_set_volume(message)
 
 
+@dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['stats_png'])
+async def stats_png(message):
+    other.gen_stats_graph()
+    await bot.send_photo(message.chat.id, PATH_STUFF / 'stats.csv')
+
+
 @dp.message_handler(commands=['notify'])
 async def notify_handler(message):
     status = db.notification_get(message.from_user.id)
