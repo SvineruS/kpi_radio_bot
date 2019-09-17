@@ -183,14 +183,13 @@ async def admin_set_volume(message):
     if not broadcast.is_broadcast_right_now():
         await message.reply(text="Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
 
-    cmd = message.get_args().split()
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
             await radioboss.radioboss_api(cmd=f'setvol {volume}')
             return await message.reply(text=f'Громкость выставлена в {volume}!')
 
-    await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{cmd[0]}</code>')
+    await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
 
 
 async def admin_stats(message):
