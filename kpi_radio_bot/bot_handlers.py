@@ -134,7 +134,7 @@ async def message_handler(message):
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
             # Одмены отвечают
-            if message.reply_to_message.audio or message.reply_to_message.forward_from:
+            if message.reply_to_message.audio or message.reply_to_message.forward_date:  # not None if sender hidden
                 await core.admin_reply(message)
 
         # Ввод названия песни
@@ -176,8 +176,8 @@ async def message_handler(message):
         await core.timetable(message)
 
     else:
-        await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-                                caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+        # await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
+        #                         caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
         await core.feedback(message)
 
 
