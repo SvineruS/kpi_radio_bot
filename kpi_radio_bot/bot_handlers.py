@@ -52,7 +52,7 @@ async def volume_handler(message):
 @dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['stats_png'])
 async def stats_png(message):
     other.gen_stats_graph()
-    await bot.send_photo(message.chat.id, PATH_STUFF / 'stats.csv')
+    await bot.send_photo(message.chat.id, PATH_STUFF / 'stats.png')
 
 
 @dp.message_handler(commands=['notify'])
