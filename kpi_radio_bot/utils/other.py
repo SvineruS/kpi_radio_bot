@@ -9,6 +9,10 @@ import consts
 from config import *
 from utils import music, broadcast
 
+from matplotlib import pyplot as plt
+from matplotlib import figure
+from collections import Counter
+
 
 def get_audio_name(audio: types.Audio) -> str:
     if audio.performer and audio.title:
@@ -77,6 +81,25 @@ def add_moder_stats(*data):
     with open(PATH_STUFF / 'stats.csv', "a", newline='', encoding='utf-8-sig') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(data)
+
+
+def gen_stats_graph():
+    file = open(PATH_STUFF / 'stats.csv')
+    records = list(csv.reader(file, delimiter=','))
+    file.close()
+    dates = set()
+    for record in records:
+        dates.add(record[-1][:10])
+        pass
+    dates = sorted(list(dates))
+
+    cnt = Counter()
+    for record in (record for record in records if record[-1][:10] in dates[-7:]):
+        cnt[record[1]] += 1
+    fig: figure.Figure = plt.figure(figsize=(12, 10))
+    plt.barh(list(cnt.keys()), list(cnt.values()), height=0.8)
+    print(len(cnt.values()))
+    plt.savefig('stats.png', dpi=300)
 
 
 def reboot() -> None:
