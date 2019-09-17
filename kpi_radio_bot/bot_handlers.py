@@ -49,10 +49,17 @@ async def volume_handler(message):
     await core.admin_set_volume(message)
 
 
-@dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['stats_png'])
-async def stats_png(message):
-    other.gen_stats_graph()
-    await bot.send_photo(message.chat.id, PATH_STUFF / 'stats.png')
+@dp.message_handler(commands=['stats'])
+async def stats_csv_handler(message):
+    if message.chat.id != ADMINS_CHAT_ID:
+        return
+    if 'csv' in message.get_args():
+        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
+            await bot.send_document(message.chat.id, file)
+    else:
+        other.gen_stats_graph()
+        with open(PATH_STUFF / 'stats.png', 'rb') as file:
+            await bot.send_photo(message.chat.id, file)
 
 
 @dp.message_handler(commands=['notify'])
@@ -62,13 +69,6 @@ async def notify_handler(message):
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
            "Уведомления <b>выключены</b> \n /notify - включить"
     await bot.send_message(message.chat.id, text)
-
-
-@dp.message_handler(commands=['stats'])
-async def stats_handler(message):
-    if message.chat.id == ADMINS_CHAT_ID:
-        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
-            await bot.send_document(message.chat.id, file)
 
 
 @dp.callback_query_handler()
