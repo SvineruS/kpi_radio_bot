@@ -160,7 +160,7 @@ async def message_handler(message):
 
     # Кнопка 'Помощь'
     elif message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.HelpConstants.FIRST_MSG, reply_markup=keyboards.choice_help)
+        await bot.send_message(message.chat.id, consts.TextConstants.HELP['start'], reply_markup=keyboards.choice_help)
 
     # Кнопка 'Расписание'
     elif message.text == consts.BtnConstants.MENU['timetable']:

@@ -249,7 +249,7 @@ async def timetable(message):
 
 async def help_change(query, key):
     try:
-        await bot.edit_message_text(getattr(consts.HelpConstants, key.upper()), query.message.chat.id,
+        await bot.edit_message_text(consts.TextConstants.HELP[key], query.message.chat.id,
                                     query.message.message_id, reply_markup=keyboards.choice_help)
     except:
         pass

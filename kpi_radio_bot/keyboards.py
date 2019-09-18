@@ -28,7 +28,7 @@ what_playing = types.InlineKeyboardMarkup(row_width=2).add(
 
 choice_help = types.InlineKeyboardMarkup(row_width=1).add(*[
     types.InlineKeyboardButton(text=v, callback_data=_callback('help', k))
-    for k, v in HelpConstants.BTNS.items()
+    for k, v in BtnConstants.HELP.items()
 ])
 
 
