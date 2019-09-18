@@ -43,7 +43,7 @@ async def history_save(request):
         'casttitle': args.get('casttitle'),
         'path': args.get('path'),
     }
-    await core.send_history(fields)
+    await core.callbacks.send_history(fields)
     return web.Response(text='ok')
 
 

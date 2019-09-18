@@ -59,7 +59,6 @@ async def choice_day() -> types.InlineKeyboardMarkup:
 
 
 async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
-
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
         free_mins = await broadcast.get_broadcast_freetime(day, time_)
         if free_mins == 0 and attempts > 0:

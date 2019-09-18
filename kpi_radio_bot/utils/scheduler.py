@@ -3,7 +3,7 @@ import asyncio
 import aioschedule
 
 from consts import broadcast_times
-from core import broadcast_begin, broadcast_end
+from core.callbacks import broadcast_begin, broadcast_end
 from utils.files import move_to_archive
 
 

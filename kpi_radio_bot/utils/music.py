@@ -60,7 +60,7 @@ async def search_text(name, attempt2=False):
 
     lyrics = resp2.html.find("div.lyrics", first=True).text
 
-    return title,  lyrics
+    return title, lyrics
 
 
 async def is_anime(audio_name):

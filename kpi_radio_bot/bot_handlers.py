@@ -38,17 +38,17 @@ async def update_handler(message):
 
 @dp.message_handler(commands=['ban'])
 async def ban_handler(message):
-    await core.admin_ban(message)
+    await core.admins.ban(message)
 
 
 @dp.message_handler(commands=['vol', 'volume'])
 async def volume_handler(message):
-    await core.admin_set_volume(message)
+    await core.admins.set_volume(message)
 
 
 @dp.message_handler(commands=['stats'])
 async def stats_csv_handler(message):
-    await core.admin_stats(message)
+    await core.admins.get_stats(message)
 
 
 @dp.message_handler(commands=['notify'])
@@ -56,7 +56,7 @@ async def notify_handler(message):
     status = db.notification_get(message.from_user.id)
     db.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
-           "Уведомления <b>выключены</b> \n /notify - включить"
+        "Уведомления <b>выключены</b> \n /notify - включить"
     await bot.send_message(message.chat.id, text)
 
 
@@ -67,19 +67,19 @@ async def callback_query_handler(query):
     #
     # Выбрали день
     if cmd[0] == 'order_day':
-        await core.order_day_choiced(query, int(cmd[1]))
+        await core.order.order_day_choiced(query, int(cmd[1]))
 
     # Выбрали время
     elif cmd[0] == 'order_time':
-        await core.order_time_choiced(query, int(cmd[1]), int(cmd[2]))
+        await core.order.order_time_choiced(query, int(cmd[1]), int(cmd[2]))
 
     # Кнопка назад при выборе времени
     elif cmd[0] == 'order_back_day':
-        await core.order_day_unchoiced(query)
+        await core.order.order_day_unchoiced(query)
 
     # Кнопка отмены при выборе дня
     elif cmd[0] == 'order_cancel':
-        await core.order_cancel(query)
+        await core.order.order_cancel(query)
 
     # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
@@ -90,21 +90,21 @@ async def callback_query_handler(query):
     #
     # Принять / отклонить
     elif cmd[0] == 'admin_choice':
-        await core.admin_choice(query, int(cmd[1]), int(cmd[2]), cmd[3])
+        await core.order.admin_choice(query, int(cmd[1]), int(cmd[2]), cmd[3])
 
     # Отменить выбор
     elif cmd[0] == 'admin_unchoice':
-        await core.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
+        await core.order.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
 
     #
     # Кнопка "следующие треки" в сообщении "что играет"
     elif cmd[0] == 'song_next':
-        await core.song_next(query)
+        await core.users.song_next(query)
 
     #
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
-        await core.help_change(query, cmd[1])
+        await core.users.help_change(query, cmd[1])
 
     try:
         await bot.answer_callback_query(query.id)
@@ -126,16 +126,16 @@ async def message_handler(message):
         if message.chat.id == ADMINS_CHAT_ID:
             # Одмены отвечают
             if message.reply_to_message.audio or message.reply_to_message.forward_date:  # not None if sender hidden
-                await core.admin_reply(message)
+                await core.communication.admin_message(message)
 
         # Ввод названия песни
         if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
-            await core.search_audio(message)
+            await core.search.search_audio(message)
 
         # Обратная связь
         if message.reply_to_message.text == consts.TextConstants.FEEDBACK:
             await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS, reply_markup=keyboards.start)
-            await core.feedback(message)
+            await core.communication.user_message(message)
 
         return
 
@@ -146,7 +146,7 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == consts.BtnConstants.MENU['what_playing']:
-        await core.song_now(message)
+        await core.users.song_now(message)
 
     # Кнопка 'Предложить песню'
     elif message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
@@ -164,17 +164,17 @@ async def message_handler(message):
 
     # Кнопка 'Расписание'
     elif message.text == consts.BtnConstants.MENU['timetable']:
-        await core.timetable(message)
+        await core.users.timetable(message)
 
     else:
         await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
                                 caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
-        await core.feedback(message)
+        await core.communication.user_message(message)
 
 
 @dp.inline_handler()
 async def query_text(inline_query):
-    await core.inline_search(inline_query)
+    await core.search.inline_search(inline_query)
 
 
 if __name__ == '__main__':
