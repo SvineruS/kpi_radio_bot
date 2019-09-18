@@ -64,5 +64,5 @@ async def search_text(name, attempt2=False):
 
 
 async def is_anime(audio_name):
-    text = (await asession.get(f"https://www.google.com.ua/search?q={audio_name}")).text.lower()
+    text = (await asession.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}")).text.lower()
     return any(anime_word in text for anime_word in consts.anime_words)
