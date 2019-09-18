@@ -23,10 +23,12 @@ async def gettext(request):
     name = request.match_info.get('name')
     if not name:
         return web.Response(text="")
-    text = await music.search_text(name)
-    if not text:
-        text = 'Ошибка поиска'
-    return web.Response(text=text)
+    res = await music.search_text(name)
+    if not res:
+        return web.Response(text="Ошибка поиска")
+    else:
+        title, text = res
+        return web.Response(text=f"{title} \n\n{text}")
 
 
 @routes.get("/playlist")

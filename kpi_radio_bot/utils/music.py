@@ -58,9 +58,9 @@ async def search_text(name, attempt2=False):
     if resp2.status_code != 200:
         return False
 
-    t = resp2.html.find("div.lyrics", first=True).text
+    lyrics = resp2.html.find("div.lyrics", first=True).text
 
-    return title + '\n\n' + t
+    return title,  lyrics
 
 
 async def is_anime(audio_name):

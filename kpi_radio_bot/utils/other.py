@@ -34,10 +34,12 @@ def get_user_name_(id_, name):
 
 async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
     async def get_bad_words():
-        t = await music.search_text(audio_name) or ''
-        bw = [word for word in consts.bad_words if word in t]
-        if bw:
-            return f'<a href="https://{HOST}/gettext/{quote(audio_name[0:100])}">⚠ </a>' + ', '.join(bw)
+        res = await music.search_text(audio_name)
+        if res:
+            title, lyrics = res
+            bw = [word for word in consts.bad_words if word in lyrics]
+            if bw:
+                return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">⚠ </a> ({title})' + ', '.join(bw)
         return ''
 
     now = broadcast.is_this_broadcast_now(day, time)
