@@ -1,6 +1,3 @@
-# Кпи Радио Бот by Владислав Свинки, Ripll 2к!8 - 2к19 t.me/svinerus
-
-
 from aiogram import Dispatcher, types, executor
 
 import consts
@@ -100,10 +97,6 @@ async def callback_query_handler(query):
         await core.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
 
     #
-    # Кнопка "предыдущие треки" в сообщении "что играет"
-    elif cmd[0] == 'song_prev':
-        await core.song_prev(query)
-
     # Кнопка "следующие треки" в сообщении "что играет"
     elif cmd[0] == 'song_next':
         await core.song_next(query)
@@ -152,25 +145,25 @@ async def message_handler(message):
     # Кнопки
 
     # Кнопка 'Что играет?'
-    if message.text == keyboards.btn['what_playing']:
+    if message.text == consts.BtnConstants.MENU['what_playing']:
         await core.song_now(message)
 
     # Кнопка 'Предложить песню'
-    elif message.text == keyboards.btn['order'] or message.text == '/song':
+    elif message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
         await bot.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
         await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
                                reply_markup=keyboards.order_inline)
 
     # Кнопка 'Обратная связь'
-    elif message.text == keyboards.btn['feedback']:
+    elif message.text == consts.BtnConstants.MENU['feedback']:
         await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
-    elif message.text == keyboards.btn['help'] or message.text == '/help':
+    elif message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
         await bot.send_message(message.chat.id, consts.HelpConstants.FIRST_MSG, reply_markup=keyboards.choice_help)
 
     # Кнопка 'Расписание'
-    elif message.text == keyboards.btn['timetable']:
+    elif message.text == consts.BtnConstants.MENU['timetable']:
         await core.timetable(message)
 
     else:

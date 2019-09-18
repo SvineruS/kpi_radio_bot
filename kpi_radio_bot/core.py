@@ -193,7 +193,8 @@ async def admin_set_volume(message):
         return
 
     if not broadcast.is_broadcast_right_now():
-        return await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
+        return await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else
+                                   "Только во время эфира")
 
     if message.get_args().isdigit():
         volume = int(message.get_args())
@@ -220,17 +221,11 @@ async def admin_stats(message):
 
 async def song_now(message):
     playback = await radioboss.get_now()
-    if not playback:
-        return await bot.send_message(message.chat.id, "Не знаю(", reply_markup=keyboards.what_playing)
+    if not broadcast.is_broadcast_right_now() or not playback:
+        return await bot.send_message(message.chat.id, consts.TextConstants.SONG_NO_NOW,
+                                      reply_markup=keyboards.what_playing)
     await bot.send_message(message.chat.id, consts.TextConstants.WHAT_PLAYING.format(*playback),
                            reply_markup=keyboards.what_playing)
-
-
-async def song_prev(query):
-    playback = await radioboss.get_prev()
-    if not playback:
-        return await bot.send_message(query.message.chat.id, consts.TextConstants.SONG_NO_PREV)
-    await bot.send_message(query.message.chat.id, other.song_format(playback))
 
 
 async def song_next(query):
@@ -331,13 +326,12 @@ async def broadcast_begin(time):
 
 
 async def broadcast_end(day, time):
-    files = broadcast.get_broadcast_path(day, time).iterdir()
-    for file_path in files:
-        tag = await radioboss.read_track_additional_info(file_path)
+    tracks = broadcast.get_broadcast_path(day, time).iterdir()
+    for track_path in tracks:
+        tag = await radioboss.read_track_additional_info(track_path)
         if not tag:
             continue
-        with open(str(file_path), 'rb') as file:
+        with open(str(track_path), 'rb') as file:
             await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
                                  reply_markup=await keyboards.choice_day())
         await asyncio.sleep(3)
-

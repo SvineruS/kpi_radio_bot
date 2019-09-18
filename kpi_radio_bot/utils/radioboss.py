@@ -33,37 +33,26 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
 
 
 async def get_now():
-    answer = []
     playback = await radioboss_api(action='playbackinfo')
+    answer = [r'¯\_(ツ)_/¯']*3
     if not playback or playback[3].attrib['state'] == 'stop':
-        return answer
+        return None
     for i in range(3):
-        answer.append(playback[i][0].attrib['CASTTITLE'])
-    return answer
+        title = playback[i][0].attrib['CASTTITLE']
+        if "setvol" in title:
+            continue
 
-
-async def get_prev():
-    answer = []
-    playback = await radioboss_api(action='getlastplayed')
-    if not playback:
-        return []
-
-    for i in range(min(5, len(playback))):
-        track = playback[i].attrib
-        answer.append({
-            'time_start': datetime.strptime(track['STARTTIME'].split(' ')[1], '%H:%M:%S'),
-            'title': track['CASTTITLE']
-        })
-
+        answer.append(title)
     return answer
 
 
 async def get_next():
-    answer = []
     playlist = await get_playlist()
     bn = broadcast.get_broadcast_num()
     if not playlist or bn is False:
         return []
+
+    answer = []
 
     dt_now = datetime.now()
     time_min = dt_now.time()
@@ -84,12 +73,12 @@ async def get_next():
 async def get_playlist():
     answer = []
     playlist = await radioboss_api(action='getplaylist2')
-    if not playlist or len(playlist) < 2 or playlist[0].attrib['CASTTITLE'] == 'stop':
+    if not playlist:
         return []
 
     for track in playlist:
         track = track.attrib
-        if not track['STARTTIME']:  # в конце эфира STARTTIME == ""
+        if not track['STARTTIME']:  # если STARTTIME == "" скорее всего это не песня (либо она стартанет через >=сутки)
             continue
 
         answer.append({
@@ -98,7 +87,6 @@ async def get_playlist():
             'filename': track['FILENAME'],
             'index': int(track['INDEX']),
             'is_order': str(consts.paths['orders']) in track["FILENAME"]
-
         })
 
     return answer
@@ -133,7 +121,8 @@ async def read_track_additional_info(path):
     tag = tags[0].attrib['Comment']
     try:
         return json.loads(tag)
-    except: pass
+    except:
+        pass
 
 
 async def clear_track_additional_info(path):
