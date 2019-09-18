@@ -42,7 +42,7 @@ async def get_now():
         if "setvol" in title:
             continue
 
-        answer.append(title)
+        answer[i] = title
     return answer
 
 
