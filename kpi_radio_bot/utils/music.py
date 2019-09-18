@@ -64,9 +64,5 @@ async def search_text(name, attempt2=False):
 
 
 async def is_anime(audio_name):
-    youtube = (await asession.get(f"https://www.youtube.com/results?search_query={audio_name}")).text.lower()
-    google = (await asession.get(f"https://www.google.com.ua/search?q={audio_name}")).text.lower()
-
-    return any(anime_word in text
-               for anime_word in consts.anime_words
-               for text in (google, youtube))
+    text = (await asession.get(f"https://www.google.com.ua/search?q={audio_name}")).text.lower()
+    return any(anime_word in text for anime_word in consts.anime_words)
