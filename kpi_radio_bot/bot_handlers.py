@@ -135,10 +135,10 @@ async def message_handler(message):
             return await core.search.search_audio(message)
 
         # Реплай на сообщение обратной связи или сообщение от модера
-        if message.reply_to_message.text == consts.TextConstants.FEEDBACK or \
-                core.communication.cache_is_set(message.reply_to_message.message_id):
-            await core.communication.user_message(message)
-            return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
+        # if message.reply_to_message.text == consts.TextConstants.FEEDBACK or \
+        #        core.communication.cache_is_set(message.reply_to_message.message_id):
+        await core.communication.user_message(message)
+        return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
                                           reply_markup=keyboards.start)
 
         
