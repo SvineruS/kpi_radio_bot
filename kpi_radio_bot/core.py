@@ -139,7 +139,9 @@ async def admin_reply(message):
         if message.reply_to_message.audio:  # на заказ
             user = message.reply_to_message.caption_entities[0].user.id
             txt = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили:"
-        elif message.reply_to_message.forward_from:  # на отзыв
+        elif message.reply_to_message.forward_date:  # на отзыв
+            if not message.reply_to_message.forward_from:
+                return await message.reply("Не могу ему написать")
             user = message.reply_to_message.forward_from.id
             txt = "На ваше сообщение ответили: "
         else:
@@ -191,15 +193,15 @@ async def admin_set_volume(message):
         return
 
     if not broadcast.is_broadcast_right_now():
-        await message.reply(text="Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
+        await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
 
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
             await radioboss.radioboss_api(cmd=f'setvol {volume}')
-            return await message.reply(text=f'Громкость выставлена в {volume}!')
+            return await message.reply(f'Громкость выставлена в {volume}!')
 
-    await message.reply(text=f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
+    await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
 
 
 async def admin_stats(message):
