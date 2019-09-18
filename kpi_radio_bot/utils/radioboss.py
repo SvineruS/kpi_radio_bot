@@ -2,8 +2,8 @@ import json
 import logging
 import xml.etree.ElementTree as Etree
 from datetime import datetime
-from urllib.parse import quote_plus
 from typing import Union
+from urllib.parse import quote_plus
 
 import aiohttp
 
@@ -34,7 +34,7 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
 
 async def get_now():
     playback = await radioboss_api(action='playbackinfo')
-    answer = [r'¯\_(ツ)_/¯']*3
+    answer = [r'¯\_(ツ)_/¯'] * 3
     if not playback or playback[3].attrib['state'] == 'stop':
         return None
     for i in range(3):

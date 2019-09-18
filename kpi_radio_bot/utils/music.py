@@ -70,7 +70,3 @@ async def is_anime(audio_name):
     return any(anime_word in text
                for anime_word in consts.anime_words
                for text in (google, youtube))
-
-
-
-

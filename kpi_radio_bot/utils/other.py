@@ -1,17 +1,16 @@
 import csv
 import os
+from collections import Counter
 from datetime import datetime
 from urllib.parse import quote
 
 from aiogram import types
+from matplotlib import figure
+from matplotlib import pyplot as plt
 
 import consts
 from config import *
 from utils import music, broadcast
-
-from matplotlib import pyplot as plt
-from matplotlib import figure
-from collections import Counter
 
 
 def get_audio_name(audio: types.Audio) -> str:
@@ -49,7 +48,7 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
     if not status:
         is_now_mark = '‼️' if now else '❗️'
         bad_words = await get_bad_words()
-        is_anime = '🅰️' if await music.is_anime(audio_name) else''
+        is_anime = '🅰️' if await music.is_anime(audio_name) else ''
         text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
     else:
         status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
@@ -96,12 +95,10 @@ def gen_stats_graph(n_days=7):
             cnt[record[1]] += 1
     cnt = dict(cnt.most_common())  # сортировка
 
-    fig: figure.Figure = plt.figure(figsize=(12, 10))
+    figure.Figure = plt.figure(figsize=(12, 10))
     plt.barh(list(cnt.keys()), list(cnt.values()), height=0.8)
     plt.savefig(PATH_STUFF / 'stats.png', dpi=300)
 
 
 def reboot() -> None:
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
-
-

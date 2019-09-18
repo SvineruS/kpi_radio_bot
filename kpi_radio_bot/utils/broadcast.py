@@ -48,7 +48,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
 
 def get_broadcast_path(day: int, time: int = False) -> Path:
     t = consts.paths['orders']
-    t /= f"D0{day+1}"
+    t /= f"D0{day + 1}"
     if time is not False:  # так и должно быть
         t /= '{0} {1}'.format(time, consts.times_name['times'][time])
     return t

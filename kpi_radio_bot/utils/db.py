@@ -1,5 +1,7 @@
-import pymongo
 from time import time
+
+import pymongo
+
 from config import DB_URL
 
 client = pymongo.MongoClient(DB_URL, retryWrites=False)
