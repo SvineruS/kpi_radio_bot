@@ -193,7 +193,7 @@ async def admin_set_volume(message):
         return
 
     if not broadcast.is_broadcast_right_now():
-        await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
+        return await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else "Только во время эфира")
 
     if message.get_args().isdigit():
         volume = int(message.get_args())
