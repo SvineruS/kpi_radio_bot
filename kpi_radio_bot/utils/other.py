@@ -39,7 +39,7 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
             title, lyrics = res
             bw = [word for word in consts.bad_words if word in lyrics]
             if bw:
-                return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">⚠ </a> ({title})' + ', '.join(bw)
+                return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">⚠ </a> ({title})  ' + ', '.join(bw)
         return ''
 
     now = broadcast.is_this_broadcast_now(day, time)
