@@ -1,15 +1,17 @@
 from config import *
 from utils import other
+from collections import OrderedDict
+
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
-MESSAGES_CACHE = {}
+MESSAGES_CACHE = OrderedDict()
 MAX_LENGTH = 10000
 
 
 def cache_add(to_msg_id, from_chat_id, from_msg_id):
     MESSAGES_CACHE[to_msg_id] = (from_chat_id, from_msg_id)
     while len(MESSAGES_CACHE) > MAX_LENGTH:
-        del MESSAGES_CACHE[list(MESSAGES_CACHE.keys())[0]]
+        MESSAGES_CACHE.popitem(last=False)  # pop older
 
 
 def cache_get(message_id):
