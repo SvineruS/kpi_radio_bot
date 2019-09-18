@@ -128,14 +128,18 @@ async def message_handler(message):
             if message.reply_to_message.audio or message.reply_to_message.forward_date:  # not None if sender hidden
                 await core.communication.admin_message(message)
 
+            return
+
         # Ввод названия песни
         if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
-            await core.search.search_audio(message)
+            return await core.search.search_audio(message)
 
-        # Обратная связь
-        if message.reply_to_message.text == consts.TextConstants.FEEDBACK:
-            await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS, reply_markup=keyboards.start)
+        # Реплай на сообщение обратной связи или сообщение от модера
+        if message.reply_to_message.text == consts.TextConstants.FEEDBACK or \
+                core.communication.cache_is_set(message.reply_to_message.message_id):
             await core.communication.user_message(message)
+            return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
+                                          reply_markup=keyboards.start)
 
         return
 
@@ -146,30 +150,31 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == consts.BtnConstants.MENU['what_playing']:
-        await core.users.song_now(message)
+        return await core.users.song_now(message)
 
     # Кнопка 'Предложить песню'
-    elif message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
+    if message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
         await bot.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
-                               reply_markup=keyboards.order_inline)
+        return await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
+                                      reply_markup=keyboards.order_inline)
 
     # Кнопка 'Обратная связь'
-    elif message.text == consts.BtnConstants.MENU['feedback']:
-        await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
+    if message.text == consts.BtnConstants.MENU['feedback']:
+        return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
-    elif message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
-        await bot.send_message(message.chat.id, consts.TextConstants.HELP['start'], reply_markup=keyboards.choice_help)
+    if message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
+        return await bot.send_message(message.chat.id, consts.TextConstants.HELP['start'],
+                                      reply_markup=keyboards.choice_help)
 
     # Кнопка 'Расписание'
-    elif message.text == consts.BtnConstants.MENU['timetable']:
-        await core.users.timetable(message)
+    if message.text == consts.BtnConstants.MENU['timetable']:
+        return await core.users.timetable(message)
 
-    else:
-        await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-                                caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
-        await core.communication.user_message(message)
+    # Просто сообщение
+    await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
+                            caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+    await core.communication.user_message(message)
 
 
 @dp.inline_handler()

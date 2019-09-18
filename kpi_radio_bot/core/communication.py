@@ -25,6 +25,7 @@ async def user_message(message):
         _, reply_to = cache_get(message.reply_to_message.message_id)
         await bot.send_message(ADMINS_CHAT_ID, "Ответ:", reply_to_message_id=reply_to)
 
+    # todo print user link if hidden
     m = await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
     cache_add(m.message_id, message.chat.id, message.message_id)
 
@@ -55,10 +56,13 @@ async def admin_message(message):
         await bot.send_message(user, txt)
 
     if message.audio:
-        await bot.send_audio(user, message.audio.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_audio(user, message.audio.file_id, reply_to_message_id=reply_to)
     elif message.sticker:
-        await bot.send_sticker(user, message.sticker.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_sticker(user, message.sticker.file_id, reply_to_message_id=reply_to)
     elif message.photo:
-        await bot.send_photo(user, message.photo[-1].file_id, reply_to_message_id=reply_to, caption=message.caption)
+        m = await bot.send_photo(user, message.photo[-1].file_id, reply_to_message_id=reply_to, caption=message.caption)
     else:
-        await bot.send_message(user, message.text, reply_to_message_id=reply_to, parse_mode='markdown')
+        m = await bot.send_message(user, message.text, reply_to_message_id=reply_to, parse_mode='markdown')
+
+    cache_add(m.message_id, message.chat.id, message.message_id)
+
