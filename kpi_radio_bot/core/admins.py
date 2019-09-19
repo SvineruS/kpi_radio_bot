@@ -37,9 +37,8 @@ async def set_volume(message):
     if message.chat.id != ADMINS_CHAT_ID:
         return
 
-    if not broadcast.is_broadcast_right_now():
-        return await message.reply("Богдан пошел нахуй" if message.from_user.id == 337283845 else
-                                   "Только во время эфира")
+    if not broadcast.is_broadcast_right_now() and message.from_user.id == 337283845:
+        return await message.reply("Богдан пошел нахуй")
 
     if message.get_args().isdigit():
         volume = int(message.get_args())
