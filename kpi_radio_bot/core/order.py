@@ -64,7 +64,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     if status == 'reject':  # отмена
         m = await bot.send_message(user.id,
                                    consts.TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
-        communication.cache_add(m, query.message)
+        communication.cache_add(m.message_id, query.message)
         return
 
     to = broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
@@ -75,7 +75,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     if not also['now']:  # если щас не этот эфир то похуй
         m = await bot.send_message(user.id,
                                    consts.TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
-        communication.cache_add(m, query.message)
+        communication.cache_add(m.message_id, query.message)
         return
 
     # todo check doubles
@@ -85,7 +85,7 @@ async def admin_choice(query, day: int, time: int, status: str):
         when_playing = 'прямо сейчас!'
         await radioboss.radioboss_api(action='inserttrack', filename=to, pos=-2)
         m = await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
-        communication.cache_add(m, query.message)
+        communication.cache_add(m.message_id, query.message)
 
     if status == 'queue':  # в очередь
         last_track = await radioboss.get_new_order_pos()
@@ -93,7 +93,7 @@ async def admin_choice(query, day: int, time: int, status: str):
             when_playing = 'не успел :('
             m = await bot.send_message(user.id,
                                        consts.TextConstants.ORDER_ERR_TOOLATE.format(audio_name, also['text_datetime']))
-            communication.cache_add(m, query.message)
+            communication.cache_add(m.message_id, query.message)
 
         else:  # есть место
             minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
@@ -102,7 +102,7 @@ async def admin_choice(query, day: int, time: int, status: str):
             await radioboss.radioboss_api(action='inserttrack', filename=to, pos=last_track['index'])
             m = await bot.send_message(user.id,
                                        consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
-            communication.cache_add(m, query.message)
+            communication.cache_add(m.message_id, query.message)
 
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
                                    caption=admin_text + '\n🕑 ' + when_playing,
