@@ -69,5 +69,5 @@ async def get_stats(message):
         stats.bars_plot(days)
         caption = f'Стата за {days} дн.'
 
-    with open(stats.PATH_STUFF, 'rb') as file:
+    with open(stats.PATH_STATS_PNG, 'rb') as file:
         await bot.send_photo(message.chat.id, file, caption=caption)
