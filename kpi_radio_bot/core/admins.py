@@ -57,7 +57,7 @@ async def get_stats(message):
         with open(PATH_STUFF / 'stats.csv', 'rb') as file:
             return await bot.send_document(message.chat.id, file)
 
-    if len(message.entities) >= 1 and message.entities[1]['type'] == 'mention':
+    if len(message.entities) >= 2 and message.entities[1]['type'] == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
         r = stats.line_plot(moderator)
         if r is False:

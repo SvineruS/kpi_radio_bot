@@ -45,7 +45,7 @@ def line_plot(moder_name):
     if moder_name not in stats:
         return False
     moder = stats[moder_name]
-    moderation_per_day = len(moder) / moder.pop('all')
+    moderation_per_day = moder.pop('all') / len(moder)
 
     plt.figure(figsize=(12, 10))
     plt.plot(list(moder.values()), list(moder.keys()), marker='o')
