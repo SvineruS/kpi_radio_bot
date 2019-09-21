@@ -47,7 +47,7 @@ async def volume_handler(message):
 
 
 @dp.message_handler(commands=['stats'])
-async def stats_csv_handler(message):
+async def stats_handler(message):
     await core.admins.get_stats(message)
 
 

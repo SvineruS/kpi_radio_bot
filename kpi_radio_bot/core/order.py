@@ -5,7 +5,7 @@ from aiogram import types
 import consts
 import keyboards
 from config import *
-from utils import other, radioboss, broadcast, files, db
+from utils import other, radioboss, broadcast, files, db, stats
 from . import communication
 
 
@@ -58,7 +58,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
-    other.add_moder_stats(audio_name, query.from_user.username, user.username, status, str(datetime.now()))
+    stats.add(audio_name, query.from_user.username, user.username, status, str(datetime.now()))
 
     if status == 'reject':  # отмена
         return await bot.send_message(user.id,

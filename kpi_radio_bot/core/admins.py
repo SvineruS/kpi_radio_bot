@@ -1,5 +1,5 @@
 from config import *
-from utils import other, radioboss, broadcast, db
+from utils import other, radioboss, broadcast, db, stats
 from . import communication
 
 
@@ -56,9 +56,19 @@ async def get_stats(message):
 
     if 'csv' in message.get_args():
         with open(PATH_STUFF / 'stats.csv', 'rb') as file:
-            await bot.send_document(message.chat.id, file)
+            return await bot.send_document(message.chat.id, file)
+
+    if len(message.entities) >= 1 and message.entities[1]['type'] == 'mention':
+        moderator = message.entities[1].get_text(message.text)
+        r = stats.line_plot(moderator)
+        if r is False:
+            return message.reply(f"Хз кто такой {moderator}")
+        caption = f"Стата модератора {moderator} за {r} дн."
+
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
-        other.gen_stats_graph(days)
-        with open(PATH_STUFF / 'stats.png', 'rb') as file:
-            await bot.send_photo(message.chat.id, file, caption=f'Стата за {days} дн.')
+        stats.bars_plot(days)
+        caption = f'Стата за {days} дн.'
+
+    with open(stats.PATH_STUFF, 'rb') as file:
+        await bot.send_photo(message.chat.id, file, caption=caption)
