@@ -45,12 +45,12 @@ def line_plot(moder_name):
     if moder_name not in stats:
         return False
     moder = stats[moder_name]
-    del moder['all']  # нужны только дни: заказы
+    moderation_per_day = len(moder) / moder.pop('all')
 
     plt.figure(figsize=(12, 10))
     plt.plot(list(moder.values()), list(moder.keys()), marker='o')
     plt.savefig(PATH_STATS_PNG, dpi=300)
-    return len(moder)
+    return moderation_per_day
 
 
 def bars_plot(days):
