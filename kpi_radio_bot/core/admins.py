@@ -58,10 +58,10 @@ async def get_stats(message):
             return await bot.send_document(message.chat.id, file)
 
     if len(message.entities) >= 1 and message.entities[1]['type'] == 'mention':
-        moderator = message.entities[1].get_text(message.text)
+        moderator = message.entities[1].get_text(message.text)[1:]
         r = stats.line_plot(moderator)
         if r is False:
-            return message.reply(f"Хз кто такой {moderator}")
+            return await message.reply(f"Хз кто такой {moderator}")
         caption = f"Стата модератора {moderator} за {r} дн."
 
     else:
