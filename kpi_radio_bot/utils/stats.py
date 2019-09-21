@@ -48,7 +48,7 @@ def line_plot(moder_name):
     del moder['all']  # нужны только дни: заказы
 
     plt.figure(figsize=(12, 10))
-    plt.plot(list(moder.values()), list(moder.keys()))
+    plt.plot(list(moder.values()), list(moder.keys()), marker='o')
     plt.savefig(PATH_STATS_PNG, dpi=300)
     return len(moder)
 
