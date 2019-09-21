@@ -62,7 +62,7 @@ async def get_stats(message):
         r = stats.line_plot(moderator)
         if r is False:
             return await message.reply(f"Хз кто такой {moderator}")
-        caption = f"Стата модератора {moderator} ({r} модераций/дн.)"
+        caption = f"Стата модератора {moderator} ({r:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
