@@ -50,7 +50,7 @@ def line_plot(moder_name):
     plt.figure(figsize=(12, 10))
     plt.plot(list(moder.values()), list(moder.keys()))
     plt.savefig(PATH_STATS_PNG, dpi=300)
-    return len(stats)
+    return len(moder)
 
 
 def bars_plot(days):
