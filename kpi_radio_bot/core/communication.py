@@ -8,8 +8,8 @@ MESSAGES_CACHE = OrderedDict()
 MAX_LENGTH = 10000
 
 
-def cache_add(to_msg_id, from_chat_id, from_msg_id):
-    MESSAGES_CACHE[to_msg_id] = (from_chat_id, from_msg_id)
+def cache_add(to_msg_id, from_message):
+    MESSAGES_CACHE[to_msg_id] = (from_message.chat.id, from_message.message_id)
     while len(MESSAGES_CACHE) > MAX_LENGTH:
         MESSAGES_CACHE.popitem(last=False)  # pop older
 
@@ -29,7 +29,7 @@ async def user_message(message):
 
     # todo print user link if hidden
     m = await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-    cache_add(m.message_id, message.chat.id, message.message_id)
+    cache_add(m.message_id, message)
 
 
 async def admin_message(message):
@@ -66,5 +66,5 @@ async def admin_message(message):
     else:
         m = await bot.send_message(user, message.text, reply_to_message_id=reply_to, parse_mode='markdown')
 
-    cache_add(m.message_id, message.chat.id, message.message_id)
+    cache_add(m.message_id, message)
 

@@ -1,7 +1,7 @@
 import consts
 import keyboards
 from config import *
-from utils import other, radioboss, broadcast
+from utils import other, radioboss, broadcast, db
 
 
 async def song_now(message):
@@ -39,3 +39,11 @@ async def help_change(query, key):
                                     query.message.message_id, reply_markup=keyboards.choice_help)
     except:
         pass
+
+
+async def notify_switch(message):
+    status = db.notification_get(message.from_user.id)
+    db.notification_set(message.from_user.id, not status)
+    text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
+        "Уведомления <b>выключены</b> \n /notify - включить"
+    await bot.send_message(message.chat.id, text)

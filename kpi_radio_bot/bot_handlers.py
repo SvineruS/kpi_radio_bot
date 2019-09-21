@@ -11,10 +11,10 @@ dp = Dispatcher(bot)
 
 @dp.message_handler(commands=['start'])
 async def start_handler(message):
-    db.add(message.chat.id)
     if message.chat.id < 0:
         return
 
+    db.add(message.chat.id)
     await bot.send_message(message.chat.id, consts.TextConstants.START)
     await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
 
@@ -53,11 +53,7 @@ async def stats_handler(message):
 
 @dp.message_handler(commands=['notify'])
 async def notify_handler(message):
-    status = db.notification_get(message.from_user.id)
-    db.notification_set(message.from_user.id, not status)
-    text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
-        "Уведомления <b>выключены</b> \n /notify - включить"
-    await bot.send_message(message.chat.id, text)
+    await core.users.notify_switch(message)
 
 
 @dp.callback_query_handler()
@@ -140,8 +136,6 @@ async def message_handler(message):
             await core.communication.user_message(message)
             return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
                                           reply_markup=keyboards.start)
-
-        return
 
     if message.chat.id < 0:
         return

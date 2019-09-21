@@ -34,7 +34,8 @@ async def order_time_choiced(query, day: int, time: int):
     await bot.send_message(query.message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
     admin_message = await bot.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                                          reply_markup=keyboards.admin_choose(day, time))
-    communication.cache_add(admin_message.message_id, query.message.chat.id, query.message.message_id)
+    communication.cache_add(admin_message.message_id, query.message)
+    communication.cache_add(query.message.message_id, admin_message)
 
 
 async def order_day_unchoiced(query):
@@ -61,8 +62,10 @@ async def admin_choice(query, day: int, time: int, status: str):
     stats.add(audio_name, query.from_user.username, user.username, status, str(datetime.now()))
 
     if status == 'reject':  # отмена
-        return await bot.send_message(user.id,
-                                      consts.TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
+        m = await bot.send_message(user.id,
+                                   consts.TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
+        communication.cache_add(m.message_id, query.message)
+        return
 
     to = broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
     files.create_dirs(to)
@@ -70,8 +73,10 @@ async def admin_choice(query, day: int, time: int, status: str):
     await radioboss.write_track_additional_info(to, user, query.message.message_id)
 
     if not also['now']:  # если щас не этот эфир то похуй
-        return await bot.send_message(user.id,
-                                      consts.TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
+        m = await bot.send_message(user.id,
+                                   consts.TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
+        communication.cache_add(m.message_id, query.message)
+        return
 
     # todo check doubles
 
@@ -79,20 +84,25 @@ async def admin_choice(query, day: int, time: int, status: str):
     if status == 'now':  # следующим
         when_playing = 'прямо сейчас!'
         await radioboss.radioboss_api(action='inserttrack', filename=to, pos=-2)
-        await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+        m = await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+        communication.cache_add(m.message_id, query.message)
 
     if status == 'queue':  # в очередь
         last_track = await radioboss.get_new_order_pos()
         if not last_track:  # нету места
             when_playing = 'не успел :('
-            await bot.send_message(user.id,
-                                   consts.TextConstants.ORDER_ERR_TOOLATE.format(audio_name, also['text_datetime']))
+            m = await bot.send_message(user.id,
+                                       consts.TextConstants.ORDER_ERR_TOOLATE.format(audio_name, also['text_datetime']))
+            communication.cache_add(m.message_id, query.message)
+
         else:  # есть место
             minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
             when_playing = f'через {minutes_left} ' + other.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
 
             await radioboss.radioboss_api(action='inserttrack', filename=to, pos=last_track['index'])
-            await bot.send_message(user.id, consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+            m = await bot.send_message(user.id,
+                                       consts.TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+            communication.cache_add(m.message_id, query.message)
 
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
                                    caption=admin_text + '\n🕑 ' + when_playing,
