@@ -52,4 +52,4 @@ async def broadcast_end(day, time):
 
 
 async def start_up():
-    await bot.send_message(ADMINS_CHAT_ID, "Ребнутнулся!")
+    await bot.send_message(ADMINS_CHAT_ID, "Ребутнулся!")
