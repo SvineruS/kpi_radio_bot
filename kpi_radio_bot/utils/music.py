@@ -30,7 +30,7 @@ def get_download_url(url, artist=None, title=None):
     return url
 
 
-async def search_text(name, attempt2=False):
+async def search_text(name):
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     resp = await asession.get(url)
 
@@ -45,10 +45,7 @@ async def search_text(name, attempt2=False):
             break
 
     if not s['hits']:
-        if attempt2:
-            return False
-        name = name.split('- ')[-1]
-        return await search_text(name, True)
+        return False
 
     s = s['hits'][0]['result']
     title = s['full_title']
