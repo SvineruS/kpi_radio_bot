@@ -49,3 +49,7 @@ async def broadcast_end(day, time):
                 logging.info(f"perezaklad: {e}")
 
         await asyncio.sleep(3)
+
+
+async def start_up():
+    await bot.send_message(ADMINS_CHAT_ID, "Ребнутнулся!")
