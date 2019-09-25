@@ -14,7 +14,7 @@ async def start_handler(message):
     if message.chat.id < 0:
         return
 
-    db.add(message.chat.id)
+    await db.add(message.chat.id)
     await bot.send_message(message.chat.id, consts.TextConstants.START)
     await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
 

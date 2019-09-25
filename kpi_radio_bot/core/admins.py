@@ -25,7 +25,7 @@ async def ban(message):
 
     ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
     reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
-    db.ban_set(user.id, ban_time)
+    await db.ban_set(user.id, ban_time)
 
     if ban_time == 0:
         return await bot.send_message(message.chat.id, f"{other.get_user_name(user)} разбанен")

@@ -20,7 +20,7 @@ async def order_day_choiced(query, day: int):
 async def order_time_choiced(query, day: int, time: int):
     user = query.from_user
 
-    is_ban = db.ban_get(user.id)
+    is_ban = await db.ban_get(user.id)
     if is_ban:
         return await bot.send_message(query.message.chat.id, "Вы не можете предлагать музыку до " +
                                       datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M"))

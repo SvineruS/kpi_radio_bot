@@ -42,8 +42,8 @@ async def help_change(query, key):
 
 
 async def notify_switch(message):
-    status = db.notification_get(message.from_user.id)
-    db.notification_set(message.from_user.id, not status)
+    status = await db.notification_get(message.from_user.id)
+    await db.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
     await bot.send_message(message.chat.id, text)
