@@ -1,3 +1,4 @@
+import logging
 import asyncio
 
 import consts
@@ -38,6 +39,10 @@ async def broadcast_end(day, time):
         if not tag:
             continue
         with open(str(track_path), 'rb') as file:
-            await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
-                                 reply_markup=await keyboards.choice_day())
+            try:
+                await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
+                                     reply_markup=await keyboards.choice_day())
+            except Exception as e:
+                logging.info(f"perezaklad: {e}")
+
         await asyncio.sleep(3)
