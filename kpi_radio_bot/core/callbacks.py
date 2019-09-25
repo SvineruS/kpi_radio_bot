@@ -33,7 +33,7 @@ async def broadcast_begin(time):
 
 
 async def broadcast_end(day, time):
-    await radioboss.radioboss_api(cmd='setvol 100')  # выключить музло на паре
+    await radioboss.radioboss_api(cmd='setvol 0')  # выключить музло на паре
 
     tracks = broadcast.get_broadcast_path(day, time).iterdir()
     for track_path in tracks:
