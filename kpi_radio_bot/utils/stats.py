@@ -1,6 +1,6 @@
 import csv
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from matplotlib import pyplot as plt
 
@@ -16,23 +16,27 @@ def add(*data):
         writer.writerow(data)
 
 
-def parse_stats(n_days=None):
+def parse_stats(n_days=60):
     with open(PATH_STATS_CSV, encoding='utf-8-sig') as file:
         records = list(csv.reader(file, delimiter=','))
 
-    start_date = datetime.today()
+    date_now = datetime.today()
     stats = {}
 
-    for r in reversed(records):
+    for r in records:
         moder = r[1]
+        date = datetime.strptime(r[4][:10], "%Y-%m-%d")
+
         if moder == r[2]:  # свои заказы не считаем
             continue
-        date = datetime.strptime(r[4][:10], "%Y-%m-%d")
-        if n_days and (start_date - date).days >= n_days:
-            break
+        if (date_now - date).days >= n_days:
+            continue
 
         if moder not in stats:
             stats[moder] = Counter()
+            for i in range((date_now - date).days):  # здесь date - самая первая модерация за n_days от сегодня
+                date_iter = date_now - timedelta(days=i)  # если делать date + timedelta график отзеркалится
+                stats[moder][date_iter.strftime("%d.%m")] += 0  # добавить все даты от начала модерации до сегодня
 
         stats[moder][date.strftime("%d.%m")] += 1  # модерации по дням
         stats[moder]['all'] += 1  # всего модераций
@@ -48,7 +52,7 @@ def line_plot(moder_name):
     moderation_per_day = moder.pop('all') / len(moder)
 
     plt.figure(figsize=(12, 10))
-    plt.plot(list(moder.values()), list(moder.keys()), marker='o')
+    plt.plot(list(moder.values()), list(moder.keys()))
     plt.savefig(PATH_STATS_PNG, dpi=300)
     return moderation_per_day
 
