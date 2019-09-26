@@ -110,10 +110,6 @@ async def callback_query_handler(query):
 
 @dp.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
 async def message_handler(message):
-    # Пользователь скинул аудио
-    if message.audio and message.chat.id != ADMINS_CHAT_ID:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.TextConstants.ORDER_CHOOSE_DAY,
-                                    reply_markup=await keyboards.choice_day())
 
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await bot.me).id:
@@ -121,10 +117,7 @@ async def message_handler(message):
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
             # Одмены отвечают
-            if message.reply_to_message.audio or message.reply_to_message.forward_date:  # not None if sender hidden
-                await core.communication.admin_message(message)
-
-            return
+            return await core.communication.admin_message(message)
 
         # Ввод названия песни
         if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
@@ -139,6 +132,11 @@ async def message_handler(message):
 
     if message.chat.id < 0:
         return
+
+    # Пользователь скинул аудио
+    if message.audio:
+        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.TextConstants.ORDER_CHOOSE_DAY,
+                                    reply_markup=await keyboards.choice_day())
 
     # Кнопки
 

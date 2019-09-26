@@ -1,5 +1,5 @@
 from config import *
-from utils import other, radioboss, broadcast, db, stats
+from utils import other, radioboss, db, stats
 from . import communication
 
 
@@ -10,27 +10,23 @@ async def ban(message):
         return await bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
     cmd = message.get_args().split(' ', 1)
-    if message.reply_to_message.audio:  # на заказ
-        user = message.reply_to_message.caption_entities[0].user
-    elif message.reply_to_message.forward_date:  # на отзыв
-        if message.reply_to_message.forward_from:
-            user = message.reply_to_message.forward_from
 
-        elif communication.cache_is_set(message.reply_to_message.message_id):
-            user, _ = communication.cache_get(message.message_id)
-        else:
-            return await message.reply("Бля, не могу забанить")
+    if communication.cache_is_set(message.reply_to_message.message_id):
+        user, _ = communication.cache_get(message.reply_to_message.message_id)
     else:
-        return
+        user = other.get_user_id_from_entity(message.reply_to_message)
+        if not user:
+            return await message.reply("Бля, не могу забанить")
 
     ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
     reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
-    await db.ban_set(user.id, ban_time)
+    await db.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await bot.send_message(message.chat.id, f"{other.get_user_name(user)} разбанен")
-    await bot.send_message(message.chat.id, f"{other.get_user_name(user)} забанен на {ban_time} минут. {reason}")
-    await bot.send_message(user.id, f"Вы были забанены на {ban_time} минут. {reason}")
+        return await bot.send_message(message.chat.id, f"{other.get_user_name_(user, 'Юзер')} разбанен")
+    await bot.send_message(message.chat.id,
+                           f"{other.get_user_name_(user, 'Юзер')} забанен на {ban_time} минут. {reason}")
+    await bot.send_message(user, f"Вы были забанены на {ban_time} минут. {reason}")
 
 
 async def set_volume(message):

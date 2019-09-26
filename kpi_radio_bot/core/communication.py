@@ -25,46 +25,48 @@ def cache_is_set(message_id):
 async def user_message(message):
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
-        await bot.send_message(ADMINS_CHAT_ID, "Ответ:", reply_to_message_id=reply_to)
+    else:
+        reply_to = None
 
-    # todo print user link if hidden
-    m = await bot.forward_message(ADMINS_CHAT_ID, message.chat.id, message.message_id)
-    cache_add(m.message_id, message)
+    text = f"От {other.get_user_name(message.from_user)}: \n"
+    await resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
 async def admin_message(message):
     if message.text and message.text.startswith("!"):  # игнор ответа
         return
 
-    if cache_is_set(message.reply_to_message.message_id):  # если можно реплайнуть
+    if cache_is_set(message.reply_to_message.message_id):
         user, reply_to = cache_get(message.reply_to_message.message_id)
+        text = ''
+    else:
+        user = other.get_user_id_from_entity(message.reply_to_message)
+        reply_to = None
 
-    else:  # если айдишника нету в кеше то пытаемся по старому
-        if message.reply_to_message.audio:  # на заказ
-            user = message.reply_to_message.caption_entities[0].user.id
-            txt = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили:"
-
-        elif message.reply_to_message.forward_date:  # на отзыв
-            if not message.reply_to_message.forward_from:
-                return await message.reply("Не могу ему написать")
-
-            user = message.reply_to_message.forward_from.id
-            txt = "На ваше сообщение ответили: "
-
-        else:  # если админы реплайнули на какую то хуйню
+        if not user:
             return
 
-        reply_to = None
-        await bot.send_message(user, txt)
+        if message.reply_to_message.audio:
+            text = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
+        else:
+            text = "На ваше сообщение ответили: \n"
+
+    await resend_message(message, user, additional_text=text, reply_to=reply_to)
+
+
+async def resend_message(message, to, additional_text='', reply_to=None):
+    if additional_text and (message.audio or message.sticker):
+        m = await bot.send_message(to, additional_text)
+        cache_add(m.message_id, message)
 
     if message.audio:
-        m = await bot.send_audio(user, message.audio.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_audio(to, message.audio.file_id, reply_to_message_id=reply_to)
     elif message.sticker:
-        m = await bot.send_sticker(user, message.sticker.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_sticker(to, message.sticker.file_id, reply_to_message_id=reply_to)
     elif message.photo:
-        m = await bot.send_photo(user, message.photo[-1].file_id, reply_to_message_id=reply_to, caption=message.caption)
+        m = await bot.send_photo(to, message.photo[-1].file_id,
+                                 caption=additional_text + (message.caption or ''), reply_to_message_id=reply_to)
     else:
-        m = await bot.send_message(user, message.text, reply_to_message_id=reply_to, parse_mode='markdown')
+        m = await bot.send_message(to, additional_text + (message.text or ''), reply_to_message_id=reply_to)
 
     cache_add(m.message_id, message)
-

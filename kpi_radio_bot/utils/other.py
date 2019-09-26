@@ -28,6 +28,12 @@ def get_user_name_(id_, name):
     return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
 
 
+def get_user_id_from_entity(message):
+    entities = message.caption_entities if message.audio or message.photo else message.entities
+    if entities:
+        return entities[0].user
+
+
 async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
     async def get_bad_words():
         res = await music.search_text(audio_name)
