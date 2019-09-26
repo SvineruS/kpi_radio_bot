@@ -6,7 +6,7 @@ from . import communication
 async def ban(message):
     if message.chat.id != ADMINS_CHAT_ID:
         return
-    if message.reply_to_message is None:
+    if message.reply_to_message is None or message.reply_to_message.from_user.id != (await bot.me).id:
         return await bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
     cmd = message.get_args().split(' ', 1)
@@ -23,9 +23,9 @@ async def ban(message):
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await bot.send_message(message.chat.id, f"{other.get_user_name_(user, 'Юзер')} разбанен")
+        return await bot.send_message(message.chat.id, f"{other.get_user_name_(user, 'Пользователь')} разбанен")
     await bot.send_message(message.chat.id,
-                           f"{other.get_user_name_(user, 'Юзер')} забанен на {ban_time} минут. {reason}")
+                           f"{other.get_user_name_(user, 'Пользователь')} забанен на {ban_time} минут. {reason}")
     await bot.send_message(user, f"Вы были забанены на {ban_time} минут. {reason}")
 
 
