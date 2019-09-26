@@ -127,6 +127,10 @@ times_name = {
               'Вечерний эфир'],
 }
 
+stats_blacklist = ['svinerus', 'mnb3000', 'MrRipll',
+                   'eddienubes', 'deshtone', 'shpiner',
+                   'nastyakulish', 'HomelessAtomist']
+
 broadcast_times = {  # todo короче эту тему лучше сделать как функцию геттер имхо
     #  day:
     #       num:  start, stop

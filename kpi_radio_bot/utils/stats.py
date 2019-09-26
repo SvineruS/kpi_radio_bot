@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 
 from config import PATH_STUFF
+from consts import stats_blacklist
 
 PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
@@ -59,7 +60,7 @@ def line_plot(moder_name):
 
 def bars_plot(days):
     stats = parse_stats(days)
-    stats = {moder_name: moder['all'] for moder_name, moder in stats.items()}
+    stats = {moder_name: moder['all'] for moder_name, moder in stats.items() if moder_name not in stats_blacklist}
     stats = dict(sorted(stats.items(), key=lambda i: i[1]))  # sort by value
 
     plt.figure(figsize=(12, 10))
