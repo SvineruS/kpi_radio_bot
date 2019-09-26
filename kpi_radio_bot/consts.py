@@ -129,7 +129,7 @@ times_name = {
 
 stats_blacklist = ['svinerus', 'mnb3000', 'MrRipll',
                    'eddienubes', 'deshtone', 'shpiner',
-                   'nastyakulish', 'HomelessAtomist']
+                   'nastyakulish', 'HomelessAtomist', 'Da_Yanchyk']
 
 broadcast_times = {  # todo короче эту тему лучше сделать как функцию геттер имхо
     #  day:
