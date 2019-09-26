@@ -56,9 +56,10 @@ async def perezaklad(day, time):
                 await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
                                      reply_markup=await keyboards.choice_day())
             except Exception as e:
-                logging.info(f"perezaklad: {e}")
+                logging.info(f"perezaklad send msg: {e}")
 
         await asyncio.sleep(3)
 
-    text = f"{counter} {other.case_by_num(counter, 'трек не успел','трека не успели','треков не успело')} заиграть"
-    await bot.send_message(ADMINS_CHAT_ID, text)
+    if counter > 0:
+        text = f"{counter} {other.case_by_num(counter, 'трек не успел','трека не успели','треков не успело')} заиграть"
+        await bot.send_message(ADMINS_CHAT_ID, text)
