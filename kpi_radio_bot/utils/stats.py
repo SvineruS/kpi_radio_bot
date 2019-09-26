@@ -23,6 +23,7 @@ def parse_stats(n_days=60):
 
     date_now = datetime.today()
     stats = {}
+    moderated_msgs = set()
 
     for r in records:
         moder = r[1]
@@ -31,6 +32,8 @@ def parse_stats(n_days=60):
         if moder == r[2]:  # свои заказы не считаем
             continue
         if (date_now - date).days >= n_days:
+            continue
+        if r[5] in moderated_msgs:
             continue
 
         if moder not in stats:
@@ -41,6 +44,7 @@ def parse_stats(n_days=60):
 
         stats[moder][date.strftime("%d.%m")] += 1  # модерации по дням
         stats[moder]['all'] += 1  # всего модераций
+        moderated_msgs.add(r[5])  # айдишники сообщений шоб не накручивали
 
     return stats
 
