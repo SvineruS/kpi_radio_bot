@@ -20,13 +20,15 @@ async def ban(message):
 
     ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
     reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
+    ban_time_text = str(ban_time) + other.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
         return await bot.send_message(message.chat.id, f"{other.get_user_name_(user, 'Пользователь')} разбанен")
     await bot.send_message(message.chat.id,
-                           f"{other.get_user_name_(user, 'Пользователь')} забанен на {ban_time} минут. {reason}")
-    await bot.send_message(user, f"Вы были забанены на {ban_time} минут. {reason}")
+                           f"{other.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
+    await bot.send_message(user, f"Вы были забанены на {ban_time_text}. {reason}")
 
 
 async def set_volume(message):
