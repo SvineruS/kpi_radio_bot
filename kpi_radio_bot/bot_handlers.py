@@ -120,7 +120,7 @@ async def message_handler(message):
             return await core.communication.admin_message(message)
 
         # Ввод названия песни
-        if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG:
+        if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG and not message.audio:
             return await core.search.search_audio(message)
 
         # Реплай на сообщение обратной связи или сообщение от модера
