@@ -105,6 +105,10 @@ async def get_new_order_pos():
     return playlist[0]  # если нету заказов - вернуть самый первый трек в очереди
 
 
+async def find_in_playlist_by_path(path):
+    return [i for i in await get_playlist() if i['filename'] == path]
+
+
 # todo тут не только инфа отправителя, надо как нить переименовать (зачеркнуто) и переструктурировать
 async def write_track_additional_info(path, user_obj, moderation_id):
     tag = {

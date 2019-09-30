@@ -40,11 +40,11 @@ async def admin_message(message):
         user, reply_to = cache_get(message.reply_to_message.message_id)
         text = ''
     else:
-        user = other.get_user_id_from_entity(message.reply_to_message)
+        user = other.get_user_from_entity(message.reply_to_message)
         reply_to = None
-
         if not user:
             return
+        user = user.id
 
         if message.reply_to_message.audio:
             text = "На ваш заказ <i>(" + other.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"

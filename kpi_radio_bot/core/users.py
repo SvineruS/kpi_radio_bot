@@ -4,6 +4,10 @@ from config import *
 from utils import other, radioboss, broadcast, db
 
 
+async def menu(message):
+    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
+
+
 async def song_now(message):
     playback = await radioboss.get_now()
     if not broadcast.is_broadcast_right_now() or not playback:

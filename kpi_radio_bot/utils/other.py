@@ -20,6 +20,10 @@ def get_audio_name(audio: types.Audio) -> str:
     return name
 
 
+def get_audio_path(day, time, audio_name):
+    return broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
+
+
 def get_user_name(user_obj: types.User) -> str:
     return get_user_name_(user_obj.id, user_obj.first_name)
 
@@ -28,7 +32,7 @@ def get_user_name_(id_, name):
     return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
 
 
-def get_user_id_from_entity(message):
+def get_user_from_entity(message):
     entities = message.caption_entities if message.audio or message.photo else message.entities
     if entities:
         return entities[0].user

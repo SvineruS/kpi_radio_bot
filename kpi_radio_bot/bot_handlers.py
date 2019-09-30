@@ -4,9 +4,10 @@ import consts
 import core
 import keyboards
 from config import *
-from utils import other, db, radioboss
+from utils import other, db, radioboss, bot_filters
 
 dp = Dispatcher(bot)
+bot_filters.bind_filters(dp)
 
 
 @dp.message_handler(commands=['start'])
@@ -16,44 +17,48 @@ async def start_handler(message):
 
     await db.add(message.chat.id)
     await bot.send_message(message.chat.id, consts.TextConstants.START)
-    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
+    await core.users.menu(message)
 
 
 @dp.message_handler(commands=['cancel'])
 async def cancel(message):
-    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.start)
-
-
-@dp.message_handler(lambda m: m.chat.id == ADMINS_CHAT_ID, commands=['next'])
-async def next_track_handler(message):
-    r = await radioboss.radioboss_api(cmd='next')
-    await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
-
-
-@dp.message_handler(lambda m: m.from_user.id in [185520398, 152950074], commands=['update'])
-async def update_handler(message):
-    await bot.send_message(message.chat.id, 'Ребутаюсь..')
-    other.reboot()
-
-
-@dp.message_handler(commands=['ban'])
-async def ban_handler(message):
-    await core.admins.ban(message)
-
-
-@dp.message_handler(commands=['vol', 'volume'])
-async def volume_handler(message):
-    await core.admins.set_volume(message)
-
-
-@dp.message_handler(commands=['stats'])
-async def stats_handler(message):
-    await core.admins.get_stats(message)
+    await core.users.menu(message)
 
 
 @dp.message_handler(commands=['notify'])
 async def notify_handler(message):
     await core.users.notify_switch(message)
+
+
+# region admins
+
+@dp.message_handler(commands=['next'], only_admins=True)
+async def next_handler(message):
+    r = await radioboss.radioboss_api(cmd='next')
+    await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
+
+
+@dp.message_handler(commands=['update'], only_admins=True)
+async def update_handler(message):
+    await bot.send_message(message.chat.id, 'Ребутаюсь..')
+    other.reboot()
+
+
+@dp.message_handler(commands=['ban'], only_admins=True)
+async def ban_handler(message):
+    await core.admins.ban(message)
+
+
+@dp.message_handler(commands=['vol', 'volume'], only_admins=True)
+async def volume_handler(message):
+    await core.admins.set_volume(message)
+
+
+@dp.message_handler(commands=['stats'], only_admins=True)
+async def stats_handler(message):
+    await core.admins.get_stats(message)
+
+# endregion
 
 
 @dp.callback_query_handler()
@@ -166,7 +171,6 @@ async def message_handler(message):
     # Просто сообщение
     await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
                             caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
-    await core.communication.user_message(message)
 
 
 @dp.inline_handler()

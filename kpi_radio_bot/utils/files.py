@@ -41,3 +41,8 @@ def move_to_archive(day=None) -> None:
                 shutil.move(src_file, dst_file)
             except Exception as ex:
                 logging.error(f'move file: {ex} {src_file}')
+
+
+async def download_audio(audio, path):
+    create_dirs(path)
+    await audio.download(path, timeout=60)
