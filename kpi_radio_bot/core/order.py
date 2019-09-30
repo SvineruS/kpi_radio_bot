@@ -76,7 +76,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     #
 
     when_playing = ''
-    if await radioboss.find_in_playlist_by_path(path):
+    if await radioboss.find_in_playlist_by_path(str(path)):
         when_playing = 'Такой же трек уже принят на этот эфир'
         m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
         communication.cache_add(m.message_id, query.message)
@@ -119,5 +119,5 @@ async def admin_unchoice(query, day: int, time: int, status: str):
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = other.get_audio_path(day, time, audio_name)
         files.delete_file(path)  # удалить с диска
-        for i in await radioboss.find_in_playlist_by_path(path):
+        for i in await radioboss.find_in_playlist_by_path(str(path)):
             await radioboss.radioboss_api(action='delete', pos=i['index'])
