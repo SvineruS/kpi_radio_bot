@@ -8,7 +8,7 @@ class OnlyAdminsFilter(BoundFilter):
     def __init__(self, only_admins):
         self.only_admins = only_admins
 
-    def check(self, message):
+    async def check(self, message):
         if not self.only_admins:
             return True
         return message.chat.id == ADMINS_CHAT_ID
