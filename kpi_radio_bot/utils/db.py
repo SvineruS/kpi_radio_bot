@@ -10,7 +10,7 @@ db = client.get_database()["kpiradio"]
 
 async def add(id_):
     if not await db.find_one({'usr': id_}):
-        await db.insert({'usr': id_})
+        await db.insert_one({'usr': id_})
 
 
 async def ban_get(id_):
