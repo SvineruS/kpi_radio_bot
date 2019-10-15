@@ -8,7 +8,7 @@ from utils import other, radioboss, broadcast, db
 
 
 async def send_history(fields):
-    if str(consts.paths['archive']) in fields['path']:  # песни с архива не играют на политехнической, только на ютубе
+    if not broadcast.is_broadcast_right_now():  # кидать только во время перерыва
         return
 
     if not fields['artist'] and not fields['title']:
