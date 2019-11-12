@@ -58,7 +58,7 @@ def line_plot(moder_name):
 
     plt.figure(figsize=(12, 10))
     plt.plot(list(moder.values()), list(moder.keys()))
-    plt.savefig(PATH_STATS_PNG, dpi=300)
+    plt.savefig(PATH_STATS_PNG)
     return moderation_per_day
 
 
@@ -69,4 +69,4 @@ def bars_plot(days):
 
     plt.figure(figsize=(12, 10))
     plt.barh(list(stats.keys()), list(stats.values()), height=0.8)
-    plt.savefig(PATH_STATS_PNG, dpi=300)
+    plt.savefig(PATH_STATS_PNG)
