@@ -61,7 +61,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     stats.add(audio_name, query.from_user.username, user.username, status,
               str(datetime.now()), query.message.message_id)
 
-    if status == 'reject':  # отмена
+    if status == 'reject':  # кнопка отмена
         m = await bot.send_message(user.id, TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
         return communication.cache_add(m.message_id, query.message)
 
@@ -69,40 +69,38 @@ async def admin_choice(query, day: int, time: int, status: str):
     await files.download_audio(query.message.audio, path)
     await radioboss.write_track_additional_info(path, user, query.message.message_id)
 
-    if not also['now']:  # если щас не этот эфир то похуй
-        m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
-        return communication.cache_add(m.message_id, query.message)
-
-    #
-
-    when_playing = ''
-    if await radioboss.find_in_playlist_by_path(str(path)):
-        when_playing = 'Такой же трек уже принят на этот эфир'
-        m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
-        communication.cache_add(m.message_id, query.message)
-
-    elif status == 'now':  # следующим
+    if status == 'now':  # кнопка сейчас
         when_playing = 'прямо сейчас!'
         await radioboss.radioboss_api(action='inserttrack', filename=path, pos=-2)
         m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
         communication.cache_add(m.message_id, query.message)
 
-    elif status == 'queue':  # в очередь
-        last_track = await radioboss.get_new_order_pos()
-        if not last_track:  # нету места
-            when_playing = 'не успел :('
-            m = await bot.send_audio(user.id, query.message.audio.file_id, reply_markup=await keyboards.choice_day(),
-                                     caption=TextConstants.ORDER_ERR_ACCEPTED_TOOLATE.
-                                     format(audio_name, also['text_datetime']))
-            communication.cache_add(m.message_id, query.message)
+    if status == 'queue':  # кнопка принять
 
-        else:  # есть место
-            minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
-            when_playing = f'через {minutes_left} ' + other.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-
-            await radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track['index'])
-            m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+        if not also['now']:  # если щас не этот эфир то похуй
+            when_playing = 'Заиграет когда надо'
+            m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
             communication.cache_add(m.message_id, query.message)
+        elif await radioboss.find_in_playlist_by_path(str(path)):
+            when_playing = 'Такой же трек уже принят на этот эфир'
+            m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
+            communication.cache_add(m.message_id, query.message)
+        else:
+            last_track = await radioboss.get_new_order_pos()
+            if not last_track:  # нету места
+                when_playing = 'не успел :('
+                m = await bot.send_audio(user.id, query.message.audio.file_id, reply_markup=await keyboards.choice_day(),
+                                         caption=TextConstants.ORDER_ERR_ACCEPTED_TOOLATE.
+                                         format(audio_name, also['text_datetime']))
+                communication.cache_add(m.message_id, query.message)
+
+            else:  # есть место
+                minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
+                when_playing = f'через {minutes_left} ' + other.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
+
+                await radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track['index'])
+                m = await bot.send_message(user.id, TextConstants.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+                communication.cache_add(m.message_id, query.message)
 
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id,
                                    caption=admin_text + '\n🕑 ' + when_playing,
