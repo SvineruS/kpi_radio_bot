@@ -60,7 +60,8 @@ async def calculate_tracks_duration(path: Path) -> float:
         files = path.iterdir()
         for file in files:
             tags = await radioboss.radioboss_api(action='readtag', fn=file)
-            duration += int(tags[0].attrib['Duration'])
+            if tags:
+                duration += int(tags[0].attrib['Duration'])
     except FileNotFoundError:
         return 0
     return duration / 1000 / 60  # minutes
