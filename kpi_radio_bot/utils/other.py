@@ -67,6 +67,11 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
     return text, {'text_datetime': text_datetime, 'now': now}
 
 
+async def is_moder(user_id):
+    member = await bot.get_chat_member(ADMINS_CHAT_ID, user_id)
+    return member and member.status in ('creator', 'administrator', 'member')
+
+
 def case_by_num(num: int, c1: str, c2: str, c3: str) -> str:
     if 11 <= num <= 14:
         return c3

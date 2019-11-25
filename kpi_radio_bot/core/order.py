@@ -10,10 +10,11 @@ from . import communication, users
 
 
 async def order_day_choiced(query, day: int):
+    is_moder = await other.is_moder(query.from_user.id)
     await bot.edit_message_caption(
         query.message.chat.id, query.message.message_id,
         caption=TextConstants.ORDER_CHOOSE_TIME.format(times_name['week_days'][day]),
-        reply_markup=await keyboards.choice_time(day)
+        reply_markup=await keyboards.choice_time(day, 0 if is_moder else 5)
     )
 
 
