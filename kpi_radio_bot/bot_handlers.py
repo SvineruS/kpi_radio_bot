@@ -135,6 +135,9 @@ async def message_handler(message):
             return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
                                           reply_markup=keyboards.start)
 
+        # Реплай, но на какую то хуйню
+        return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
+
     if message.chat.id < 0:
         return
 
