@@ -136,7 +136,8 @@ async def message_handler(message):
                                           reply_markup=keyboards.start)
 
         # Реплай, но на какую то хуйню
-        return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
+        if not message.audio:
+            return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
 
     if message.chat.id < 0:
         return
