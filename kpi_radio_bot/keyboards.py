@@ -32,7 +32,8 @@ CHOICE_HELP = types.InlineKeyboardMarkup(row_width=1).add(*[
 ])
 
 BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
-    types.InlineKeyboardButton(text=BtnConstants.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok'))
+    types.InlineKeyboardButton(text=BtnConstants.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok')),
+    types.InlineKeyboardButton(text=BtnConstants.CANCEL, callback_data='order_cancel')
 )
 
 

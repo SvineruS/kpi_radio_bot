@@ -60,7 +60,7 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
         duration = tg_audio.duration
         performer = tg_audio.performer
     elif api_audio:
-        file = api_audio['url']
+        file = music.get_download_url(api_audio['url'], api_audio['artist'], api_audio['title'])
         name = other.get_audio_name_(api_audio['artist'], api_audio['title'])
         duration = int(api_audio['duration'])
         performer = api_audio['artist']
