@@ -1,7 +1,7 @@
-from config import *
+import consts
+from config import bot, PATH_STUFF
 from utils import other, radioboss, db, stats
 from . import communication
-import consts
 
 
 async def ban(message):
@@ -48,10 +48,10 @@ async def get_stats(message):
 
     if len(message.entities) >= 2 and message.entities[1]['type'] == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
-        r = stats.line_plot(moderator)
-        if r is False:
+        res = stats.line_plot(moderator)
+        if res is False:
             return await message.reply(f"Хз кто такой {moderator}")
-        caption = f"Стата модератора {moderator} ({r:.2f} модераций/дн.)"
+        caption = f"Стата модератора {moderator} ({res:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7

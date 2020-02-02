@@ -13,7 +13,7 @@ def get_broadcast_num(dt: datetime = None) -> Union[bool, int]:
     day = dt.weekday()
     time = dt.hour * 60 + dt.minute
 
-    for num, (time_start, time_stop) in consts.broadcast_times_[day].items():
+    for num, (time_start, time_stop) in consts.BROADCAST_TIMES_[day].items():
         if time_start < time < time_stop:
             return num
 
@@ -21,7 +21,7 @@ def get_broadcast_num(dt: datetime = None) -> Union[bool, int]:
 
 
 def get_broadcast_name(time: int) -> str:
-    return consts.times_name['times'][time]
+    return consts.TIMES_NAME['times'][time]
 
 
 def is_this_broadcast_now(day: int, time: int) -> bool:
@@ -33,7 +33,7 @@ def is_broadcast_right_now() -> bool:
 
 
 async def get_broadcast_freetime(day: int, time: int) -> int:
-    broadcast_start, broadcast_finish = consts.broadcast_times_[day][time]
+    broadcast_start, broadcast_finish = consts.BROADCAST_TIMES_[day][time]
     if is_this_broadcast_now(day, time):
         last_order = await radioboss.get_new_order_pos()
         if not last_order:
@@ -47,11 +47,11 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
 
 
 def get_broadcast_path(day: int, time: int = False) -> Path:
-    t = consts.paths['orders']
-    t /= f"D0{day + 1}"
+    path = consts.PATHS['orders']
+    path /= f"D0{day + 1}"
     if time is not False:  # так и должно быть
-        t /= '{0} {1}'.format(time, consts.times_name['times'][time])
-    return t
+        path /= '{0} {1}'.format(time, consts.TIMES_NAME['times'][time])
+    return path
 
 
 async def calculate_tracks_duration(path: Path) -> float:

@@ -5,7 +5,7 @@ from urllib.parse import quote
 from aiogram import types
 
 import consts
-from config import *
+from config import bot, HOST, ADMINS_CHAT_ID, PATH_SELF
 from utils import music, broadcast
 
 
@@ -52,13 +52,13 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
         return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">' \
                f'{"⚠" if bw else "🆗"} ({title})</a>  ' + ', '.join(bw)
 
-    now = broadcast.is_this_broadcast_now(day, time)
-    is_now_text = ' (сейчас!)' if now else ''
+    is_now = broadcast.is_this_broadcast_now(day, time)
+    is_now_text = ' (сейчас!)' if is_now else ''
     user_name = get_user_name(user)
-    text_datetime = consts.times_name['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
+    text_datetime = consts.TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
 
     if not status:
-        is_now_mark = '‼️' if now else '❗️'
+        is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await get_bad_words_()
         is_anime = '🅰️' if await music.is_anime(audio_name) else ''
         text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
@@ -67,7 +67,7 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
         moder_name = get_user_name(moder)
         text = f'Заказ: {text_datetime} {is_now_text} от {user_name} {status_text} ({moder_name})'
 
-    return text, {'text_datetime': text_datetime, 'now': now}
+    return text, {'text_datetime': text_datetime, 'now': is_now}
 
 
 async def is_moder(user_id):

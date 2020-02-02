@@ -144,7 +144,7 @@ class BtnConstants:
     BAD_ORDER_BUT_OK = 'Все ок'
 
 
-bad_words = [
+BAD_WORDS = [
     'пизд',
     'бля',
     'хуй', 'хуя', 'хуи', 'хуе',
@@ -159,23 +159,23 @@ bad_words = [
     'fuck', 'bitch', 'shit', 'dick', 'cunt'
 ]
 
-anime_words = ['anime', 'аниме']
+ANIME_WORDS = ['anime', 'аниме']
 
-bad_performers = ['корж', 'тима', 'стрыкало', 'radio tapok']  # todo
+BAD_PERFORMERS = ['корж', 'тима', 'стрыкало', 'radio tapok']  # todo
 
 
-times_name = {
+TIMES_NAME = {
     'week_days': ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'],
     'next_days': ['Сегодня', 'Завтра', 'Послезавтра', 'Послепослезавтра', 'Сейчас'],
     'times': ['Утренний эфир', 'Первый перерыв', 'Второй перерыв', 'Третий перерыв', 'Четвертый перерыв',
               'Вечерний эфир'],
 }
 
-stats_blacklist = ['svinerus', 'mnb3000', 'MrRipll',
+STATS_BLACKLIST = ['svinerus', 'mnb3000', 'MrRipll',
                    'eddienubes', 'deshtone', 'shpiner',
                    'nastyakulish', 'HomelessAtomist', 'Da_Yanchyk']
 
-broadcast_times = {  # todo короче эту тему лучше сделать как функцию геттер имхо
+BROADCAST_TIMES = {  # todo короче эту тему лучше сделать как функцию геттер имхо
     #  day:
     #       num:  start, stop
 
@@ -198,7 +198,7 @@ broadcast_times = {  # todo короче эту тему лучше сделат
 
 }
 
-paths = {
+PATHS = {
     'orders': Path('D:/Вещание Радио/Заказы'),  # сюда бот кидает заказанные песни
     'archive': Path('D:/Вещание Радио/Архив'),  # сюда песни перемещаются каждую ночь с папки заказов
     'ether': Path('D:/Вещание Радио/Эфир'),  # тут песни выбранные радистами, не используется
@@ -213,14 +213,14 @@ paths = {
 # }
 
 
-def _time(s):
-    h, m = s.split(':')
-    return int(h) * 60 + int(m)
+def _time(time_string):
+    hours, mins = time_string.split(':')
+    return int(hours) * 60 + int(mins)
 
 
-broadcast_times_ = {
+BROADCAST_TIMES_ = {
     day_k: {
         num_k: tuple(_time(time) for time in num_v)
         for num_k, num_v in day_v.items()
-    } for day_k, day_v in broadcast_times.items()
+    } for day_k, day_v in BROADCAST_TIMES.items()
 }
