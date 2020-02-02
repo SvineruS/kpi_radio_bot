@@ -56,17 +56,17 @@ async def admin_message(message):
 
 async def resend_message(message, chat, additional_text='', reply_to=None):
     if additional_text and (message.audio or message.sticker):
-        message = await bot.send_message(chat, additional_text)
-        cache_add(message.message_id, message)
+        m = await bot.send_message(chat, additional_text)
+        cache_add(m.message_id, message)
 
     if message.audio:
-        message = await bot.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)
     elif message.sticker:
-        message = await bot.send_sticker(chat, message.sticker.file_id, reply_to_message_id=reply_to)
+        m = await bot.send_sticker(chat, message.sticker.file_id, reply_to_message_id=reply_to)
     elif message.photo:
-        message = await bot.send_photo(chat, message.photo[-1].file_id,
-                                       caption=additional_text + (message.caption or ''), reply_to_message_id=reply_to)
+        m = await bot.send_photo(chat, message.photo[-1].file_id,
+                                 caption=additional_text + (message.caption or ''), reply_to_message_id=reply_to)
     else:
-        message = await bot.send_message(chat, additional_text + (message.text or ''), reply_to_message_id=reply_to)
+        m = await bot.send_message(chat, additional_text + (message.text or ''), reply_to_message_id=reply_to)
 
-    cache_add(message.message_id, message)
+    cache_add(m.message_id, message)
