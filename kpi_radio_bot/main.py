@@ -9,7 +9,7 @@ from aiohttp import web
 
 import core
 from bot_handlers import dp
-from config import *
+from config import RADIOBOSS_DATA, WEBHOOK_URL, PORT, SSL_PRIV, Bot, bot, SSL_CERT, WEBHOOK_PATH
 from utils import music, scheduler
 
 app = web.Application()
@@ -26,9 +26,8 @@ async def gettext(request):
     res = await music.search_text(name)
     if not res:
         return web.Response(text="Ошибка поиска")
-    else:
-        title, text = res
-        return web.Response(text=f"{title} \n\n{text}")
+    title, text = res
+    return web.Response(text=f"{title} \n\n{text}")
 
 
 @routes.get("/playlist")

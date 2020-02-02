@@ -1,9 +1,9 @@
-import logging
 import asyncio
+import logging
 
 import consts
 import keyboards
-from config import *
+from config import HISTORY_CHAT_ID, bot, ADMINS_CHAT_ID
 from utils import other, radioboss, broadcast, db
 
 
@@ -24,8 +24,8 @@ async def send_history(fields):
             await bot.send_message(tag['id'], consts.TextConstants.ORDER_PLAYING.format(fields['casttitle']))
         await bot.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
-    with open(fields['path'], 'rb') as f:
-        await bot.send_audio(HISTORY_CHAT_ID, f, sender_name, performer=fields['artist'], title=fields['title'])
+    with open(fields['path'], 'rb') as file:
+        await bot.send_audio(HISTORY_CHAT_ID, file, sender_name, performer=fields['artist'], title=fields['title'])
 
 
 async def broadcast_begin(time):

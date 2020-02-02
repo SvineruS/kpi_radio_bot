@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 import aiohttp
 
 import consts
-from config import *
+from config import RADIOBOSS_DATA
 from utils import broadcast
 
 
@@ -16,19 +16,19 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
     for key in kwargs:
         url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
-    t = ''
+    res = ''
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 resp.encoding = 'utf-8'
-                t = await resp.text()
-                if not t:
+                res = await resp.text()
+                if not res:
                     return False
-                if t == 'OK':
+                if res == 'OK':
                     return True
-                return Etree.fromstring(t)
+                return Etree.fromstring(res)
     except Exception as e:
-        logging.error(f'radioboss: {e} {t} {url}')
+        logging.error(f'radioboss: {e} {res} {url}')
         return False
 
 
@@ -56,7 +56,7 @@ async def get_next():
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-    time_max = consts.broadcast_times[dt_now.weekday()][bn][1]
+    time_max = consts.BROADCAST_TIMES[dt_now.weekday()][bn][1]
     time_max = datetime.strptime(time_max, '%H:%M').time()
 
     for track in playlist:
@@ -86,7 +86,7 @@ async def get_playlist():
             'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
             'filename': track['FILENAME'],
             'index': int(track['INDEX']),
-            'is_order': str(consts.paths['orders']) in track["FILENAME"]
+            'is_order': str(consts.PATHS['orders']) in track["FILENAME"]
         })
 
     return answer

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 
 from config import PATH_STUFF
-from consts import stats_blacklist
+from consts import STATS_BLACKLIST
 
 PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
@@ -25,15 +25,15 @@ def parse_stats(n_days=60):
     stats = {}
     moderated_msgs = set()
 
-    for r in records:
-        moder = r[1]
-        date = datetime.strptime(r[4][:10], "%Y-%m-%d")
+    for rec in records:
+        moder = rec[1]
+        date = datetime.strptime(rec[4][:10], "%Y-%m-%d")
 
-        if moder == r[2]:  # свои заказы не считаем
+        if moder == rec[2]:  # свои заказы не считаем
             continue
         if (date_now - date).days >= n_days:
             continue
-        if r[5] in moderated_msgs:
+        if rec[5] in moderated_msgs:
             continue
 
         if moder not in stats:
@@ -44,7 +44,7 @@ def parse_stats(n_days=60):
 
         stats[moder][date.strftime("%d.%m")] += 1  # модерации по дням
         stats[moder]['all'] += 1  # всего модераций
-        moderated_msgs.add(r[5])  # айдишники сообщений шоб не накручивали
+        moderated_msgs.add(rec[5])  # айдишники сообщений шоб не накручивали
 
     return stats
 
@@ -64,7 +64,7 @@ def line_plot(moder_name):
 
 def bars_plot(days):
     stats = parse_stats(days)
-    stats = {moder_name: moder['all'] for moder_name, moder in stats.items() if moder_name not in stats_blacklist}
+    stats = {moder_name: moder['all'] for moder_name, moder in stats.items() if moder_name not in STATS_BLACKLIST}
     stats = dict(sorted(stats.items(), key=lambda i: i[1]))  # sort by value
 
     plt.figure(figsize=(12, 10))

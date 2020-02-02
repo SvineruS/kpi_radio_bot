@@ -2,8 +2,9 @@ from aiogram import Dispatcher, types, executor
 
 import consts
 import core
+import core.users
 import keyboards
-from config import *
+from config import bot, ADMINS_CHAT_ID
 from utils import other, db, radioboss, bot_filters
 
 dp = Dispatcher(bot)
@@ -34,8 +35,8 @@ async def notify_handler(message):
 
 @dp.message_handler(commands=['next'], only_admins=True)
 async def next_handler(message):
-    r = await radioboss.radioboss_api(cmd='next')
-    await bot.send_message(message.chat.id, 'Ок' if r else 'хуй знает, не работает')
+    res = await radioboss.radioboss_api(cmd='next')
+    await bot.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
 
 
 @dp.message_handler(commands=['update'], only_admins=True)
@@ -102,10 +103,15 @@ async def callback_query_handler(query):
     elif cmd[0] == 'song_next':
         await core.users.song_next(query)
 
-    #
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
         await core.users.help_change(query, cmd[1])
+
+    # Кнопка "все ок" когда закинул неподобающий трек
+    elif cmd[0] == 'bad_order_but_ok':
+        await bot.edit_message_caption(
+            query.message.chat.id, query.message.message_id,
+            caption=consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
     try:
         await bot.answer_callback_query(query.id)
@@ -133,7 +139,7 @@ async def message_handler(message):
                 core.communication.cache_is_set(message.reply_to_message.message_id):
             await core.communication.user_message(message)
             return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
-                                          reply_markup=keyboards.start)
+                                          reply_markup=keyboards.START)
 
         # Реплай, но на какую то хуйню
         if not message.audio:
@@ -144,8 +150,7 @@ async def message_handler(message):
 
     # Пользователь скинул аудио
     if message.audio:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.TextConstants.ORDER_CHOOSE_DAY,
-                                    reply_markup=await keyboards.choice_day())
+        return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
 
     # Кнопки
 
@@ -157,7 +162,7 @@ async def message_handler(message):
     if message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
         await bot.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
         return await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
-                                      reply_markup=keyboards.order_inline)
+                                      reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
     if message.text == consts.BtnConstants.MENU['feedback']:
@@ -166,7 +171,7 @@ async def message_handler(message):
     # Кнопка 'Помощь'
     if message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
         return await bot.send_message(message.chat.id, consts.TextConstants.HELP['start'],
-                                      reply_markup=keyboards.choice_help)
+                                      reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
     if message.text == consts.BtnConstants.MENU['timetable']:
@@ -174,7 +179,7 @@ async def message_handler(message):
 
     # Просто сообщение
     await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-                            caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.start)
+                            caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.START)
 
 
 @dp.inline_handler()
