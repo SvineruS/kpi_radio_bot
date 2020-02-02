@@ -5,10 +5,8 @@ from datetime import datetime
 from typing import Union
 from urllib.parse import quote_plus
 
-import aiohttp
-
 import consts
-from config import RADIOBOSS_DATA
+from config import RADIOBOSS_DATA, AIOHTTP_SESSION
 from utils import broadcast
 
 
@@ -18,15 +16,14 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
         url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
     res = ''
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                resp.encoding = 'utf-8'
-                res = await resp.text()
-                if not res:
-                    return False
-                if res == 'OK':
-                    return True
-                return Etree.fromstring(res)
+        async with AIOHTTP_SESSION.get(url) as resp:
+            resp.encoding = 'utf-8'
+            res = await resp.text()
+            if not res:
+                return False
+            if res == 'OK':
+                return True
+            return Etree.fromstring(res)
     except Exception as e:
         logging.error(f'radioboss: {e} {res} {url}')
         return False
