@@ -81,7 +81,7 @@ async def is_anime(audio_name):
     async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}") as res:
         if res.status != 200:
             return False
-        text = await res.text().lower()
+        text = (await res.text()).lower()
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 
