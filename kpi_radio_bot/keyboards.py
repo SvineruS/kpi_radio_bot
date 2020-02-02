@@ -31,6 +31,10 @@ choice_help = types.InlineKeyboardMarkup(row_width=1).add(*[
     for k, v in BtnConstants.HELP.items()
 ])
 
+bad_order_but_ok = types.InlineKeyboardMarkup(row_width=1).add(
+    types.InlineKeyboardButton(text=BtnConstants.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok'))
+)
+
 
 async def choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()

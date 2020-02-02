@@ -2,6 +2,7 @@ from aiogram import Dispatcher, types, executor
 
 import consts
 import core
+import core.users
 import keyboards
 from config import *
 from utils import other, db, radioboss, bot_filters
@@ -102,10 +103,15 @@ async def callback_query_handler(query):
     elif cmd[0] == 'song_next':
         await core.users.song_next(query)
 
-    #
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
         await core.users.help_change(query, cmd[1])
+
+    # Кнопка "все ок" когда закинул неподобающий трек
+    elif cmd[0] == 'bad_order_but_ok':
+        await bot.edit_message_caption(
+            query.message.chat.id, query.message.message_id,
+            caption=consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
     try:
         await bot.answer_callback_query(query.id)
@@ -144,8 +150,7 @@ async def message_handler(message):
 
     # Пользователь скинул аудио
     if message.audio:
-        return await bot.send_audio(message.chat.id, message.audio.file_id, consts.TextConstants.ORDER_CHOOSE_DAY,
-                                    reply_markup=await keyboards.choice_day())
+        return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
 
     # Кнопки
 

@@ -63,3 +63,23 @@ async def search_text(name):
 async def is_anime(audio_name):
     text = (await asession.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}")).text.lower()
     return any(anime_word in text for anime_word in consts.anime_words)
+
+
+def is_bad_performer(performer):
+    performer = performer.lower()
+    return any(bad_perf in performer for bad_perf in consts.bad_performers)
+
+
+async def is_contain_bad_words(audio_name):
+    res = await search_text(audio_name)
+    return res and res[1]
+
+
+async def get_bad_words(audio_name):
+    res = await search_text(audio_name)
+    if not res:
+        return False
+
+    title, lyrics = res
+    bw = [word for word in consts.bad_words if word in lyrics]
+    return title, bw

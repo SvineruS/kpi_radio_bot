@@ -10,12 +10,16 @@ from utils import music, broadcast
 
 
 def get_audio_name(audio: types.Audio) -> str:
-    if audio.performer and audio.title:
-        name = f'{audio.performer} - {audio.title}'
-    elif not audio.performer and not audio.title:
+    return get_audio_name_(audio.performer, audio.title)
+
+
+def get_audio_name_(performer, title) -> str:
+    if performer and title:
+        name = f'{performer} - {title}'
+    elif not performer and not title:
         name = 'Названия нету :('
     else:
-        name = audio.title if audio.title else audio.performer
+        name = title if title else performer
     name = ''.join(list(filter(lambda c: (c not in '/:*?"<>|'), name)))  # винда агрится на эти символы в пути
     return name
 
@@ -39,13 +43,12 @@ def get_user_from_entity(message):
 
 
 async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
-    async def get_bad_words():
-        res = await music.search_text(audio_name)
+    async def get_bad_words_():
+        res = await music.get_bad_words(audio_name)
         if not res:
             return ''
 
-        title, lyrics = res
-        bw = [word for word in consts.bad_words if word in lyrics]
+        title, bw = res
         return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">' \
                f'{"⚠" if bw else "🆗"} ({title})</a>  ' + ', '.join(bw)
 
@@ -56,7 +59,7 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
 
     if not status:
         is_now_mark = '‼️' if now else '❗️'
-        bad_words = await get_bad_words()
+        bad_words = await get_bad_words_()
         is_anime = '🅰️' if await music.is_anime(audio_name) else ''
         text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
     else:
