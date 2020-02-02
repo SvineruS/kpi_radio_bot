@@ -1,24 +1,43 @@
 import logging
-from json import loads
+from html.parser import HTMLParser
 from urllib.parse import quote_plus
 
-from requests_html import AsyncHTMLSession
-
 import consts
+from config import AIOHTTP_SESSION
 
-asession = AsyncHTMLSession()
+
+class MyHTMLParser(HTMLParser):
+    data = ''
+
+    def parse(self, data):
+        self.data = ''
+        self.feed(data)
+        return self.data
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'br':
+            self.data += '\n'
+
+    def handle_data(self, data):
+        self.data += data
+
+    def error(self, message):
+        pass
+
+
+PARSER = MyHTMLParser()
 
 
 async def search(name):
     url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
-    resp = await asession.get(url)
-    if resp.status_code != 200:
-        return False
-    try:
-        return loads(resp.text)
-    except Exception as e:
-        logging.error(f'search song: {e} {name}')
-        return False
+    async with AIOHTTP_SESSION.get(url) as res:
+        if res.status != 200:
+            return False
+        try:
+            return await res.json()
+        except Exception as e:
+            logging.error(f'search song: {e} {name}')
+            return False
 
 
 def get_download_url(url, artist=None, title=None):
@@ -32,11 +51,11 @@ def get_download_url(url, artist=None, title=None):
 
 async def search_text(name):
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
-    res = await asession.get(url)
-    if res.status_code != 200:
-        return False
+    async with AIOHTTP_SESSION.get(url) as res:
+        if res.status != 200:
+            return False
+        res_json = await res.json()
 
-    res_json = loads(res.text)
     sections = res_json['response']['sections']
     for sec in sections:
         if sec['type'] == 'song' and sec['hits']:
@@ -49,17 +68,20 @@ async def search_text(name):
     title = res['full_title']
     lyrics_url = res['url']
 
-    res = await asession.get(lyrics_url)
-    if res.status_code != 200:
-        return False
-
-    lyrics = res.html.find("div.lyrics", first=True).text
-
+    async with AIOHTTP_SESSION.get(lyrics_url) as res:
+        if res.status != 200:
+            return False
+        lyrics = await res.text()
+    lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
+    lyrics = PARSER.parse(lyrics).strip()
     return title, lyrics
 
 
 async def is_anime(audio_name):
-    text = (await asession.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}")).text.lower()
+    async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}") as res:
+        if res.status != 200:
+            return False
+        text = await res.text().lower()
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 

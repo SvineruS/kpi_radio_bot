@@ -3,4 +3,3 @@ aiohttp==3.5.4
 aioschedule==0.5.2
 matplotlib==3.1.1
 motor==2.0.0
-requests-html==0.10.0
