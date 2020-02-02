@@ -85,9 +85,9 @@ async def is_anime(audio_name):
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 
-def is_bad_performer(performer):
-    performer = performer.lower()
-    return any(bad_perf in performer for bad_perf in consts.BAD_PERFORMERS)
+def is_bad_name(audio_name):
+    audio_name = audio_name.lower()
+    return any(bad_name in audio_name for bad_name in consts.BAD_NAMES)
 
 
 async def is_contain_bad_words(audio_name):

@@ -161,8 +161,11 @@ BAD_WORDS = [
 
 ANIME_WORDS = ['anime', 'аниме']
 
-BAD_PERFORMERS = ['корж', 'тима', 'стрыкало', 'radio tapok']  # todo
-
+BAD_NAMES = [
+    'корж', 'тима', 'стрыкало',
+    'gachi', '♂', 'slave', 'ass', 'butt', 'right version'
+    'mix', 'radio tapok',
+]  # todo
 
 TIMES_NAME = {
     'week_days': ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'],

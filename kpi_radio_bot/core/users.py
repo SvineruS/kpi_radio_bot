@@ -58,12 +58,10 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
         file = tg_audio.file_id
         name = other.get_audio_name(tg_audio)
         duration = tg_audio.duration
-        performer = tg_audio.performer
     elif api_audio:
         file = music.get_download_url(api_audio['url'], api_audio['artist'], api_audio['title'])
         name = other.get_audio_name_(api_audio['artist'], api_audio['title'])
         duration = int(api_audio['duration'])
-        performer = api_audio['artist']
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
 
@@ -72,7 +70,7 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
         (consts.TextConstants.BAD_ORDER_LONG, duration > 60 * 6),
         (consts.TextConstants.BAD_ORDER_BADWORDS, await music.is_contain_bad_words(name)),
         (consts.TextConstants.BAD_ORDER_ANIME, await music.is_anime(name)),
-        (consts.TextConstants.BAD_ORDER_PERFORMER, music.is_bad_performer(performer)),
+        (consts.TextConstants.BAD_ORDER_PERFORMER, music.is_bad_name(name)),
     )
 
     warnings = list(text for text, b in bad_list if b)
