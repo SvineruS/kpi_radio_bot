@@ -91,7 +91,7 @@ def is_bad_performer(performer):
 
 
 async def is_contain_bad_words(audio_name):
-    res = await search_text(audio_name)
+    res = await get_bad_words(audio_name)
     return res and res[1]
 
 
