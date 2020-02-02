@@ -15,7 +15,7 @@ from utils import music, scheduler
 app = web.Application()
 routes = web.RouteTableDef()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 
 
 @routes.get("/gettext/{name}")
