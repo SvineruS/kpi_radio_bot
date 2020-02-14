@@ -43,14 +43,12 @@ async def start_up():
 
 
 async def perezaklad(day, time):
-    counter = 0
     tracks = broadcast.get_broadcast_path(day, time).iterdir()
     for track_path in tracks:
         tag = await radioboss.read_track_additional_info(track_path)
         if not tag:
             continue
 
-        counter += 1
         with open(str(track_path), 'rb') as file:
             try:
                 await bot.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
@@ -59,7 +57,3 @@ async def perezaklad(day, time):
                 logging.info(f"perezaklad send msg: {e}")
 
         await asyncio.sleep(3)
-
-    if counter > 0:
-        text = f"{counter} {other.case_by_num(counter, 'трек не успел','трека не успели','треков не успело')} заиграть"
-        await bot.send_message(ADMINS_CHAT_ID, text)
