@@ -54,7 +54,8 @@ async def search_text(name):
     async with AIOHTTP_SESSION.get(url) as res:
         if res.status != 200:
             return False
-        res_json = await res.json()
+
+        res_json = await res.json(content_type=None)
 
     sections = res_json['response']['sections']
     for sec in sections:
