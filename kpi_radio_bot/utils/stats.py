@@ -1,11 +1,11 @@
 import csv
 from collections import Counter
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 from matplotlib import pyplot as plt
 
-from config import PATH_STUFF, bot, ADMINS_CHAT_ID
+from config import PATH_STUFF
+from utils.other import get_moders
 
 PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
@@ -15,6 +15,15 @@ def add(*data):
     with open(PATH_STATS_CSV, "a", newline='', encoding='utf-8-sig') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(data)
+
+
+def TEMP_change_username_to_id(changes):  # todo remove
+    with open(PATH_STATS_CSV, "r") as file:
+        content = file.read()
+    for username, id_ in changes.items():
+        content = content.replace(username, str(id_))
+    with open(PATH_STATS_CSV, "w") as file:
+        file.write(content)
 
 
 def parse_stats(n_days=float('nan')):
@@ -51,27 +60,26 @@ def parse_stats(n_days=float('nan')):
         if moder_id not in stats:
             stats[moder_id] = set_all_days(date_how_old)
 
-        stats[moder_id]['all'][date_now.strftime("%d.%m")] += 1
+        stats[moder_id]['all'][date.strftime("%d.%m")] += 1
         if moder_id == user_id:
-            stats[moder_id]['own'][date_now.strftime("%d.%m")] += 1
+            stats[moder_id]['own'][date.strftime("%d.%m")] += 1
 
     return stats
 
 
 async def line_plot(moder_id):
     stats = parse_stats(60)
-    if isinstance(moder_id, str):
-        moder_id = await get_moder_by_username(moder_id).id
+    moder_id = str(moder_id)  # todo remove
+
     if moder_id not in stats:
         return False
     moder = stats[moder_id]
 
     moderation_all, moderation_own = moder['all'], moder['own']
-    moderation_not_own = {date: moderation_all[date] - moderation_own[date] for date in moderation_all}
 
     plt.figure(figsize=(12, 10))
 
-    plt.plot(list(moderation_not_own.values()), list(moderation_not_own.keys()), label="Не свои заказы")
+    plt.plot(list(moderation_all.values()), list(moderation_all.keys()), label="Все заказы")
     plt.plot(list(moderation_own.values()), list(moderation_own.keys()), 'r', label="Свои заказы")
 
     plt.legend(loc="upper right")
@@ -83,14 +91,20 @@ async def line_plot(moder_id):
 
 async def bars_plot(days):
     stats = parse_stats(days)
-    moder_names = await get_moders()
+    moders = await get_moders()
+
+    stats = {int(moder_id): moder for moder_id, moder in stats.items() if moder_id.isdigit()}  # todo remove
 
     stats = [
-        (moder_names[moder_id], sum(moder['all'].values()), sum(moder['own'].values()))
+        (
+            moders[moder_id].user.first_name,
+            sum(moder['all'].values()),
+            sum(moder['own'].values())
+        )
         for moder_id, moder in stats.items()
-        # if moder_name not in STATS_BLACKLIST
+        if moder_id in moders and 'Модер' in moders[moder_id].custom_title
     ]
-    stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort all by value
+    stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
     names, alls, owns = zip(*stats)
 
     plt.figure(figsize=(12, 10))
@@ -100,20 +114,3 @@ async def bars_plot(days):
 
     plt.legend(loc="lower right")
     plt.savefig(PATH_STATS_PNG)
-
-
-async def get_moders():
-    @lru_cache(maxsize=1)
-    async def get_moders_(_):
-        admins = await bot.get_chat_administrators(ADMINS_CHAT_ID)
-        return {
-            admin.id: admin
-            for admin in admins
-            if 'Модер' in admin.custom_title
-        }
-
-    return await get_moders_(datetime.today().day)
-
-
-async def get_moder_by_username(username):
-    return [moder for moder in await get_moders() if moder.username == username][0]

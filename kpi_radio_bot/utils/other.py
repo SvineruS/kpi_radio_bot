@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from functools import lru_cache
 from urllib.parse import quote
 
 from aiogram import types
@@ -24,7 +25,7 @@ def get_audio_name_(performer, title) -> str:
     return name
 
 
-def get_audio_path(day, time, audio_name):
+def get_audio_path(day, time, audio_name):  # todo move to order.py
     return broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
 
 
@@ -42,7 +43,7 @@ def get_user_from_entity(message):
         return entities[0].user
 
 
-async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
+async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):  # todo move to order.py
     async def get_bad_words_():
         res = await music.get_bad_words(audio_name)
         if not res:
@@ -70,11 +71,6 @@ async def gen_order_caption(day, time, user, audio_name=None, status=None, moder
     return text, {'text_datetime': text_datetime, 'now': is_now}
 
 
-async def is_moder(user_id):
-    member = await bot.get_chat_member(ADMINS_CHAT_ID, user_id)
-    return member and member.status in ('creator', 'administrator', 'member')
-
-
 def case_by_num(num: int, c1: str, c2: str, c3: str) -> str:
     if 11 <= num <= 14:
         return c3
@@ -85,7 +81,7 @@ def case_by_num(num: int, c1: str, c2: str, c3: str) -> str:
     return c3
 
 
-def song_format(playback):
+def song_format(playback):  # todo move to users.py
     text = [
         f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
         for track in playback
@@ -95,3 +91,27 @@ def song_format(playback):
 
 def reboot() -> None:
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
+
+
+async def get_moders():
+    @lru_cache(maxsize=1)
+    async def get_moders_(_):
+        admins = await bot.get_chat_administrators(ADMINS_CHAT_ID)
+        return {
+            admin.user.id: admin
+            for admin in admins
+            # if admin.custom_title
+        }
+
+    return await get_moders_(datetime.today().day)
+
+
+async def get_moder_by_username(username):
+    for moder in (await get_moders()).values():
+        if moder.user.username == username:
+            return moder.user
+
+
+async def is_moder(user_id):
+    member = await bot.get_chat_member(ADMINS_CHAT_ID, user_id)
+    return member and member.status in ('creator', 'administrator', 'member')

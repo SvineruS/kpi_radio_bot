@@ -54,12 +54,14 @@ async def order_cancel(query):
 async def admin_choice(query, day: int, time: int, status: str):
     audio_name = other.get_audio_name(query.message.audio)
     user = other.get_user_from_entity(query.message)
+    moder = query.from_user
 
-    admin_text, also = await other.gen_order_caption(day, time, user, status=status, moder=query.from_user)
+    admin_text, also = await other.gen_order_caption(day, time, user, status=status, moder=moder)
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
-    stats.add(audio_name, query.from_user.id, user.id, status, str(datetime.now()), query.message.message_id)
+    stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
+    stats.TEMP_change_username_to_id({user.username: user.id, moder.username: moder.id})
 
     if status == 'reject':  # кнопка отмена
         m = await bot.send_message(user.id, TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
