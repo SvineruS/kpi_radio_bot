@@ -1,12 +1,10 @@
-./idea
 ./__pycache__
-config.py
-./idea/*
+.idea/*
 *.pyc
 *.pem
-./git_backup
+*.env
 test.py
 stuff
-./stuff/*
+stuff/*
 
 # научите пользоваться этим умоляю

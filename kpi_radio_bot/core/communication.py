@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from config import bot, ADMINS_CHAT_ID
+from config import BOT, ADMINS_CHAT_ID
 from utils import other
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
@@ -56,17 +56,17 @@ async def admin_message(message):
 
 async def resend_message(message, chat, additional_text='', reply_to=None):
     if additional_text and (message.audio or message.sticker):
-        m = await bot.send_message(chat, additional_text)
+        m = await BOT.send_message(chat, additional_text)
         cache_add(m.message_id, message)
 
     if message.audio:
-        m = await bot.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)
+        m = await BOT.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)
     elif message.sticker:
-        m = await bot.send_sticker(chat, message.sticker.file_id, reply_to_message_id=reply_to)
+        m = await BOT.send_sticker(chat, message.sticker.file_id, reply_to_message_id=reply_to)
     elif message.photo:
-        m = await bot.send_photo(chat, message.photo[-1].file_id,
+        m = await BOT.send_photo(chat, message.photo[-1].file_id,
                                  caption=additional_text + (message.caption or ''), reply_to_message_id=reply_to)
     else:
-        m = await bot.send_message(chat, additional_text + (message.text or ''), reply_to_message_id=reply_to)
+        m = await BOT.send_message(chat, additional_text + (message.text or ''), reply_to_message_id=reply_to)
 
     cache_add(m.message_id, message)

@@ -4,10 +4,10 @@ import consts
 import core
 import core.users
 import keyboards
-from config import bot, ADMINS_CHAT_ID
+from config import BOT, ADMINS_CHAT_ID
 from utils import other, db, radioboss, bot_filters
 
-dp = Dispatcher(bot)
+dp = Dispatcher(BOT)
 bot_filters.bind_filters(dp)
 
 
@@ -17,7 +17,7 @@ async def start_handler(message):
         return
 
     await db.add(message.chat.id)
-    await bot.send_message(message.chat.id, consts.TextConstants.START)
+    await BOT.send_message(message.chat.id, consts.TextConstants.START)
     await core.users.menu(message)
 
 
@@ -36,12 +36,12 @@ async def notify_handler(message):
 @dp.message_handler(commands=['next'], only_admins=True)
 async def next_handler(message):
     res = await radioboss.radioboss_api(cmd='next')
-    await bot.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
+    await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
 
 
 @dp.message_handler(commands=['update'], only_admins=True)
 async def update_handler(message):
-    await bot.send_message(message.chat.id, 'Ребутаюсь..')
+    await BOT.send_message(message.chat.id, 'Ребутаюсь..')
     other.reboot()
 
 
@@ -85,9 +85,9 @@ async def callback_query_handler(query):
 
     # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
-        await bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
+        await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
                                             reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2]) - 1))
-        await bot.answer_callback_query(query.id, consts.TextConstants.ORDER_ERR_TOOLATE)
+        await BOT.answer_callback_query(query.id, consts.TextConstants.ORDER_ERR_TOOLATE)
 
     #
     # Принять / отклонить
@@ -109,12 +109,12 @@ async def callback_query_handler(query):
 
     # Кнопка "все ок" когда закинул неподобающий трек
     elif cmd[0] == 'bad_order_but_ok':
-        await bot.edit_message_caption(
+        await BOT.edit_message_caption(
             query.message.chat.id, query.message.message_id,
             caption=consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
     try:
-        await bot.answer_callback_query(query.id)
+        await BOT.answer_callback_query(query.id)
     except:
         pass
 
@@ -123,7 +123,7 @@ async def callback_query_handler(query):
 async def message_handler(message):
 
     # Форс реплаи
-    if message.reply_to_message and message.reply_to_message.from_user.id == (await bot.me).id:
+    if message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id:
 
         # Одменские команды
         if message.chat.id == ADMINS_CHAT_ID:
@@ -138,12 +138,12 @@ async def message_handler(message):
         if message.reply_to_message.text == consts.TextConstants.FEEDBACK or \
                 core.communication.cache_is_set(message.reply_to_message.message_id):
             await core.communication.user_message(message)
-            return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
+            return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
                                           reply_markup=keyboards.START)
 
         # Реплай, но на какую то хуйню
         if not message.audio:
-            return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
+            return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
 
     if message.chat.id < 0:
         return
@@ -160,17 +160,17 @@ async def message_handler(message):
 
     # Кнопка 'Предложить песню'
     if message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
-        await bot.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        return await bot.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
+        await BOT.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+        return await BOT.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
                                       reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
     if message.text == consts.BtnConstants.MENU['feedback']:
-        return await bot.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
+        return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
     if message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
-        return await bot.send_message(message.chat.id, consts.TextConstants.HELP['start'],
+        return await BOT.send_message(message.chat.id, consts.TextConstants.HELP['start'],
                                       reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
@@ -178,7 +178,7 @@ async def message_handler(message):
         return await core.users.timetable(message)
 
     # Просто сообщение
-    await bot.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
+    await BOT.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
                             caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.START)
 
 

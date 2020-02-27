@@ -9,7 +9,7 @@ from aiohttp import web
 
 import core
 from bot_handlers import dp
-from config import RADIOBOSS_DATA, WEBHOOK_URL, PORT, SSL_PRIV, Bot, bot, SSL_CERT, WEBHOOK_PATH
+from config import RADIOBOSS_DATA, WEBHOOK_URL, PORT, SSL_PRIV, Bot, BOT, SSL_CERT, WEBHOOK_PATH
 from utils import music, scheduler
 
 app = web.Application()
@@ -61,12 +61,12 @@ async def webhook_handle(request):
 
 
 async def on_startup(_):
-    webhook = await bot.get_webhook_info()
-    print(await bot.me)
+    webhook = await BOT.get_webhook_info()
+    print(await BOT.me)
     if webhook.url != WEBHOOK_URL:
         if not webhook.url:
-            await bot.delete_webhook()
-        await bot.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
+            await BOT.delete_webhook()
+        await BOT.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
 
     asyncio.ensure_future(scheduler.start())
     await core.callbacks.start_up()

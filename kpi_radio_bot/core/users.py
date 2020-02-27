@@ -1,27 +1,27 @@
 import consts
 import keyboards
-from config import bot
+from config import BOT
 from utils import other, radioboss, broadcast, db, music
 
 
 async def menu(message):
-    await bot.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.START)
+    await BOT.send_message(message.chat.id, consts.TextConstants.MENU, reply_markup=keyboards.START)
 
 
 async def song_now(message):
     playback = await radioboss.get_now()
     if not broadcast.is_broadcast_right_now() or not playback:
-        return await bot.send_message(message.chat.id, consts.TextConstants.SONG_NO_NOW,
+        return await BOT.send_message(message.chat.id, consts.TextConstants.SONG_NO_NOW,
                                       reply_markup=keyboards.WHAT_PLAYING)
-    await bot.send_message(message.chat.id, consts.TextConstants.WHAT_PLAYING.format(*playback),
+    await BOT.send_message(message.chat.id, consts.TextConstants.WHAT_PLAYING.format(*playback),
                            reply_markup=keyboards.WHAT_PLAYING)
 
 
 async def song_next(query):
     playback = await radioboss.get_next()
     if not playback:
-        return await bot.send_message(query.message.chat.id, consts.TextConstants.SONG_NO_NEXT)
-    await bot.send_message(query.message.chat.id, other.song_format(playback[:5]))
+        return await BOT.send_message(query.message.chat.id, consts.TextConstants.SONG_NO_NEXT)
+    await BOT.send_message(query.message.chat.id, other.song_format(playback[:5]))
 
 
 async def timetable(message):
@@ -34,12 +34,12 @@ async def timetable(message):
     # todo
     # text += "До ближайшего эфира ..."
 
-    await bot.send_message(message.chat.id, text)
+    await BOT.send_message(message.chat.id, text)
 
 
 async def help_change(query, key):
     try:
-        await bot.edit_message_text(consts.TextConstants.HELP[key], query.message.chat.id,
+        await BOT.edit_message_text(consts.TextConstants.HELP[key], query.message.chat.id,
                                     query.message.message_id, reply_markup=keyboards.CHOICE_HELP)
     except:
         pass
@@ -50,7 +50,7 @@ async def notify_switch(message):
     await db.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
-    await bot.send_message(message.chat.id, text)
+    await BOT.send_message(message.chat.id, text)
 
 
 async def send_audio(chat, tg_audio=None, api_audio=None):
@@ -77,7 +77,7 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
 
     if warnings:
         text = consts.TextConstants.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        await bot.send_audio(chat, file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
+        await BOT.send_audio(chat, file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
-        await bot.send_audio(chat, file, consts.TextConstants.ORDER_CHOOSE_DAY,
+        await BOT.send_audio(chat, file, consts.TextConstants.ORDER_CHOOSE_DAY,
                              reply_markup=await keyboards.choice_day())

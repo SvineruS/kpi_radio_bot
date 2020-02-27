@@ -5,30 +5,30 @@ from aiogram import types
 import consts
 import core
 import keyboards
-from config import bot
+from config import BOT
 from utils import music
 
 
 async def search_audio(message):
-    await bot.send_chat_action(message.chat.id, 'upload_audio')
+    await BOT.send_chat_action(message.chat.id, 'upload_audio')
     audio = await music.search(message.text)
 
     if not audio:
-        return await bot.send_message(message.chat.id, consts.TextConstants.SEARCH_FAILED, reply_markup=keyboards.START)
+        return await BOT.send_message(message.chat.id, consts.TextConstants.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]
     try:
         await core.users.send_audio(message.chat.id, api_audio=audio)
     except Exception as ex:
         logging.error(f'send audio: {ex} {audio["url"]}')
-        await bot.send_message(message.chat.id, consts.TextConstants.ERROR, reply_markup=keyboards.START)
+        await BOT.send_message(message.chat.id, consts.TextConstants.ERROR, reply_markup=keyboards.START)
 
 
 async def inline_search(inline_query):
     name = inline_query.query
     audios = await music.search(name)
     if not audios:
-        return await bot.answer_inline_query(inline_query.id, [])  # todo что то писать
+        return await BOT.answer_inline_query(inline_query.id, [])  # todo что то писать
 
     articles = []
     for i in range(min(50, len(audios))):
@@ -41,4 +41,4 @@ async def inline_search(inline_query):
             performer=audio['artist'],
             title=audio['title']
         ))
-    await bot.answer_inline_query(inline_query.id, articles)
+    await BOT.answer_inline_query(inline_query.id, articles)

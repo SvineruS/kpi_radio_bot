@@ -1,13 +1,13 @@
 import consts
-from config import bot, PATH_STUFF
+from config import BOT, PATH_STUFF
 from utils import other, radioboss, db, stats
 from utils.other import get_moder_by_username
 from . import communication
 
 
 async def ban(message):
-    if message.reply_to_message is None or message.reply_to_message.from_user.id != (await bot.me).id:
-        return await bot.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
+    if message.reply_to_message is None or message.reply_to_message.from_user.id != (await BOT.me).id:
+        return await BOT.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
     cmd = message.get_args().split(' ', 1)
 
@@ -26,10 +26,10 @@ async def ban(message):
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await bot.send_message(message.chat.id, f"{other.get_user_name_(user, 'Пользователь')} разбанен")
-    await bot.send_message(message.chat.id,
+        return await BOT.send_message(message.chat.id, f"{other.get_user_name_(user, 'Пользователь')} разбанен")
+    await BOT.send_message(message.chat.id,
                            f"{other.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
-    await bot.send_message(user, consts.TextConstants.BAN_YOU_BANNED.format(ban_time_text, reason))
+    await BOT.send_message(user, consts.TextConstants.BAN_YOU_BANNED.format(ban_time_text, reason))
 
 
 async def set_volume(message):
@@ -45,7 +45,7 @@ async def set_volume(message):
 async def get_stats(message):
     if 'csv' in message.get_args():
         with open(PATH_STUFF / 'stats.csv', 'rb') as file:
-            return await bot.send_document(message.chat.id, file)
+            return await BOT.send_document(message.chat.id, file)
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if message.entities[1].type == 'mention':
@@ -65,4 +65,4 @@ async def get_stats(message):
         caption = f'Стата за {days} дн.'
 
     with open(stats.PATH_STATS_PNG, 'rb') as file:
-        await bot.send_photo(message.chat.id, file, caption=caption)
+        await BOT.send_photo(message.chat.id, file, caption=caption)

@@ -6,7 +6,7 @@ from urllib.parse import quote
 from aiogram import types
 
 import consts
-from config import bot, HOST, ADMINS_CHAT_ID, PATH_SELF
+from config import BOT, HOST, ADMINS_CHAT_ID, PATH_SELF
 from utils import music, broadcast
 
 
@@ -96,7 +96,7 @@ def reboot() -> None:
 async def get_moders():
     @lru_cache(maxsize=1)
     async def get_moders_(_):
-        admins = await bot.get_chat_administrators(ADMINS_CHAT_ID)
+        admins = await BOT.get_chat_administrators(ADMINS_CHAT_ID)
         return {
             admin.user.id: admin
             for admin in admins
@@ -113,5 +113,5 @@ async def get_moder_by_username(username):
 
 
 async def is_moder(user_id):
-    member = await bot.get_chat_member(ADMINS_CHAT_ID, user_id)
+    member = await BOT.get_chat_member(ADMINS_CHAT_ID, user_id)
     return member and member.status in ('creator', 'administrator', 'member')
