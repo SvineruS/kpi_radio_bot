@@ -1,35 +1,14 @@
 import logging
-from functools import lru_cache
-from html.parser import HTMLParser
 from urllib.parse import quote_plus
 
 import consts
 from config import AIOHTTP_SESSION
-
-
-class MyHTMLParser(HTMLParser):
-    data = ''
-
-    def parse(self, data):
-        self.data = ''
-        self.feed(data)
-        return self.data
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'br':
-            self.data += '\n'
-
-    def handle_data(self, data):
-        self.data += data
-
-    def error(self, message):
-        pass
-
+from utils.other import MyHTMLParser, my_lru
 
 PARSER = MyHTMLParser()
 
 
-@lru_cache(maxsize=200)
+@my_lru(maxsize=200, ttl=60 * 60 * 12)
 async def search(name):
     url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
@@ -52,7 +31,7 @@ def get_download_url(url, artist=None, title=None):
     return url
 
 
-@lru_cache(maxsize=100)
+@my_lru(maxsize=100, ttl=60 * 60 * 12)
 async def search_text(name):
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
@@ -82,7 +61,7 @@ async def search_text(name):
     return title, lyrics
 
 
-@lru_cache(maxsize=100)
+@my_lru(maxsize=100, ttl=60 * 60 * 12)
 async def is_anime(audio_name):
     async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
                                    headers={'user-agent': 'my custom agent'}) as res:
@@ -102,7 +81,7 @@ async def is_contain_bad_words(audio_name):
     return res and res[1]
 
 
-@lru_cache(maxsize=100)
+@my_lru(maxsize=100, ttl=60 * 60 * 12)
 async def get_bad_words(audio_name):
     res = await search_text(audio_name)
     if not res:

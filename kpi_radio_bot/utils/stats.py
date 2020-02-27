@@ -44,7 +44,7 @@ async def line_plot(moder_id):
     plt.legend(loc="upper right")
     plt.savefig(PATH_STATS_PNG)
 
-    moderation_per_day = sum(moderation_all.values()) / len(moder)
+    moderation_per_day = sum(moderation_all.values()) / len(moderation_all)
     return moderation_per_day
 
 

@@ -59,7 +59,7 @@ async def get_stats(message):
         res = await stats.line_plot(moderator.id)
         if res is False:
             return await message.reply(f"Хз кто это")
-        caption = f"Стата модератора {get_by.get_user_name(moderator)} ({res:.2f} модераций/дн.)"
+        caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
@@ -75,11 +75,11 @@ async def get_debug(message):
         await BOT.send_file(message.chat.id, file)
 
 
-def next_track(message):
+async def next_track(message):
     res = await radioboss_api(cmd='next')
     await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
 
 
-def update(message):
+async def update(message):
     await BOT.send_message(message.chat.id, 'Ребутаюсь..')
     os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')

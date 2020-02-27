@@ -1,22 +1,18 @@
-from collections import OrderedDict
-
 import utils.get_by
 from config import BOT, ADMINS_CHAT_ID
 from utils import user_utils
+from utils.other import LRU
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
-MESSAGES_CACHE = OrderedDict()
-MAX_LENGTH = 10000
+MESSAGES_CACHE = LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
 
 
 def cache_add(to_msg_id, from_message):
     MESSAGES_CACHE[to_msg_id] = (from_message.chat.id, from_message.message_id)
-    while len(MESSAGES_CACHE) > MAX_LENGTH:
-        MESSAGES_CACHE.popitem(last=False)  # pop older
 
 
 def cache_get(message_id):
-    return MESSAGES_CACHE.get(message_id, None)
+    return MESSAGES_CACHE[message_id]
 
 
 def cache_is_set(message_id):

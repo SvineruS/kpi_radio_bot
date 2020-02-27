@@ -154,7 +154,8 @@ async def _gen_order_caption(day, time, user, audio_name=None, status=None, mode
         is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await get_bad_words_()
         is_anime = '🅰️' if await music.is_anime(audio_name) else ''
-        text = f'{is_now_mark} Новый заказ - {text_datetime}{is_now_text} от {user_name}\n{bad_words} {is_anime} #модер'
+        text = f'{is_now_mark} Новый заказ - {text_datetime}{is_now_text} от {user_name}\n' \
+               f'{bad_words}{is_anime} #отмодерить'
     else:
         status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
         moder_name = get_by.get_user_name(moder)

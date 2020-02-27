@@ -9,7 +9,7 @@ from aiohttp import web
 
 import config
 import core
-from bot_handlers import DP
+from handlers import DP
 from utils import music, scheduler
 
 APP = web.Application()
