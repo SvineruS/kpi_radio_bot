@@ -72,7 +72,7 @@ async def get_stats(message):
 
 async def get_debug(message):
     with open(PATH_LOG, 'r') as file:
-        await BOT.send_file(message.chat.id, file)
+        await BOT.send_document(message.chat.id, file)
 
 
 async def next_track(message):
