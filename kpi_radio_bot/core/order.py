@@ -59,8 +59,7 @@ async def admin_choice(query, day: int, time: int, status: str):
     await bot.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
-    stats.add(audio_name, query.from_user.username, user.username, status,
-              str(datetime.now()), query.message.message_id)
+    stats.add(audio_name, query.from_user.id, user.id, status, str(datetime.now()), query.message.message_id)
 
     if status == 'reject':  # кнопка отмена
         m = await bot.send_message(user.id, TextConstants.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))

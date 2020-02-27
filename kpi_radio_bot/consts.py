@@ -174,10 +174,6 @@ TIMES_NAME = {
               'Вечерний эфир'],
 }
 
-STATS_BLACKLIST = ['svinerus', 'mnb3000', 'MrRipll',
-                   'eddienubes', 'deshtone', 'shpiner',
-                   'nastyakulish', 'HomelessAtomist', 'Da_Yanchyk']
-
 BROADCAST_TIMES = {  # todo короче эту тему лучше сделать как функцию геттер имхо
     #  day:
     #       num:  start, stop

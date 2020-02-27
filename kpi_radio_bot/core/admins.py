@@ -46,16 +46,17 @@ async def get_stats(message):
         with open(PATH_STUFF / 'stats.csv', 'rb') as file:
             return await bot.send_document(message.chat.id, file)
 
-    if len(message.entities) >= 2 and message.entities[1]['type'] == 'mention':
-        moderator = message.entities[1].get_text(message.text)[1:]
-        res = stats.line_plot(moderator)
+    if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
+        moderator = message.entities[1]
+        moderator = moderator.get_text() if moderator.type == 'mention' else moderator.user.id
+        res = await stats.line_plot(moderator)
         if res is False:
             return await message.reply(f"Хз кто такой {moderator}")
         caption = f"Стата модератора {moderator} ({res:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
-        stats.bars_plot(days)
+        await stats.bars_plot(days)
         caption = f'Стата за {days} дн.'
 
     with open(stats.PATH_STATS_PNG, 'rb') as file:
