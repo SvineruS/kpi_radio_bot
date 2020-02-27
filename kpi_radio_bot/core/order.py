@@ -1,7 +1,6 @@
 from datetime import datetime
 from urllib.parse import quote
 
-import aiogram
 from aiogram import types, exceptions
 
 import consts
@@ -150,15 +149,15 @@ async def _gen_order_caption(day, time, user, audio_name=None, status=None, mode
     user_name = get_user_name(user)
     text_datetime = consts.TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
 
-    if not status:
+    if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await get_bad_words_()
         is_anime = '🅰️' if await music.is_anime(audio_name) else ''
-        text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
+        text = f'{is_now_mark} Новый заказ - {text_datetime}{is_now_text} от {user_name}\n{bad_words} {is_anime} #модер'
     else:
         status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
         moder_name = get_user_name(moder)
-        text = f'Заказ: {text_datetime} {is_now_text} от {user_name} {status_text} ({moder_name})'
+        text = f'Заказ: {text_datetime}{is_now_text} от {user_name} {status_text} ({moder_name})'
 
     return text, {'text_datetime': text_datetime, 'now': is_now}
 
