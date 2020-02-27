@@ -1,37 +1,14 @@
-import json
-import logging
-import xml.etree.ElementTree as Etree
 from datetime import datetime
-from typing import Union
-from urllib.parse import quote_plus
+from pathlib import Path
 
 import consts
-from config import RADIOBOSS_DATA, AIOHTTP_SESSION
-from utils import broadcast
-
-
-async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
-    url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)
-    for key in kwargs:
-        url += '&{0}={1}'.format(key, quote_plus(str(kwargs[key])))
-    res = ''
-    try:
-        async with AIOHTTP_SESSION.get(url) as resp:
-            resp.encoding = 'utf-8'
-            res = await resp.text()
-            if not res:
-                return False
-            if res == 'OK':
-                return True
-            return Etree.fromstring(res)
-    except Exception as e:
-        logging.error(f'radioboss: {e} {res} {url}')
-        return False
+from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now, get_broadcast_path
+from broadcast.radioboss import radioboss_api
 
 
 async def get_now():
     playback = await radioboss_api(action='playbackinfo')
-    answer = [r'¯\_(ツ)_/¯'] * 3
+    result = [r'¯\_(ツ)_/¯'] * 3
     if not playback or playback[3].attrib['state'] == 'stop':
         return None
     for i in range(3):
@@ -39,21 +16,21 @@ async def get_now():
         if "setvol" in title:
             continue
 
-        answer[i] = title
-    return answer
+        result[i] = title
+    return result
 
 
 async def get_next():
     playlist = await get_playlist()
-    bn = broadcast.get_broadcast_num()
-    if not playlist or bn is False:
+    b_n = get_broadcast_num()
+    if not playlist or b_n is False:
         return []
 
-    answer = []
+    result = []
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-    time_max = consts.BROADCAST_TIMES[dt_now.weekday()][bn][1]
+    time_max = consts.BROADCAST_TIMES[dt_now.weekday()][b_n][1]
     time_max = datetime.strptime(time_max, '%H:%M').time()
 
     for track in playlist:
@@ -62,13 +39,13 @@ async def get_next():
             continue
         if time_start > time_max:
             break
-        answer.append(track)
+        result.append(track)
 
-    return answer
+    return result
 
 
 async def get_playlist():
-    answer = []
+    result = []
     playlist = await radioboss_api(action='getplaylist2')
     if not playlist:
         return []
@@ -78,7 +55,7 @@ async def get_playlist():
         if not track['STARTTIME']:  # если STARTTIME == "" скорее всего это не песня (либо она стартанет через >=сутки)
             continue
 
-        answer.append({
+        result.append({
             'title': track['CASTTITLE'],
             'time_start': datetime.strptime(track['STARTTIME'], '%H:%M:%S'),
             'filename': track['FILENAME'],
@@ -86,7 +63,7 @@ async def get_playlist():
             'is_order': str(consts.PATHS['orders']) in track["FILENAME"]
         })
 
-    return answer
+    return result
 
 
 async def get_new_order_pos():
@@ -106,32 +83,31 @@ async def find_in_playlist_by_path(path):
     return [i for i in await get_playlist() if i['filename'] == path]
 
 
-# todo тут не только инфа отправителя, надо как нить переименовать (зачеркнуто) и переструктурировать
-async def write_track_additional_info(path, user_obj, moderation_id):
-    tag = {
-        'id': user_obj.id,
-        'name': user_obj.first_name,
-        'moderation_id': moderation_id
-    }
-    tag = json.dumps(tag)
-    await write_comment_tag(path, tag)
+async def get_broadcast_freetime(day: int, time: int) -> int:
+    broadcast_start, broadcast_finish = consts.BROADCAST_TIMES_[day][time]
+    if is_this_broadcast_now(day, time):
+        last_order = await get_new_order_pos()
+        if not last_order:
+            return 0
+        last_order_start = last_order['time_start'].hour * 60 + last_order['time_start'].minute
+    else:
+        tracks_duration = await _calculate_tracks_duration(get_broadcast_path(day, time))
+        last_order_start = broadcast_start + tracks_duration
+
+    return max(0, broadcast_finish - last_order_start)
 
 
-async def read_track_additional_info(path):
-    tags = await radioboss_api(action='readtag', fn=path)
-    tag = tags[0].attrib['Comment']
+#
+
+
+async def _calculate_tracks_duration(path: Path) -> float:
+    duration = 0
     try:
-        return json.loads(tag)
-    except:
-        pass
-
-
-async def clear_track_additional_info(path):
-    await write_comment_tag(path, '')
-
-
-async def write_comment_tag(path, tag):
-    tags = await radioboss_api(action='readtag', fn=path)
-    tags[0].attrib['Comment'] = tag
-    xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')
-    await radioboss_api(action='writetag', fn=path, data=xmlstr)
+        files = path.iterdir()
+        for file in files:
+            tags = await radioboss_api(action='readtag', fn=file)
+            if tags:
+                duration += int(tags[0].attrib['Duration'])
+    except FileNotFoundError:
+        return 0
+    return duration / 1000 / 60  # minutes

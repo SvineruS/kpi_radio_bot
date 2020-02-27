@@ -1,97 +1,93 @@
-import os
-from datetime import datetime
-from urllib.parse import quote
-
-from aiogram import types
-
-import consts
-from config import bot, HOST, ADMINS_CHAT_ID, PATH_SELF
-from utils import music, broadcast
+import functools
+from collections import OrderedDict
+from html.parser import HTMLParser
+from time import time
 
 
-def get_audio_name(audio: types.Audio) -> str:
-    return get_audio_name_(audio.performer, audio.title)
+def my_lru(maxsize=None, ttl=None):
+    def decorator(function):
+        function.cache = LRU(maxsize=maxsize, ttl=ttl)
+
+        @functools.wraps(function)
+        async def wrapper(*args, **kwargs):
+            result = await function(*args, **kwargs)
+            function.cache[tuple(args), tuple(kwargs.items())] = result
+            return result
+
+        return wrapper
+
+    return decorator
 
 
-def get_audio_name_(performer, title) -> str:
-    if performer and title:
-        name = f'{performer} - {title}'
-    elif not performer and not title:
-        name = 'Названия нету :('
-    else:
-        name = title if title else performer
-    name = ''.join(list(filter(lambda c: (c not in '/:*?"<>|'), name)))  # винда агрится на эти символы в пути
-    return name
+class LRU(OrderedDict):
+    def __init__(self, *args, maxsize=None, ttl=None, **kwargs):
+        self.maxsize = maxsize
+        self.ttl = ttl
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, key):
+        t = super().__getitem__(key)
+        ttl, value = t
+        if ttl and ttl != self.get_ttl():
+            del self[key]
+            return None
+        self.move_to_end(key)
+        return value
+
+    def __setitem__(self, key, value):
+        t = (self.get_ttl(), value)
+        super().__setitem__(key, t)
+        if len(self) > self.maxsize:
+            del self[next(iter(self))]
+
+    def get_ttl(self):
+        if not self.ttl:
+            return None
+        return round(time() / self.ttl)
 
 
-def get_audio_path(day, time, audio_name):
-    return broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
+class MyHTMLParser(HTMLParser):
+    data = ''
+
+    def parse(self, data):
+        self.data = ''
+        self.feed(data)
+        return self.data
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'br':
+            self.data += '\n'
+
+    def handle_data(self, data):
+        self.data += data
+
+    def error(self, message):
+        pass
 
 
-def get_user_name(user_obj: types.User) -> str:
-    return get_user_name_(user_obj.id, user_obj.first_name)
+_hashtag_chars = "0-9,a-z," \
+    "\u00c0-\u00d6,\u00d8-\u00f6,\u00f8-\u00ff,\u0100-\u024f," \
+    "\u1e00-\u1eff,\u0400-\u0481,\u0500-\u0527,\ua640-\ua66f," \
+    "\u0e01-\u0e31,\u1100-\u11ff,\u3130-\u3185,\uA960-\uA97d," \
+    "\uAC00-\uD7A0,\uff41-\uff5a,\uff66-\uff9f,\uffa1-\uffbc"
+
+_hashtag_chars = ''.join(
+    set(
+        chr(ch_id).lower()
+        for from_ch, to_ch in
+        [
+            map(ord, range_.split('-'))
+            for range_ in _hashtag_chars.split(',')
+        ]
+        for ch_id in range(from_ch + 1, to_ch)
+    )
+)
 
 
-def get_user_name_(id_, name):
-    return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
-
-
-def get_user_from_entity(message):
-    entities = message.caption_entities if message.audio or message.photo else message.entities
-    if entities:
-        return entities[0].user
-
-
-async def gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
-    async def get_bad_words_():
-        res = await music.get_bad_words(audio_name)
-        if not res:
-            return ''
-
-        title, bw = res
-        return f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">' \
-               f'{"⚠" if bw else "🆗"} ({title})</a>  ' + ', '.join(bw)
-
-    is_now = broadcast.is_this_broadcast_now(day, time)
-    is_now_text = ' (сейчас!)' if is_now else ''
-    user_name = get_user_name(user)
-    text_datetime = consts.TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
-
-    if not status:
-        is_now_mark = '‼️' if is_now else '❗️'
-        bad_words = await get_bad_words_()
-        is_anime = '🅰️' if await music.is_anime(audio_name) else ''
-        text = f'{is_now_mark} Новый заказ - {text_datetime} {is_now_text} от {user_name}\n{bad_words} {is_anime}'
-    else:
-        status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
-        moder_name = get_user_name(moder)
-        text = f'Заказ: {text_datetime} {is_now_text} от {user_name} {status_text} ({moder_name})'
-
-    return text, {'text_datetime': text_datetime, 'now': is_now}
-
-
-async def is_moder(user_id):
-    member = await bot.get_chat_member(ADMINS_CHAT_ID, user_id)
-    return member and member.status in ('creator', 'administrator', 'member')
-
-
-def case_by_num(num: int, c1: str, c2: str, c3: str) -> str:
-    if 11 <= num <= 14:
-        return c3
-    if num % 10 == 1:
-        return c1
-    if 2 <= num % 10 <= 4:
-        return c2
-    return c3
-
-
-def song_format(playback):
-    text = [
-        f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
-        for track in playback
-    ]
-    return '\n'.join(text)
-
-
-def reboot() -> None:
-    os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
+def id_2_hashtag(id_):
+    base = len(_hashtag_chars)
+    res = ""
+    while id_:
+        res += _hashtag_chars[int(id_ % base)]
+        x = int(id_ / base)
+    return res
