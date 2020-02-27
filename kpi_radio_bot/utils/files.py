@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Union
 
 import consts
-from .broadcast import get_broadcast_path
+from broadcast import get_broadcast_path
 
 
 def create_dirs(path: Union[str, Path]) -> None:

@@ -1,8 +1,10 @@
+import os
+
 import consts
-from config import BOT, PATH_STUFF
-from utils import other, radioboss, db, stats
-from utils.other import get_moder_by_username
-from . import communication
+from broadcast.radioboss import radioboss_api
+from config import BOT, PATH_STUFF, PATH_LOG, PATH_SELF
+from core import communication
+from utils import user_utils, db, stats, get_by
 
 
 async def ban(message):
@@ -14,29 +16,29 @@ async def ban(message):
     if communication.cache_is_set(message.reply_to_message.message_id):
         user, _ = communication.cache_get(message.reply_to_message.message_id)
     else:
-        user = other.get_user_from_entity(message.reply_to_message)
+        user = user_utils.get_user_from_entity(message.reply_to_message)
         if not user:
             return await message.reply("Бля, не могу забанить")
         user = user.id
 
     ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
     reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
-    ban_time_text = str(ban_time) + ' ' + other.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+    ban_time_text = str(ban_time) + ' ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
 
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await BOT.send_message(message.chat.id, f"{other.get_user_name_(user, 'Пользователь')} разбанен")
+        return await BOT.send_message(message.chat.id, f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
     await BOT.send_message(message.chat.id,
-                           f"{other.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
-    await BOT.send_message(user, consts.TextConstants.BAN_YOU_BANNED.format(ban_time_text, reason))
+                           f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
+    await BOT.send_message(user, consts.texts.BAN_YOU_BANNED.format(ban_time_text, reason))
 
 
 async def set_volume(message):
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
-            await radioboss.radioboss_api(cmd=f'setvol {volume}')
+            await radioboss_api(cmd=f'setvol {volume}')
             return await message.reply(f'Громкость выставлена в {volume}!')
 
     await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
@@ -50,14 +52,14 @@ async def get_stats(message):
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if message.entities[1].type == 'mention':
             moderator = message.entities[1].get_text(message.text)[1:]
-            moderator = (await get_moder_by_username(moderator))
+            moderator = (await user_utils.get_admin_by_username(moderator))
         else:
             moderator = message.entities[1].user
 
         res = await stats.line_plot(moderator.id)
         if res is False:
             return await message.reply(f"Хз кто это")
-        caption = f"Стата модератора {other.get_user_name(moderator)} ({res:.2f} модераций/дн.)"
+        caption = f"Стата модератора {get_by.get_user_name(moderator)} ({res:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
@@ -66,3 +68,18 @@ async def get_stats(message):
 
     with open(stats.PATH_STATS_PNG, 'rb') as file:
         await BOT.send_photo(message.chat.id, file, caption=caption)
+
+
+async def get_debug(message):
+    with open(PATH_LOG, 'r') as file:
+        await BOT.send_file(message.chat.id, file)
+
+
+def next_track(message):
+    res = await radioboss_api(cmd='next')
+    await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
+
+
+def update(message):
+    await BOT.send_message(message.chat.id, 'Ребутаюсь..')
+    os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')

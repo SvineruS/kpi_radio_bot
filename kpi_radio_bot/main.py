@@ -4,12 +4,12 @@ import ssl
 import sys
 import traceback
 
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, Bot
 from aiohttp import web
 
+import config
 import core
-from bot_handlers import dp
-from config import RADIOBOSS_DATA, WEBHOOK_URL, PORT, SSL_PRIV, Bot, BOT, SSL_CERT, WEBHOOK_PATH
+from bot_handlers import DP
 from utils import music, scheduler
 
 APP = web.Application()
@@ -20,7 +20,7 @@ ROUTES = web.RouteTableDef()
 async def gettext(request):
     name = request.match_info.get('name')
     if not name:
-        return web.Response(text="")
+        return web.Response(text="Использование: /gettext/имя_песни")
     res = await music.search_text(name)
     if not res:
         return web.Response(text="Ошибка поиска")
@@ -32,7 +32,7 @@ async def gettext(request):
 async def history_save(request):
     # https://HOST:PORT/playlist?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = request.rel_url.query
-    if args.get('pass') != RADIOBOSS_DATA[2]:
+    if args.get('pass') != config.RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
     fields = {
         'artist': args.get('artist'),
@@ -44,14 +44,14 @@ async def history_save(request):
     return web.Response(text='ok')
 
 
-@ROUTES.post(WEBHOOK_PATH)
+@ROUTES.post(config.WEBHOOK_PATH)
 async def webhook_handle(request):
     update = await request.json()
     update = types.Update(**update)
-    Bot.set_current(dp.bot)  # без этого не работает
-    Dispatcher.set_current(dp)
+    Bot.set_current(DP.bot)  # без этого не работает
+    Dispatcher.set_current(DP)
     try:
-        await dp.process_update(update)
+        await DP.process_update(update)
     except Exception as ex:
         traceback.print_exception(*sys.exc_info())
         logging.warning(f"pls add exception {ex} in except")
@@ -60,12 +60,12 @@ async def webhook_handle(request):
 
 
 async def on_startup(_):
-    webhook = await BOT.get_webhook_info()
-    print(await BOT.me)
-    if webhook.url != WEBHOOK_URL:
+    webhook = await config.BOT.get_webhook_info()
+    print(await config.BOT.me)
+    if webhook.url != config.WEBHOOK_URL:
         if not webhook.url:
-            await BOT.delete_webhook()
-        await BOT.set_webhook(WEBHOOK_URL, certificate=open(SSL_CERT, 'rb'))
+            await config.BOT.delete_webhook()
+        await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=open(config.SSL_CERT, 'rb'))
 
     asyncio.ensure_future(scheduler.start())
     await core.callbacks.start_up()
@@ -82,12 +82,12 @@ def start():
     APP.on_shutdown.append(on_shutdown)
 
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    context.load_cert_chain(SSL_CERT, SSL_PRIV)
+    context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)
 
     web.run_app(
         APP,
         host='0.0.0.0',
-        port=PORT,
+        port=config.PORT,
         ssl_context=context
     )
 

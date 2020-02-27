@@ -2,8 +2,9 @@ from datetime import datetime
 
 from aiogram import types
 
-from consts import BtnConstants, TIMES_NAME, BROADCAST_TIMES_
-from utils import broadcast
+from broadcast import playlist, get_broadcast_num, get_broadcast_name
+from consts import btns_text
+from consts.others import TIMES_NAME, BROADCAST_TIMES_
 
 
 def _callback(*args):
@@ -11,39 +12,39 @@ def _callback(*args):
 
 
 ORDER_INLINE = types.InlineKeyboardMarkup().add(
-    types.InlineKeyboardButton("Удобный поиск", switch_inline_query_current_chat="")
+    types.InlineKeyboardButton(btns_text.INLINE_SEARCH, switch_inline_query_current_chat="")
 )
 
 START = types.ReplyKeyboardMarkup(resize_keyboard=True).add(
-    types.KeyboardButton(BtnConstants.MENU['what_playing']), types.KeyboardButton(BtnConstants.MENU['order'])
+    types.KeyboardButton(btns_text.MENU['what_playing']), types.KeyboardButton(btns_text.MENU['order'])
 ).add(
-    types.KeyboardButton(BtnConstants.MENU['feedback']), types.KeyboardButton(BtnConstants.MENU['help']),
-    types.KeyboardButton(BtnConstants.MENU['timetable'])
+    types.KeyboardButton(btns_text.MENU['feedback']), types.KeyboardButton(btns_text.MENU['help']),
+    types.KeyboardButton(btns_text.MENU['timetable'])
 )
 
 WHAT_PLAYING = types.InlineKeyboardMarkup(row_width=2).add(
-    types.InlineKeyboardButton(text=BtnConstants.HISTORY, url='https://t.me/rkpi_music'),
-    types.InlineKeyboardButton(text=BtnConstants.NEXT, callback_data='song_next')
+    types.InlineKeyboardButton(text=btns_text.HISTORY, url='https://t.me/rkpi_music'),
+    types.InlineKeyboardButton(text=btns_text.NEXT, callback_data='song_next')
 )
 
 CHOICE_HELP = types.InlineKeyboardMarkup(row_width=1).add(*[
     types.InlineKeyboardButton(text=v, callback_data=_callback('help', k))
-    for k, v in BtnConstants.HELP.items()
+    for k, v in btns_text.HELP.items()
 ])
 
 BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
-    types.InlineKeyboardButton(text=BtnConstants.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok')),
-    types.InlineKeyboardButton(text=BtnConstants.CANCEL, callback_data='order_cancel')
+    types.InlineKeyboardButton(text=btns_text.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok')),
+    types.InlineKeyboardButton(text=btns_text.CANCEL, callback_data='order_cancel')
 )
 
 
 async def choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
-    b_n = broadcast.get_broadcast_num()
+    b_n = get_broadcast_num()
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
 
-    if b_n is not False and (await broadcast.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
+    if b_n is not False and (await playlist.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             text=TIMES_NAME['next_days'][-1],
             callback_data=_callback('order_time', day, b_n)
@@ -58,21 +59,21 @@ async def choice_day() -> types.InlineKeyboardMarkup:
             text=TIMES_NAME['next_days'][i],
             callback_data=_callback('order_day', (day + i) % 7)
         ))
-    btns.append(types.InlineKeyboardButton(text=BtnConstants.CANCEL, callback_data='order_cancel'))
+    btns.append(types.InlineKeyboardButton(text=btns_text.CANCEL, callback_data='order_cancel'))
     keyboard.add(*btns)
     return keyboard
 
 
 async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
-        free_mins = await broadcast.get_broadcast_freetime(day, time_)
+        free_mins = await playlist.get_broadcast_freetime(day, time_)
         if free_mins == 0 and attempts > 0:
             return types.InlineKeyboardButton(
-                text='❌' + broadcast.get_broadcast_name(time_),
+                text='❌' + get_broadcast_name(time_),
                 callback_data=_callback('order_notime', day, attempts)
             )
         return types.InlineKeyboardButton(
-            text=('⚠' if free_mins < 5 else '') + broadcast.get_broadcast_name(time_),
+            text=('⚠' if free_mins < 5 else '') + get_broadcast_name(time_),
             callback_data=_callback('order_time', day, time_)
         )
 
@@ -88,7 +89,7 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
             continue
         btns.append(await get_btn(num))
 
-    btns.append(types.InlineKeyboardButton(text=BtnConstants.BACK, callback_data='order_back_day'))
+    btns.append(types.InlineKeyboardButton(text=btns_text.BACK, callback_data='order_back_day'))
     keyboard.add(*btns)
     return keyboard
 
@@ -96,15 +97,15 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
 def admin_choose(day: int, time: int) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup().add(
         types.InlineKeyboardButton(
-            text=BtnConstants.QUEUE,
+            text=btns_text.QUEUE,
             callback_data=_callback('admin_choice', day, time, 'queue')
         ),
         types.InlineKeyboardButton(
-            text=BtnConstants.NOW,
+            text=btns_text.NOW,
             callback_data=_callback('admin_choice', day, time, 'now')
         ),
         types.InlineKeyboardButton(
-            text=BtnConstants.REJECT,
+            text=btns_text.REJECT,
             callback_data=_callback('admin_choice', day, time, 'reject')
         )
     )
@@ -112,6 +113,6 @@ def admin_choose(day: int, time: int) -> types.InlineKeyboardMarkup:
 
 def admin_unchoose(day: int, time: int, status: str) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(
-        text=BtnConstants.CANCEL,
+        text=btns_text.CANCEL,
         callback_data=_callback('admin_unchoice', day, time, status)
     ))

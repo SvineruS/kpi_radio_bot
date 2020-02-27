@@ -4,8 +4,8 @@ from aiogram import types, exceptions
 
 import consts
 import core
-import keyboards
 from config import BOT
+from consts import keyboards
 from utils import music
 
 
@@ -14,14 +14,14 @@ async def search_audio(message):
     audio = await music.search(message.text)
 
     if not audio:
-        return await BOT.send_message(message.chat.id, consts.TextConstants.SEARCH_FAILED, reply_markup=keyboards.START)
+        return await BOT.send_message(message.chat.id, consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]
     try:
         await core.users.send_audio(message.chat.id, api_audio=audio)
     except Exception as ex:
         logging.error(f'send audio: {ex} {audio["url"]}')
-        await BOT.send_message(message.chat.id, consts.TextConstants.ERROR, reply_markup=keyboards.START)
+        await BOT.send_message(message.chat.id, consts.texts.ERROR, reply_markup=keyboards.START)
 
 
 async def inline_search(inline_query):
@@ -46,5 +46,3 @@ async def inline_search(inline_query):
     except exceptions.NetworkError as ex:
         logging.warning(f"inline_search file too large {ex}")
         await BOT.answer_inline_query(inline_query.id, [])
-
-

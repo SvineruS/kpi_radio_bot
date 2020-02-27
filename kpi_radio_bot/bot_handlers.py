@@ -2,70 +2,71 @@ import logging
 
 from aiogram import Dispatcher, types, executor
 
-import consts
 import core
-import core.users
-import keyboards
 from config import BOT, ADMINS_CHAT_ID
-from utils import other, db, radioboss, bot_filters
+from consts import keyboards, texts, btns_text
+from utils import bot_filters
 
-dp = Dispatcher(BOT)
-bot_filters.bind_filters(dp)
+DP = Dispatcher(BOT)
+bot_filters.bind_filters(DP)
 
 
-@dp.message_handler(commands=['start'])
+@DP.message_handler(commands=['start'])
 async def start_handler(message):
     if message.chat.id < 0:
         return
 
-    await db.add(message.chat.id)
-    await BOT.send_message(message.chat.id, consts.TextConstants.START)
+    await core.users.add_in_db(message)
+    await BOT.send_message(message.chat.id, texts.START)
     await core.users.menu(message)
 
 
-@dp.message_handler(commands=['cancel'])
+@DP.message_handler(commands=['cancel'])
 async def cancel(message):
     await core.users.menu(message)
 
 
-@dp.message_handler(commands=['notify'])
+@DP.message_handler(commands=['notify'])
 async def notify_handler(message):
     await core.users.notify_switch(message)
 
 
 # region admins
 
-@dp.message_handler(commands=['next'], only_admins=True)
+@DP.message_handler(commands=['next'], admins_chat=True)
 async def next_handler(message):
-    res = await radioboss.radioboss_api(cmd='next')
-    await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
+    await core.admins.next_track(message)
 
 
-@dp.message_handler(commands=['update'], only_admins=True)
+@DP.message_handler(commands=['update'], admins_chat=True)
 async def update_handler(message):
-    await BOT.send_message(message.chat.id, 'Ребутаюсь..')
-    other.reboot()
+    await core.admins.update(message)
 
 
-@dp.message_handler(commands=['ban'], only_admins=True)
+@DP.message_handler(commands=['ban'], admins_chat=True)
 async def ban_handler(message):
     await core.admins.ban(message)
 
 
-@dp.message_handler(commands=['vol', 'volume'], only_admins=True)
+@DP.message_handler(commands=['vol', 'volume'], admins_chat=True)
 async def volume_handler(message):
     await core.admins.set_volume(message)
 
 
-@dp.message_handler(commands=['stats'], only_admins=True)
+@DP.message_handler(commands=['stats'], admins_chat=True)
 async def stats_handler(message):
     await core.admins.get_stats(message)
+
+
+@DP.message_handler(commands=['debug'], admins_chat=True)
+async def debug_handler(message):
+    await core.admins.get_debug(message)
 
 
 # endregion
 
 
-@dp.callback_query_handler()
+@DP.callback_query_handler()
 async def callback_query_handler(query):
     cmd = query.data.split('-|-')
 
@@ -90,7 +91,7 @@ async def callback_query_handler(query):
     elif cmd[0] == 'order_notime':
         await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
                                             reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2]) - 1))
-        await BOT.answer_callback_query(query.id, consts.TextConstants.ORDER_ERR_TOOLATE)
+        await BOT.answer_callback_query(query.id, texts.ORDER_ERR_TOOLATE)
 
     #
     # Принять / отклонить
@@ -114,7 +115,7 @@ async def callback_query_handler(query):
     elif cmd[0] == 'bad_order_but_ok':
         await BOT.edit_message_caption(
             query.message.chat.id, query.message.message_id,
-            caption=consts.TextConstants.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+            caption=texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
     try:
         await BOT.answer_callback_query(query.id)
@@ -122,7 +123,7 @@ async def callback_query_handler(query):
         logging.warning(f"pls add exception {ex} in except")
 
 
-@dp.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
+@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
 async def message_handler(message):
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id:
@@ -133,19 +134,19 @@ async def message_handler(message):
             return await core.communication.admin_message(message)
 
         # Ввод названия песни
-        if message.reply_to_message.text == consts.TextConstants.ORDER_CHOOSE_SONG and not message.audio:
+        if message.reply_to_message.text == texts.ORDER_CHOOSE_SONG and not message.audio:
             return await core.search.search_audio(message)
 
         # Реплай на сообщение обратной связи или сообщение от модера
-        if message.reply_to_message.text == consts.TextConstants.FEEDBACK or \
+        if message.reply_to_message.text == texts.FEEDBACK or \
                 core.communication.cache_is_set(message.reply_to_message.message_id):
             await core.communication.user_message(message)
-            return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK_THANKS,
+            return await BOT.send_message(message.chat.id, texts.FEEDBACK_THANKS,
                                           reply_markup=keyboards.START)
 
         # Реплай, но на какую то хуйню
         if not message.audio:
-            return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK_PLS_USE_BUTTON)
+            return await BOT.send_message(message.chat.id, texts.FEEDBACK_PLS_USE_BUTTON)
 
     if message.chat.id < 0:
         return
@@ -157,37 +158,37 @@ async def message_handler(message):
     # Кнопки
 
     # Кнопка 'Что играет?'
-    if message.text == consts.BtnConstants.MENU['what_playing']:
+    if message.text == btns_text.MENU['what_playing']:
         return await core.users.song_now(message)
 
     # Кнопка 'Предложить песню'
-    if message.text == consts.BtnConstants.MENU['order'] or message.text == '/song':
-        await BOT.send_message(message.chat.id, consts.TextConstants.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        return await BOT.send_message(message.chat.id, consts.TextConstants.ORDER_INLINE_SEARCH,
+    if message.text == btns_text.MENU['order'] or message.text == '/song':
+        await BOT.send_message(message.chat.id, texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+        return await BOT.send_message(message.chat.id, texts.ORDER_INLINE_SEARCH,
                                       reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
-    if message.text == consts.BtnConstants.MENU['feedback']:
-        return await BOT.send_message(message.chat.id, consts.TextConstants.FEEDBACK, reply_markup=types.ForceReply())
+    if message.text == btns_text.MENU['feedback']:
+        return await BOT.send_message(message.chat.id, texts.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
-    if message.text == consts.BtnConstants.MENU['help'] or message.text == '/help':
-        return await BOT.send_message(message.chat.id, consts.TextConstants.HELP['start'],
+    if message.text == btns_text.MENU['help'] or message.text == '/help':
+        return await BOT.send_message(message.chat.id, texts.HELP['start'],
                                       reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
-    if message.text == consts.BtnConstants.MENU['timetable']:
+    if message.text == btns_text.MENU['timetable']:
         return await core.users.timetable(message)
 
     # Просто сообщение
     await BOT.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-                            caption=consts.TextConstants.UNKNOWN_CMD, reply_markup=keyboards.START)
+                            caption=texts.UNKNOWN_CMD, reply_markup=keyboards.START)
 
 
-@dp.inline_handler()
+@DP.inline_handler()
 async def query_text(inline_query):
     await core.search.inline_search(inline_query)
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(DP, skip_updates=True)

@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 from html.parser import HTMLParser
 from urllib.parse import quote_plus
 
@@ -28,6 +29,7 @@ class MyHTMLParser(HTMLParser):
 PARSER = MyHTMLParser()
 
 
+@lru_cache(maxsize=200)
 async def search(name):
     url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
@@ -50,6 +52,7 @@ def get_download_url(url, artist=None, title=None):
     return url
 
 
+@lru_cache(maxsize=100)
 async def search_text(name):
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
@@ -79,6 +82,7 @@ async def search_text(name):
     return title, lyrics
 
 
+@lru_cache(maxsize=100)
 async def is_anime(audio_name):
     async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
                                    headers={'user-agent': 'my custom agent'}) as res:
@@ -98,6 +102,7 @@ async def is_contain_bad_words(audio_name):
     return res and res[1]
 
 
+@lru_cache(maxsize=100)
 async def get_bad_words(audio_name):
     res = await search_text(audio_name)
     if not res:
