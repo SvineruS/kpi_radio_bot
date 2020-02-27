@@ -1,4 +1,4 @@
-aiogram==2.3
+aiogram==2.6.1
 aiohttp==3.5.4
 aioschedule==0.5.2
 matplotlib==3.1.1

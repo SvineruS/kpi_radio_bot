@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Dispatcher, types, executor
 
 import consts
@@ -59,6 +61,7 @@ async def volume_handler(message):
 async def stats_handler(message):
     await core.admins.get_stats(message)
 
+
 # endregion
 
 
@@ -115,13 +118,12 @@ async def callback_query_handler(query):
 
     try:
         await BOT.answer_callback_query(query.id)
-    except:
-        pass
+    except Exception as ex:
+        logging.warning(f"pls add exception {ex} in except")
 
 
 @dp.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
 async def message_handler(message):
-
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id:
 

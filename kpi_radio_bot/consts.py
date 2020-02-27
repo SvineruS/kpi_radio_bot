@@ -164,7 +164,7 @@ ANIME_WORDS = ['anime', 'аниме']
 BAD_NAMES = [
     'корж', 'тима', 'стрыкало', 'нервы', 'гречка',
     'gachi', '♂', 'slave', 'ass', 'butt', 'right version'
-    'mix', 'radio tapok',
+                                          'mix', 'radio tapok',
 ]  # todo
 
 TIMES_NAME = {

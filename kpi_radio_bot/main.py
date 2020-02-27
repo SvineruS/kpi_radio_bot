@@ -12,13 +12,11 @@ from bot_handlers import dp
 from config import RADIOBOSS_DATA, WEBHOOK_URL, PORT, SSL_PRIV, Bot, BOT, SSL_CERT, WEBHOOK_PATH
 from utils import music, scheduler
 
-app = web.Application()
-routes = web.RouteTableDef()
-
-logging.basicConfig(filename='debug.log', level=logging.INFO)
+APP = web.Application()
+ROUTES = web.RouteTableDef()
 
 
-@routes.get("/gettext/{name}")
+@ROUTES.get("/gettext/{name}")
 async def gettext(request):
     name = request.match_info.get('name')
     if not name:
@@ -30,7 +28,7 @@ async def gettext(request):
     return web.Response(text=f"{title} \n\n{text}")
 
 
-@routes.get("/playlist")
+@ROUTES.get("/playlist")
 async def history_save(request):
     # https://HOST:PORT/playlist?artist=%artist%&title%title%&casttitle=%casttitle%&len=%seconds%&path=%path%&pass=pass
     args = request.rel_url.query
@@ -46,7 +44,7 @@ async def history_save(request):
     return web.Response(text='ok')
 
 
-@routes.post(WEBHOOK_PATH)
+@ROUTES.post(WEBHOOK_PATH)
 async def webhook_handle(request):
     update = await request.json()
     update = types.Update(**update)
@@ -54,8 +52,9 @@ async def webhook_handle(request):
     Dispatcher.set_current(dp)
     try:
         await dp.process_update(update)
-    except Exception:
+    except Exception as ex:
         traceback.print_exception(*sys.exc_info())
+        logging.warning(f"pls add exception {ex} in except")
 
     return web.Response(text='ok')
 
@@ -77,16 +76,16 @@ async def on_shutdown(_):
 
 
 def start():
-    app.add_routes(routes)
+    APP.add_routes(ROUTES)
 
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
+    APP.on_startup.append(on_startup)
+    APP.on_shutdown.append(on_shutdown)
 
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(SSL_CERT, SSL_PRIV)
 
     web.run_app(
-        app,
+        APP,
         host='0.0.0.0',
         port=PORT,
         ssl_context=context

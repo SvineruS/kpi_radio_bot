@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import types
+from aiogram import types, exceptions
 
 import consts
 import core
@@ -41,4 +41,10 @@ async def inline_search(inline_query):
             performer=audio['artist'],
             title=audio['title']
         ))
-    await BOT.answer_inline_query(inline_query.id, articles)
+    try:
+        await BOT.answer_inline_query(inline_query.id, articles)
+    except exceptions.NetworkError as ex:
+        logging.warning(f"inline_search file too large {ex}")
+        await BOT.answer_inline_query(inline_query.id, [])
+
+

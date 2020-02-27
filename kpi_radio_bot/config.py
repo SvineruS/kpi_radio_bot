@@ -1,5 +1,6 @@
-from pathlib import Path
+import logging
 from os import getenv
+from pathlib import Path
 
 import aiohttp
 from aiogram import Bot
@@ -10,6 +11,7 @@ PATH_SELF = Path(__file__).parent.parent
 PATH_STUFF = PATH_SELF / 'stuff'
 
 load_dotenv(dotenv_path=PATH_STUFF / '.env')
+logging.basicConfig(filename=PATH_STUFF / 'debug.log', level=logging.INFO)
 
 
 IS_TEST_ENV = getenv("IS_TEST_ENV")
@@ -38,10 +40,8 @@ SSL_PRIV = PATH_STUFF / 'webhook_pkey.pem'
 WEBHOOK_PATH = '/webhook'
 WEBHOOK_URL = f"https://{HOST}:{PORT}{WEBHOOK_PATH}"
 
-
 if IS_TEST_ENV:
     TOKEN = TOKEN_TEST
-
 
 BOT = Bot(token=TOKEN, parse_mode='HTML')
 AIOHTTP_SESSION = aiohttp.ClientSession()

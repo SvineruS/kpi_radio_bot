@@ -35,8 +35,9 @@ async def search(name):
             return False
         try:
             return await res.json()
-        except Exception as e:
-            logging.error(f'search song: {e} {name}')
+        except Exception as ex:
+            logging.error(f'search song: {ex} {name}')
+            logging.warning(f"pls add exception {ex} in except")
             return False
 
 
@@ -79,7 +80,8 @@ async def search_text(name):
 
 
 async def is_anime(audio_name):
-    async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}", headers={'user-agent': 'my custom agent'} ) as res:
+    async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
+                                   headers={'user-agent': 'my custom agent'}) as res:
         if res.status != 200:
             return False
         text = (await res.text()).lower()
@@ -102,5 +104,5 @@ async def get_bad_words(audio_name):
         return False
 
     title, lyrics = res
-    bw = [word for word in consts.BAD_WORDS if word in lyrics]
-    return title, bw
+    b_w = [word for word in consts.BAD_WORDS if word in lyrics]
+    return title, b_w

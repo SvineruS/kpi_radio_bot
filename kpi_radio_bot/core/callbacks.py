@@ -53,7 +53,8 @@ async def perezaklad(day, time):
             try:
                 await BOT.send_audio(tag['id'], file, caption=consts.TextConstants.ORDER_PEREZAKLAD,
                                      reply_markup=await keyboards.choice_day())
-            except Exception as e:
-                logging.info(f"perezaklad send msg: {e}")
+            except Exception as ex:
+                logging.info(f"perezaklad send msg: {ex}")
+                logging.warning(f"pls add exception {ex} in except")
 
         await asyncio.sleep(3)

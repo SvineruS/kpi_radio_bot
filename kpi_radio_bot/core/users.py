@@ -1,3 +1,6 @@
+import logging
+from datetime import datetime
+
 import consts
 import keyboards
 from config import BOT
@@ -21,7 +24,7 @@ async def song_next(query):
     playback = await radioboss.get_next()
     if not playback:
         return await BOT.send_message(query.message.chat.id, consts.TextConstants.SONG_NO_NEXT)
-    await BOT.send_message(query.message.chat.id, other.song_format(playback[:5]))
+    await BOT.send_message(query.message.chat.id, _song_format(playback[:5]))
 
 
 async def timetable(message):
@@ -41,8 +44,8 @@ async def help_change(query, key):
     try:
         await BOT.edit_message_text(consts.TextConstants.HELP[key], query.message.chat.id,
                                     query.message.message_id, reply_markup=keyboards.CHOICE_HELP)
-    except:
-        pass
+    except Exception as ex:
+        logging.warning(f"pls add exception {ex} in except")
 
 
 async def notify_switch(message):
@@ -81,3 +84,13 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
     else:
         await BOT.send_audio(chat, file, consts.TextConstants.ORDER_CHOOSE_DAY,
                              reply_markup=await keyboards.choice_day())
+
+
+#
+
+def _song_format(playback):
+    text = [
+        f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
+        for track in playback
+    ]
+    return '\n'.join(text)

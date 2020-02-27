@@ -24,8 +24,9 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
             if res == 'OK':
                 return True
             return Etree.fromstring(res)
-    except Exception as e:
-        logging.error(f'radioboss: {e} {res} {url}')
+    except Exception as ex:
+        logging.error(f'radioboss: {ex} {res} {url}')
+        logging.warning(f"pls add exception {ex} in except")
         return False
 
 
@@ -45,15 +46,15 @@ async def get_now():
 
 async def get_next():
     playlist = await get_playlist()
-    bn = broadcast.get_broadcast_num()
-    if not playlist or bn is False:
+    b_n = broadcast.get_broadcast_num()
+    if not playlist or b_n is False:
         return []
 
     answer = []
 
     dt_now = datetime.now()
     time_min = dt_now.time()
-    time_max = consts.BROADCAST_TIMES[dt_now.weekday()][bn][1]
+    time_max = consts.BROADCAST_TIMES[dt_now.weekday()][b_n][1]
     time_max = datetime.strptime(time_max, '%H:%M').time()
 
     for track in playlist:
@@ -122,8 +123,8 @@ async def read_track_additional_info(path):
     tag = tags[0].attrib['Comment']
     try:
         return json.loads(tag)
-    except:
-        pass
+    except Exception as ex:
+        logging.warning(f"pls add exception {ex} in except")
 
 
 async def clear_track_additional_info(path):

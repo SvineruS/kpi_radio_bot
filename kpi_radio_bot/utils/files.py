@@ -21,6 +21,7 @@ def delete_file(path: Path) -> None:
     try:
         path.unlink()
     except Exception as ex:
+        logging.warning(f"pls add exception {ex} in except")
         logging.error(f'delete file: {ex} {path}')
 
 
@@ -41,6 +42,7 @@ def move_to_archive(day=None) -> None:
                 shutil.move(src_file, dst_file)
             except Exception as ex:
                 logging.error(f'move file: {ex} {src_file}')
+                logging.warning(f"pls add exception {ex} in except")
 
 
 async def download_audio(audio, path):

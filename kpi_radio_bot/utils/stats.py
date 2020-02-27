@@ -46,7 +46,7 @@ def parse_stats(n_days=float('nan')):
     moderated_msgs = set()
 
     for rec in records:
-        song_name, moder_id, user_id, status, date, msg_id = rec
+        _song_name, moder_id, user_id, _status, date, msg_id = rec
         date = datetime.strptime(date[:10], "%Y-%m-%d")
         date_how_old = (date_now - date).days
 

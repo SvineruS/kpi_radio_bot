@@ -39,14 +39,14 @@ BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
 
 async def choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
-    bn = broadcast.get_broadcast_num()
+    b_n = broadcast.get_broadcast_num()
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     btns = []
 
-    if bn is not False and (await broadcast.get_broadcast_freetime(day, bn)) != 0:  # кнопка сейчас если эфир+успевает
+    if b_n is not False and (await broadcast.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             text=TIMES_NAME['next_days'][-1],
-            callback_data=_callback('order_time', day, bn)
+            callback_data=_callback('order_time', day, b_n)
         ))
     if datetime.now().hour < 22:  # кнопка сегодня
         btns.append(types.InlineKeyboardButton(
