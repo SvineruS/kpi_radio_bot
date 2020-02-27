@@ -70,7 +70,7 @@ async def get_stats(message):
         await BOT.send_photo(message.chat.id, file, caption=caption)
 
 
-async def get_debug(message):
+async def get_log(message):
     with open(PATH_LOG, 'r') as file:
         await BOT.send_document(message.chat.id, file)
 

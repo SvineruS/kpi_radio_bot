@@ -58,9 +58,9 @@ async def stats_handler(message):
     await core.admins.get_stats(message)
 
 
-@DP.message_handler(commands=['debug'], admins_chat=True)
-async def debug_handler(message):
-    await core.admins.get_debug(message)
+@DP.message_handler(commands=['log'], admins_chat=True)
+async def log_handler(message):
+    await core.admins.get_log(message)
 
 
 # endregion

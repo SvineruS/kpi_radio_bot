@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=PATH_STUFF / '.env')
 logging.basicConfig(level=logging.INFO,
                     handlers=[logging.FileHandler(PATH_LOG), logging.StreamHandler()])
 
-IS_TEST_ENV = getenv("IS_TEST_ENV")
+IS_TEST_ENV = bool(getenv("IS_TEST_ENV"))
 
 TOKEN = getenv("TOKEN")
 TOKEN_TEST = getenv("TOKEN_TEST")
