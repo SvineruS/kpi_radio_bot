@@ -71,7 +71,9 @@ async def bars_plot(days):
             sum(moder['own'].values())
         )
         for moder_id, moder in stats.items()
-        if moder_id in moders and 'Модер' in moders[moder_id].custom_title
+        if moder_id in moders and
+           moders[moder_id].custom_title and
+           'Модер' in moders[moder_id].custom_title
     ]
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
     names, alls, owns = zip(*stats)

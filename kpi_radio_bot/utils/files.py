@@ -47,6 +47,6 @@ def move_to_archive(day=None) -> None:
                 logging.warning(f"pls add exception {ex} in except")
 
 
-async def download_audio(audio, path):
+async def download_audio(audio, path) -> None:
     create_dirs(path)
     await audio.download(path, timeout=60)

@@ -8,7 +8,6 @@ from urllib.parse import quote
 from aiogram import types, exceptions
 
 import broadcast
-import consts
 from config import BOT, ADMINS_CHAT_ID, HOST
 from consts import texts, TIMES_NAME, keyboards
 from core import communication, users
@@ -120,10 +119,10 @@ async def admin_choice(query, day: int, time: int, status: str):
                 communication.cache_add(mes.message_id, query.message)
 
             else:  # есть место
-                minutes_left = round((last_track['time_start'] - datetime.now()).seconds / 60)
+                minutes_left = round((last_track.time_start - datetime.now()).seconds / 60)
                 when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
 
-                await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track['index'])
+                await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track.index)
                 mes = await BOT.send_message(user.id,
                                              texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
                 communication.cache_add(mes.message_id, query.message)
@@ -143,8 +142,8 @@ async def admin_unchoice(query, day: int, time: int, status: str):
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)
         files.delete_file(path)  # удалить с диска
-        for i in await broadcast.playlist.find_in_playlist_by_path(str(path)):
-            await broadcast.radioboss.radioboss_api(action='delete', pos=i['index'])
+        for track in await broadcast.playlist.find_in_playlist_by_path(str(path)):
+            await broadcast.radioboss.radioboss_api(action='delete', pos=track.index)
 
 
 #
@@ -162,7 +161,7 @@ async def _gen_order_caption(day, time, user, audio_name=None, status=None, mode
     is_now = broadcast.is_this_broadcast_now(day, time)
     is_now_text = ' (сейчас!)' if is_now else ''
     user_name = get_by.get_user_name(user)
-    text_datetime = consts.TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
+    text_datetime = TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
