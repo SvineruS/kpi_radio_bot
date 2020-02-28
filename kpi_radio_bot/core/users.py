@@ -1,18 +1,19 @@
 """Обработка действий обычных пользователей"""
+from datetime import datetime
 
 from aiogram.utils import exceptions
 
 from broadcast import broadcast, playlist
 from config import BOT
-from consts import BROADCAST_TIMES, texts, keyboards
-from utils import get_by, db, music
+from consts import BROADCAST_TIMES, texts, keyboards, TIMES_NAME
+from utils import get_by, db, music, files
 
 
 async def menu(message):
     await BOT.send_message(message.chat.id, texts.MENU, reply_markup=keyboards.START)
 
 
-async def song_now(message):
+async def playlist_now(message):
     playback = await playlist.get_now()
     if not playback or not broadcast.is_broadcast_right_now():
         return await BOT.send_message(message.chat.id, texts.SONG_NO_NOW, reply_markup=keyboards.WHAT_PLAYING)
@@ -20,11 +21,40 @@ async def song_now(message):
     await BOT.send_message(message.chat.id, texts.WHAT_PLAYING.format(*playback), reply_markup=keyboards.WHAT_PLAYING)
 
 
-async def song_next(query):
-    playback = await playlist.get_next()
-    if not playback:
-        return await BOT.send_message(query.message.chat.id, texts.SONG_NO_NEXT)
-    await BOT.send_message(query.message.chat.id, _song_format(playback[:5]))
+async def playlist_next(query):
+    if broadcast.is_broadcast_right_now():
+        text = _get_playlist()
+        day = datetime.today().weekday()
+        await BOT.send_message(query.message.chat.id, text, reply_markup=keyboards.playlist_choose_time(day))
+    else:
+        text = texts.CHOOSE_DAY
+        await BOT.send_message(query.message.chat.id, text, reply_markup=keyboards.playlist_choose_day())
+
+
+async def playlist_choose_day(query):
+    await BOT.edit_message_text(
+        texts.CHOOSE_DAY, query.message.chat.id, query.message.message_id,
+        reply_markup=keyboards.playlist_choose_day()
+    )
+
+
+async def playlist_choose_time(query, day):
+    await BOT.edit_message_text(
+        texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
+        query.message.chat.id, query.message.message_id,
+        reply_markup=keyboards.playlist_choose_time(day)
+    )
+
+
+async def playlist_show(query, day, time):
+    try:
+        await BOT.edit_message_text(
+            await _get_playlist(day, time),
+            query.message.chat.id, query.message.message_id,
+            reply_markup=keyboards.playlist_choose_time(day)
+        )
+    except exceptions.MessageNotModified:
+        pass
 
 
 async def timetable(message):
@@ -82,7 +112,7 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
         text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
         await BOT.send_audio(chat, file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
-        await BOT.send_audio(chat, file, texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+        await BOT.send_audio(chat, file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
 
 
 async def add_in_db(message):
@@ -91,8 +121,19 @@ async def add_in_db(message):
 
 #
 
-def _song_format(playback):
-    return '\n'.join([
-        f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
-        for track in playback
-    ])
+
+async def _get_playlist(day=None, time=None):
+    if day is None or broadcast.is_this_broadcast_now(day, time):
+        playback = await playlist.get_next()
+        return '\n'.join([
+            f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
+            for track in playback[:10]
+        ])
+    else:
+        playback = files.get_downloaded_tracks(day, time)
+        if not playback:
+            return "❗️Еще ничего не заказали"
+        return '\n'.join([
+            f"🕖<b>{i}</b> {track.name}"
+            for i, track in enumerate(playback[:10])
+        ])

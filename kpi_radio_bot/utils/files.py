@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Union
 
 import consts
-from broadcast import get_broadcast_path
+from broadcast.broadcast import get_broadcast_path
 
 
 def create_dirs(path: Union[str, Path]) -> None:
@@ -50,3 +50,14 @@ def move_to_archive(day=None) -> None:
 async def download_audio(audio, path) -> None:
     create_dirs(path)
     await audio.download(path, timeout=60)
+
+
+def get_downloaded_tracks(day, time):
+    path = get_broadcast_path(day, time)
+    try:
+        return [file for file in path.iterdir() if file.is_file()]
+    except FileNotFoundError as ex:
+        logging.warning(f'get_downloaded_tracks: {ex}')
+        return []
+
+

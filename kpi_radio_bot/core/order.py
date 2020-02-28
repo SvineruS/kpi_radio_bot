@@ -18,8 +18,8 @@ async def order_day_choiced(query, day: int):
     is_moder = await user_utils.is_admin(query.from_user.id)
     await BOT.edit_message_caption(
         query.message.chat.id, query.message.message_id,
-        caption=texts.ORDER_CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
-        reply_markup=await keyboards.choice_time(day, 0 if is_moder else 5)
+        caption=texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
+        reply_markup=await keyboards.order_choice_time(day, 0 if is_moder else 5)
     )
 
 
@@ -51,7 +51,7 @@ async def order_time_choiced(query, day: int, time: int):
 
 async def order_day_unchoiced(query):
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption=texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+                                   caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
 
 
 async def order_cancel(query):
@@ -63,7 +63,7 @@ async def order_cancel(query):
 async def order_no_time(query, day, attempts):
     try:
         await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
-                                            reply_markup=await keyboards.choice_time(day, attempts - 1))
+                                            reply_markup=await keyboards.order_choice_time(day, attempts - 1))
     except exceptions.MessageNotModified:
         pass
     await BOT.answer_callback_query(query.id, texts.ORDER_ERR_TOOLATE)
@@ -82,7 +82,7 @@ async def admin_choice(query, day: int, time: int, status: str):
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
     stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
-    stats.TEMP_change_username_to_id({user.username: user.id, moder.username: moder.id})
+    stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
 
     if status == 'reject':  # кнопка отмена
         mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
@@ -113,7 +113,7 @@ async def admin_choice(query, day: int, time: int, status: str):
             if not last_track:  # нету места
                 when_playing = 'не успел :('
                 mes = await BOT.send_audio(user.id, query.message.audio.file_id,
-                                           reply_markup=await keyboards.choice_day(),
+                                           reply_markup=await keyboards.order_choice_day(),
                                            caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.
                                            format(audio_name, also['text_datetime']))
                 communication.cache_add(mes.message_id, query.message)

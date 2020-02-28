@@ -104,9 +104,22 @@ async def callback_query_handler(query):
 
     #
     # Кнопка "что будет играть" в сообщении "что играет"
-    elif cmd[0] == 'song_next':
-        await core.users.song_next(query)
+    elif cmd[0] == 'playlist_next':
+        await core.users.playlist_next(query)
 
+    # Выбор дня
+    elif cmd[0] == 'playlist_day':
+        await core.users.playlist_choose_time(query, int(cmd[1]))
+
+    # Выбор времени
+    elif cmd[0] == 'playlist_time':
+        await core.users.playlist_show(query, int(cmd[1]), int(cmd[2]))
+
+    # Выбор времени
+    elif cmd[0] == 'playlist_back':
+        await core.users.playlist_choose_day(query)
+
+    #
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
         await core.users.help_change(query, cmd[1])
@@ -114,7 +127,7 @@ async def callback_query_handler(query):
     # Кнопка "все ок" когда закинул неподобающий трек
     elif cmd[0] == 'bad_order_but_ok':
         await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                       caption=texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+                                       caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
 
     try:
         await BOT.answer_callback_query(query.id)
@@ -158,7 +171,7 @@ async def message_handler(message):
 
     # Кнопка 'Что играет?'
     if message.text == keyboards.MAIN_MENU['what_playing']:
-        return await core.users.song_now(message)
+        return await core.users.playlist_now(message)
 
     # Кнопка 'Предложить песню'
     if message.text == keyboards.MAIN_MENU['order'] or message.text == '/song':

@@ -55,7 +55,7 @@ async def perezaklad(day, time):
         with open(str(track_path), 'rb') as file:
             try:
                 await BOT.send_audio(tag['id'], file, caption=consts.texts.ORDER_PEREZAKLAD,
-                                     reply_markup=await keyboards.choice_day())
+                                     reply_markup=await keyboards.order_choice_day())
             except Exception as ex:
                 logging.info(f"perezaklad send msg: {ex}")
                 logging.warning(f"pls pls add exception {type(ex)}{ex}in except")

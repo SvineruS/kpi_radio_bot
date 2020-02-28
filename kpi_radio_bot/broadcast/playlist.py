@@ -7,6 +7,7 @@ import consts
 from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now, get_broadcast_path
 from broadcast.radioboss import radioboss_api
 from utils.get_by import time_to_datetime
+from utils.files import get_downloaded_tracks
 
 PlaylistItem = namedtuple("namedtuple", ('title', 'time_start', 'filename', 'index', 'is_order'))
 
@@ -47,10 +48,10 @@ async def get_next() -> List[PlaylistItem]:
     return result
 
 
-async def get_new_order_pos() -> Union[bool, PlaylistItem]:
+async def get_new_order_pos() -> Union[None, PlaylistItem]:
     playlist = await get_next()
-    if not playlist or playlist[-1].is_order:  # если последний трек, что успеет проиграть, это заказ - вернем False
-        return False
+    if not playlist or playlist[-1].is_order:  # если последний трек, что успеет проиграть, это заказ - вернем None
+        return None
 
     for i, track in reversed(list(enumerate(playlist[:-1]))):
         if track.is_order:  # т.к. заказы всегда в начале плейлиста, то нужен трек, следующий после последнего заказа
@@ -71,7 +72,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
             return 0
         last_order_start = last_order.time_start
     else:
-        tracks_duration = await _calculate_tracks_duration(get_broadcast_path(day, time))
+        tracks_duration = await _calculate_tracks_duration(day, time)
         last_order_start = broadcast_start + timedelta(minutes=tracks_duration)
 
     t_d = broadcast_finish - last_order_start
@@ -104,14 +105,13 @@ async def _get_playlist() -> List[PlaylistItem]:
     return result
 
 
-async def _calculate_tracks_duration(path: Path) -> float:
+async def _calculate_tracks_duration(day, time) -> float:
     duration = 0
     try:
-        files = path.iterdir()
-        for file in files:
+        for file in get_downloaded_tracks(day, time):
             tags = await radioboss_api(action='readtag', fn=file)
             if tags:
                 duration += int(tags[0].attrib['Duration'])
-    except FileNotFoundError:
+    except FileNotFoundError:  # это бблядь как
         return 0
     return duration / 1000 / 60  # minutes

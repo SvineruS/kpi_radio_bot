@@ -26,7 +26,7 @@ START = types.ReplyKeyboardMarkup(resize_keyboard=True).add(
 
 WHAT_PLAYING = types.InlineKeyboardMarkup(row_width=2).add(
     types.InlineKeyboardButton(text=_btns_text.HISTORY, url='https://t.me/rkpi_music'),
-    types.InlineKeyboardButton(text=_btns_text.NEXT, callback_data='song_next')
+    types.InlineKeyboardButton(text=_btns_text.NEXT, callback_data='playlist_next')
 )
 
 CHOICE_HELP = types.InlineKeyboardMarkup(row_width=1).add(*[
@@ -40,7 +40,7 @@ BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
 )
 
 
-async def choice_day() -> types.InlineKeyboardMarkup:
+async def order_choice_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
     b_n = get_broadcast_num()
     keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -66,7 +66,7 @@ async def choice_day() -> types.InlineKeyboardMarkup:
     return keyboard
 
 
-async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
+async def order_choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
         free_mins = await playlist.get_broadcast_freetime(day, time_)
         if free_mins == 0 and attempts > 0:
@@ -79,15 +79,12 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
             callback_data=_callback('order_time', day, time_)
         )
 
-    today = day == datetime.today().weekday()
-    time = datetime.now().hour * 60 + datetime.now().minute
-    times = BROADCAST_TIMES_[day]
-
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     btns = []
 
-    for num, (_, break_finish) in times.items():
-        if today and time > break_finish:  # если сегодня и перерыв прошел - не добавляем кнопку
+    for num, (_, break_finish) in BROADCAST_TIMES_[day].items():
+        if day == datetime.today().weekday() and \
+                datetime.now().time() > break_finish:  # если сегодня и перерыв прошел - не добавляем кнопку
             continue
         btns.append(await get_btn(num))
 
@@ -118,3 +115,22 @@ def admin_unchoose(day: int, time: int, status: str) -> types.InlineKeyboardMark
         text=_btns_text.CANCEL,
         callback_data=_callback('admin_unchoice', day, time, status)
     ))
+
+
+def playlist_choose_day() -> types.InlineKeyboardMarkup:
+    today = datetime.today().weekday()
+    btns = []
+    for day in range(4):
+        day = (day + today) % 7
+        btns.append(types.InlineKeyboardButton(
+            text=TIMES_NAME['week_days'][day], callback_data=_callback('playlist_day', day)))
+    return types.InlineKeyboardMarkup(row_width=4).add(*btns)
+
+
+def playlist_choose_time(day) -> types.InlineKeyboardMarkup:
+    btns = []
+    for time in BROADCAST_TIMES_[day]:
+        btns.append(types.InlineKeyboardButton(
+            text=TIMES_NAME['times'][time], callback_data=_callback('playlist_time', day, time)))
+    btns.append(types.InlineKeyboardButton(text=_btns_text.BACK, callback_data='playlist_back'))
+    return types.InlineKeyboardMarkup(row_width=3).add(*btns)
