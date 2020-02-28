@@ -6,7 +6,7 @@ import aiohttp
 from aiogram import Bot
 from dotenv import load_dotenv
 
-PATH_SELF = Path(__file__).parent.parent
+PATH_SELF = Path(__file__).parent.parent  # todo rename to PATH_ROOT
 PATH_STUFF = PATH_SELF / 'stuff'
 PATH_LOG = PATH_STUFF / 'debug.log'
 
