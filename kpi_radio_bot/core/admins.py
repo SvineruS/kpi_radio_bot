@@ -2,6 +2,7 @@
 
 import io
 import os
+from urllib.parse import unquote
 
 import consts
 from broadcast import radioboss, playlist
@@ -72,8 +73,10 @@ async def get_stats(message):
 
 
 async def get_log(message):
-    file = io.StringIO(PATH_LOG.read_text())
-    file.name = 'log.txt'
+    text = PATH_LOG.read_text()
+    text = unquote(text)  # unquote urls logged by aiohttp
+    file = io.StringIO(text)
+    file.name = 'log.txt'  # set filename
     await BOT.send_document(message.chat.id, file)
 
 
