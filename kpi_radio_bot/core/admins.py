@@ -85,7 +85,7 @@ async def next_track(message):
     if not res:
         await BOT.send_message(message.chat.id, 'хуй знает, не работает')
     prev, now, _ = await playlist.get_now()
-    await BOT.send_message(message.chat.id, f'{prev} -> {now}')
+    await BOT.send_message(message.chat.id, f'<i>{prev} ➡ {now}</i>')
 
 
 async def update(message):

@@ -27,7 +27,7 @@ def add(*data):
         writer.writerow(data)
 
 
-def TEMP_change_username_to_id(changes):  # todo remove
+def change_username_to_id(changes):  # todo remove
     with open(PATH_STATS_CSV, "r", encoding='utf-8-sig') as file:
         content = file.read()
     for username, id_ in changes.items():
@@ -73,8 +73,8 @@ async def bars_plot(days):
         )
         for moder_id, moder in stats.items()
         if moder_id in moders and
-           moders[moder_id].custom_title and
-           'Модер' in moders[moder_id].custom_title
+        moders[moder_id].custom_title and
+        'Модер' in moders[moder_id].custom_title
     ]
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
     names, alls, owns = zip(*stats)
