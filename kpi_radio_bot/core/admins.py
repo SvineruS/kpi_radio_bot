@@ -1,4 +1,5 @@
 import os
+import io
 
 import consts
 from broadcast.radioboss import radioboss_api
@@ -46,8 +47,7 @@ async def set_volume(message):
 
 async def get_stats(message):
     if 'csv' in message.get_args():
-        with open(PATH_STUFF / 'stats.csv', 'rb') as file:
-            return await BOT.send_document(message.chat.id, file)
+        return await BOT.send_document(message.chat.id, (PATH_STUFF / 'stats.csv').open('rb'))
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if message.entities[1].type == 'mention':
@@ -66,16 +66,17 @@ async def get_stats(message):
         await stats.bars_plot(days)
         caption = f'Стата за {days} дн.'
 
-    with open(stats.PATH_STATS_PNG, 'rb') as file:
-        await BOT.send_photo(message.chat.id, file, caption=caption)
+    await BOT.send_photo(message.chat.id, stats.PATH_STATS_PNG.open('rb'), caption=caption)
 
 
 async def get_log(message):
-    with open(PATH_LOG, 'r') as file:
-        await BOT.send_document(message.chat.id, file)
+    file = io.StringIO(PATH_LOG.read_text())
+    file.name = 'log.txt'
+    await BOT.send_document(message.chat.id, file)
 
 
 async def next_track(message):
+    # todo писать с какого на какой трек переключил
     res = await radioboss_api(cmd='next')
     await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
 
