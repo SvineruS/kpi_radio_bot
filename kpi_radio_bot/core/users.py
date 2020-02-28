@@ -1,7 +1,5 @@
 """Обработка действий обычных пользователей"""
 
-from datetime import datetime
-
 from aiogram.utils import exceptions
 
 from broadcast import broadcast, playlist
@@ -16,8 +14,9 @@ async def menu(message):
 
 async def song_now(message):
     playback = await playlist.get_now()
-    if not broadcast.is_broadcast_right_now() or not playback:
+    if not playback or not broadcast.is_broadcast_right_now():
         return await BOT.send_message(message.chat.id, texts.SONG_NO_NOW, reply_markup=keyboards.WHAT_PLAYING)
+    playback = [i if i else r'¯\_(ツ)_/¯' for i in playback]
     await BOT.send_message(message.chat.id, texts.WHAT_PLAYING.format(*playback), reply_markup=keyboards.WHAT_PLAYING)
 
 
@@ -94,6 +93,6 @@ async def add_in_db(message):
 
 def _song_format(playback):
     return '\n'.join([
-        f"🕖<b>{datetime.strftime(track['time_start'], '%H:%M:%S')}</b> {track['title']}"
+        f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
         for track in playback
     ])

@@ -9,8 +9,7 @@ def get_broadcast_num(dt_: datetime = None) -> Union[bool, int]:
     if not dt_:
         dt_ = datetime.now()
 
-    day = dt_.weekday()
-    time = dt_.hour * 60 + dt_.minute
+    day, time = dt_.weekday(), dt_.time()
 
     for num, (time_start, time_stop) in consts.BROADCAST_TIMES_[day].items():
         if time_start < time < time_stop:

@@ -1,4 +1,5 @@
 """Методы, конвентирующие всякую хрень"""
+from datetime import datetime
 
 from aiogram import types
 
@@ -41,3 +42,7 @@ def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
     if 2 <= num % 10 <= 4:
         return c_2
     return c_3
+
+
+def time_to_datetime(time):
+    return datetime.combine(datetime.today(), time)

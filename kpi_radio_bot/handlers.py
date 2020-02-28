@@ -103,7 +103,7 @@ async def callback_query_handler(query):
         await core.order.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
 
     #
-    # Кнопка "следующие треки" в сообщении "что играет"
+    # Кнопка "что будет играть" в сообщении "что играет"
     elif cmd[0] == 'song_next':
         await core.users.song_next(query)
 

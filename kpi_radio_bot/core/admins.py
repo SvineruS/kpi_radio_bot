@@ -4,7 +4,7 @@ import io
 import os
 
 import consts
-from broadcast.radioboss import radioboss_api
+from broadcast import radioboss, playlist
 from config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
 from core import communication
 from utils import user_utils, db, stats, get_by
@@ -41,7 +41,7 @@ async def set_volume(message):
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
-            await radioboss_api(cmd=f'setvol {volume}')
+            await radioboss.radioboss_api(cmd=f'setvol {volume}')
             return await message.reply(f'Громкость выставлена в {volume}!')
 
     await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
@@ -78,9 +78,11 @@ async def get_log(message):
 
 
 async def next_track(message):
-    # todo писать с какого на какой трек переключил
-    res = await radioboss_api(cmd='next')
-    await BOT.send_message(message.chat.id, 'Ок' if res else 'хуй знает, не работает')
+    res = await radioboss.radioboss_api(cmd='next')
+    if not res:
+        await BOT.send_message(message.chat.id, 'хуй знает, не работает')
+    prev, now, _ = playlist.get_now()
+    await BOT.send_message(message.chat.id, f'{prev} -> {now}')
 
 
 async def update(message):

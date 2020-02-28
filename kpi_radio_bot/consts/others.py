@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 BAD_WORDS = [
@@ -53,6 +54,19 @@ BROADCAST_TIMES = {  # todo короче эту тему лучше сделат
 
 }
 
+
+BROADCAST_TIMES_ = {
+    day_k: {
+        num_k: tuple(
+            datetime.strptime(time_string, '%H:%M').time()
+            for time_string in num_v
+        )
+        for num_k, num_v in day_v.items()
+    }
+    for day_k, day_v in BROADCAST_TIMES.items()
+}
+
+
 PATHS = {
     'orders': Path('D:/Вещание Радио/Заказы'),  # сюда бот кидает заказанные песни
     'archive': Path('D:/Вещание Радио/Архив'),  # сюда песни перемещаются каждую ночь с папки заказов
@@ -67,16 +81,3 @@ PATHS = {
 #     'ether': Path('D:/Вещание Радио/Летний эфир/Эфир'),
 # }
 
-
-def _time(time_string):
-    hours, mins = time_string.split(':')
-    return int(hours) * 60 + int(mins)
-
-
-BROADCAST_TIMES_ = {
-    day_k: {
-        num_k: tuple(_time(time) for time in num_v)
-        for num_k, num_v in day_v.items()
-    }
-    for day_k, day_v in BROADCAST_TIMES.items()
-}
