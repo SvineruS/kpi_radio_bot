@@ -88,6 +88,6 @@ def id_2_hashtag(id_):
     base = len(_hashtag_chars)
     res = ""
     while id_:
-        res += _hashtag_chars[int(id_ % base)]
-        x = int(id_ / base)
+        x, k = divmode(id_, base)
+        res += _hashtag_chars[k]
     return res
