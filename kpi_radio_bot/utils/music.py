@@ -20,7 +20,7 @@ async def search(name):
             return await res.json()
         except Exception as ex:
             logging.error(f'search song: {ex} {name}')
-            logging.warning(f"pls add exception {ex} in except")
+            logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
             return False
 
 

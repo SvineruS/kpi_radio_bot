@@ -23,6 +23,7 @@ async def search_audio(message):
         await core.users.send_audio(message.chat.id, api_audio=audio)
     except Exception as ex:
         logging.error(f'send audio: {ex} {audio["url"]}')
+        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
         await BOT.send_message(message.chat.id, consts.texts.ERROR, reply_markup=keyboards.START)
 
 

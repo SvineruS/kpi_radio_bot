@@ -119,7 +119,7 @@ async def callback_query_handler(query):
     try:
         await BOT.answer_callback_query(query.id)
     except Exception as ex:
-        logging.warning(f"pls add exception {ex} in except")
+        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])

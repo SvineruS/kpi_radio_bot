@@ -23,7 +23,7 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
             return Etree.fromstring(res)
     except Exception as ex:
         logging.error(f'radioboss: {ex} {res} {url}')
-        logging.warning(f"pls add exception {ex} in except")
+        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
         return False
 
 
@@ -44,7 +44,7 @@ async def read_track_additional_info(path):
     try:
         return json.loads(tag)
     except Exception as ex:
-        logging.warning(f"pls add exception {ex} in except")
+        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
 
 
 async def clear_track_additional_info(path):

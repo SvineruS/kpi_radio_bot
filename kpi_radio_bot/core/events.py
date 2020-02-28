@@ -58,6 +58,6 @@ async def perezaklad(day, time):
                                      reply_markup=await keyboards.choice_day())
             except Exception as ex:
                 logging.info(f"perezaklad send msg: {ex}")
-                logging.warning(f"pls add exception {ex} in except")
+                logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
 
         await asyncio.sleep(3)
