@@ -13,8 +13,8 @@ PATH_LOG = PATH_STUFF / 'debug.log'
 load_dotenv(dotenv_path=PATH_STUFF / '.env')
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d > %(funcName)s] \t  %(name)-8s %(message)s',
-    datefmt='%m.%d %H:%M:%S',
+    format='[%(asctime)s] %(levelname)-8s [%(filename)s:%(lineno)d > %(funcName)s] \t  %(name)-8s %(message)s',
+    datefmt='%d.%m %H:%M:%S',
     handlers=[logging.FileHandler(PATH_LOG), logging.StreamHandler()]
 )
 
