@@ -84,7 +84,7 @@ async def next_track(message):
     res = await radioboss.radioboss_api(cmd='next')
     if not res:
         await BOT.send_message(message.chat.id, 'хуй знает, не работает')
-    prev, now, _ = playlist.get_now()
+    prev, now, _ = await playlist.get_now()
     await BOT.send_message(message.chat.id, f'{prev} -> {now}')
 
 
