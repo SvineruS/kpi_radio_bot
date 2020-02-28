@@ -16,7 +16,7 @@ async def get_now():
     if not playback or playback[3].attrib['state'] == 'stop':
         return False
 
-    result = [] * 3
+    result = [''] * 3
     for i, track in enumerate(playback[0:2]):
         title = track[0].attrib['CASTTITLE']
         if "setvol" not in title:
