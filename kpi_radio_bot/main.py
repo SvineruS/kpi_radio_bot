@@ -1,8 +1,5 @@
 import asyncio
-import logging
 import ssl
-import sys
-import traceback
 
 from aiogram import types, Dispatcher, Bot
 from aiohttp import web
@@ -48,13 +45,10 @@ async def history_save(request):
 async def webhook_handle(request):
     update = await request.json()
     update = types.Update(**update)
+
     Bot.set_current(DP.bot)  # без этого не работает
     Dispatcher.set_current(DP)
-    try:
-        await DP.process_update(update)
-    except Exception as ex:
-        traceback.print_exception(*sys.exc_info())
-        logging.warning(f"pls add exception {ex} in except")
+    asyncio.create_task(DP.process_update(update))
 
     return web.Response(text='ok')
 
@@ -67,7 +61,7 @@ async def on_startup(_):
             await config.BOT.delete_webhook()
         await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=open(config.SSL_CERT, 'rb'))
 
-    asyncio.ensure_future(scheduler.start())
+    asyncio.create_task(scheduler.start())
     await core.callbacks.start_up()
 
 
