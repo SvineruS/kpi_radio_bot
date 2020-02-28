@@ -31,7 +31,8 @@ def TEMP_change_username_to_id(changes):  # todo remove
     with open(PATH_STATS_CSV, "r", encoding='utf-8-sig') as file:
         content = file.read()
     for username, id_ in changes.items():
-        content = content.replace(username, str(id_))
+        if username:
+            content = content.replace(username, str(id_))
     with open(PATH_STATS_CSV, "w", encoding='utf-8-sig') as file:
         file.write(content)
 
