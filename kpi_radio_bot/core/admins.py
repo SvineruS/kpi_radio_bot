@@ -1,9 +1,11 @@
-import os
+"""Обработка действий админов"""
+
 import io
+import os
 
 import consts
 from broadcast.radioboss import radioboss_api
-from config import BOT, PATH_STUFF, PATH_LOG, PATH_SELF
+from config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
 from core import communication
 from utils import user_utils, db, stats, get_by
 
@@ -17,7 +19,7 @@ async def ban(message):
     if communication.cache_is_set(message.reply_to_message.message_id):
         user, _ = communication.cache_get(message.reply_to_message.message_id)
     else:
-        user = user_utils.get_user_from_entity(message.reply_to_message)
+        user = get_by.get_user_from_entity(message.reply_to_message)
         if not user:
             return await message.reply("Бля, не могу забанить")
         user = user.id
@@ -83,4 +85,4 @@ async def next_track(message):
 
 async def update(message):
     await BOT.send_message(message.chat.id, 'Ребутаюсь..')
-    os.system(rf'cmd.exe /C start {PATH_SELF}\\update.bat')
+    os.system(rf'cmd.exe /C start {PATH_ROOT}\\update.bat')

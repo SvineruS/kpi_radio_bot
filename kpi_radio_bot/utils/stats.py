@@ -1,3 +1,13 @@
+"""Запись и отображение статистики
+Столбцы статистики:
+- Название трека
+- id модера
+- id заказчика
+- статус модерации
+- дата модерации
+- id сообщение модерации
+"""
+
 import csv
 from collections import Counter
 from datetime import datetime, timedelta

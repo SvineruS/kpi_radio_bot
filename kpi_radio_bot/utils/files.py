@@ -1,3 +1,5 @@
+"""Методы для работы с файлами"""
+
 import logging
 import os
 import shutil

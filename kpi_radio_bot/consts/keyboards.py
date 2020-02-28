@@ -3,7 +3,7 @@ from datetime import datetime
 from aiogram import types
 
 from broadcast import playlist, get_broadcast_num, get_broadcast_name
-from consts import btns_text
+from consts import _btns_text
 from consts.others import TIMES_NAME, BROADCAST_TIMES_
 
 
@@ -11,30 +11,32 @@ def _callback(*args):
     return '-|-'.join([str(i) for i in args])
 
 
+MAIN_MENU = _btns_text.MENU
+
 ORDER_INLINE = types.InlineKeyboardMarkup().add(
-    types.InlineKeyboardButton(btns_text.INLINE_SEARCH, switch_inline_query_current_chat="")
+    types.InlineKeyboardButton(_btns_text.INLINE_SEARCH, switch_inline_query_current_chat="")
 )
 
 START = types.ReplyKeyboardMarkup(resize_keyboard=True).add(
-    types.KeyboardButton(btns_text.MENU['what_playing']), types.KeyboardButton(btns_text.MENU['order'])
+    types.KeyboardButton(_btns_text.MENU['what_playing']), types.KeyboardButton(_btns_text.MENU['order'])
 ).add(
-    types.KeyboardButton(btns_text.MENU['feedback']), types.KeyboardButton(btns_text.MENU['help']),
-    types.KeyboardButton(btns_text.MENU['timetable'])
+    types.KeyboardButton(_btns_text.MENU['feedback']), types.KeyboardButton(_btns_text.MENU['help']),
+    types.KeyboardButton(_btns_text.MENU['timetable'])
 )
 
 WHAT_PLAYING = types.InlineKeyboardMarkup(row_width=2).add(
-    types.InlineKeyboardButton(text=btns_text.HISTORY, url='https://t.me/rkpi_music'),
-    types.InlineKeyboardButton(text=btns_text.NEXT, callback_data='song_next')
+    types.InlineKeyboardButton(text=_btns_text.HISTORY, url='https://t.me/rkpi_music'),
+    types.InlineKeyboardButton(text=_btns_text.NEXT, callback_data='song_next')
 )
 
 CHOICE_HELP = types.InlineKeyboardMarkup(row_width=1).add(*[
     types.InlineKeyboardButton(text=v, callback_data=_callback('help', k))
-    for k, v in btns_text.HELP.items()
+    for k, v in _btns_text.HELP.items()
 ])
 
 BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
-    types.InlineKeyboardButton(text=btns_text.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok')),
-    types.InlineKeyboardButton(text=btns_text.CANCEL, callback_data='order_cancel')
+    types.InlineKeyboardButton(text=_btns_text.BAD_ORDER_BUT_OK, callback_data=_callback('bad_order_but_ok')),
+    types.InlineKeyboardButton(text=_btns_text.CANCEL, callback_data='order_cancel')
 )
 
 
@@ -59,7 +61,7 @@ async def choice_day() -> types.InlineKeyboardMarkup:
             text=TIMES_NAME['next_days'][i],
             callback_data=_callback('order_day', (day + i) % 7)
         ))
-    btns.append(types.InlineKeyboardButton(text=btns_text.CANCEL, callback_data='order_cancel'))
+    btns.append(types.InlineKeyboardButton(text=_btns_text.CANCEL, callback_data='order_cancel'))
     keyboard.add(*btns)
     return keyboard
 
@@ -89,7 +91,7 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
             continue
         btns.append(await get_btn(num))
 
-    btns.append(types.InlineKeyboardButton(text=btns_text.BACK, callback_data='order_back_day'))
+    btns.append(types.InlineKeyboardButton(text=_btns_text.BACK, callback_data='order_back_day'))
     keyboard.add(*btns)
     return keyboard
 
@@ -97,15 +99,15 @@ async def choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup
 def admin_choose(day: int, time: int) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup().add(
         types.InlineKeyboardButton(
-            text=btns_text.QUEUE,
+            text=_btns_text.QUEUE,
             callback_data=_callback('admin_choice', day, time, 'queue')
         ),
         types.InlineKeyboardButton(
-            text=btns_text.NOW,
+            text=_btns_text.NOW,
             callback_data=_callback('admin_choice', day, time, 'now')
         ),
         types.InlineKeyboardButton(
-            text=btns_text.REJECT,
+            text=_btns_text.REJECT,
             callback_data=_callback('admin_choice', day, time, 'reject')
         )
     )
@@ -113,6 +115,6 @@ def admin_choose(day: int, time: int) -> types.InlineKeyboardMarkup:
 
 def admin_unchoose(day: int, time: int, status: str) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(
-        text=btns_text.CANCEL,
+        text=_btns_text.CANCEL,
         callback_data=_callback('admin_unchoice', day, time, status)
     ))

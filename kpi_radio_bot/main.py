@@ -37,7 +37,7 @@ async def history_save(request):
         'casttitle': args.get('casttitle'),
         'path': args.get('path'),
     }
-    await core.callbacks.send_history(fields)
+    await core.events.send_history(fields)
     return web.Response(text='ok')
 
 
@@ -55,25 +55,16 @@ async def webhook_handle(request):
 
 async def on_startup(_):
     webhook = await config.BOT.get_webhook_info()
-    print(await config.BOT.me)
     if webhook.url != config.WEBHOOK_URL:
-        if not webhook.url:
-            await config.BOT.delete_webhook()
-        await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=open(config.SSL_CERT, 'rb'))
+        await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=config.SSL_CERT.open('rb'))
 
     asyncio.create_task(scheduler.start())
-    await core.callbacks.start_up()
-
-
-async def on_shutdown(_):
-    pass
+    await core.events.start_up()
 
 
 def start():
     APP.add_routes(ROUTES)
-
     APP.on_startup.append(on_startup)
-    APP.on_shutdown.append(on_shutdown)
 
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)

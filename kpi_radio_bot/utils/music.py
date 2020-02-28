@@ -1,3 +1,5 @@
+"""Методы, для работы с треками (поиск, поиск текста, определение опенингов и матов)"""
+
 import logging
 from urllib.parse import quote_plus
 
@@ -68,6 +70,8 @@ async def is_anime(audio_name):
         if res.status != 200:
             return False
         text = (await res.text()).lower()
+
+    # todo проверять реджексом с учетом конца слова
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 

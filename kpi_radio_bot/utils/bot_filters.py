@@ -1,3 +1,6 @@
+"""Добавляет в message_handler параметры, например admins_chat
+https://aiogram.readthedocs.io/en/latest/dispatcher/filters.html#boundfilter"""
+
 from aiogram.dispatcher.filters.filters import BoundFilter
 
 from config import ADMINS_CHAT_ID

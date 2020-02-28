@@ -1,6 +1,6 @@
+"""Обеспечение удобного общения юзеров и админов на основе кеша и реплаев"""
 import utils.get_by
 from config import BOT, ADMINS_CHAT_ID
-from utils import user_utils
 from utils.other import LRU
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
@@ -37,7 +37,7 @@ async def admin_message(message):
         user, reply_to = cache_get(message.reply_to_message.message_id)
         text = ''
     else:
-        user = user_utils.get_user_from_entity(message.reply_to_message)
+        user = utils.get_by.get_user_from_entity(message.reply_to_message)
         reply_to = None
         if not user:
             return

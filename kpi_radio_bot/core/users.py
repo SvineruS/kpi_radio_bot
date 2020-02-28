@@ -1,3 +1,5 @@
+"""Обработка действий обычных пользователей"""
+
 from datetime import datetime
 
 from aiogram.utils import exceptions
@@ -6,10 +8,6 @@ from broadcast import broadcast, playlist
 from config import BOT
 from consts import BROADCAST_TIMES, texts, keyboards
 from utils import get_by, db, music
-
-
-async def add_in_db(message):
-    await db.add(message.chat.id)
 
 
 async def menu(message):
@@ -86,6 +84,10 @@ async def send_audio(chat, tg_audio=None, api_audio=None):
         await BOT.send_audio(chat, file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
         await BOT.send_audio(chat, file, texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+
+
+async def add_in_db(message):
+    await db.add(message.chat.id)
 
 
 #

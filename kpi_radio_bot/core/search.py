@@ -1,3 +1,5 @@
+"""Поиск песен"""
+
 import logging
 
 from aiogram import types, exceptions

@@ -2,13 +2,6 @@ from config import BOT, ADMINS_CHAT_ID
 from utils.other import my_lru
 
 
-def get_user_from_entity(message):
-    entities = message.caption_entities if message.audio or message.photo else message.entities
-    if not entities:
-        return False
-    return entities[0].user
-
-
 @my_lru(maxsize=1, ttl=60 * 60 * 12)
 async def get_admins():
     admins = await BOT.get_chat_administrators(ADMINS_CHAT_ID)

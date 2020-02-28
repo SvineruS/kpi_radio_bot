@@ -1,3 +1,5 @@
+"""Обработка заказов"""
+
 # todo refactor this
 
 from datetime import datetime
@@ -61,7 +63,7 @@ async def order_cancel(query):
 
 async def admin_choice(query, day: int, time: int, status: str):
     audio_name = get_by.get_audio_name(query.message.audio)
-    user = user_utils.get_user_from_entity(query.message)
+    user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
 
     admin_text, also = await _gen_order_caption(day, time, user, status=status, moder=moder)
@@ -120,7 +122,7 @@ async def admin_choice(query, day: int, time: int, status: str):
 
 
 async def admin_unchoice(query, day: int, time: int, status: str):
-    user = user_utils.get_user_from_entity(query.message)
+    user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
     admin_text, _ = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
     await BOT.edit_message_caption(ADMINS_CHAT_ID, query.message.message_id,

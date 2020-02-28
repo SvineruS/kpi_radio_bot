@@ -1,9 +1,15 @@
+"""Шедулер. Текущие функции:
+- В 23:00 перемещать треки с папки текущего дня в папку архив
+- Вызывать broadcast_begin в начале каждого эфира
+- Вызывать broadcast_end в конце каждого эфира
+"""
+
 import asyncio
 
 import aioschedule
 
 from consts import BROADCAST_TIMES
-from core.callbacks import broadcast_begin, broadcast_end
+from core.events import broadcast_begin, broadcast_end
 from utils.files import move_to_archive
 
 

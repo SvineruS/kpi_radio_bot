@@ -1,10 +1,12 @@
+""" Хендлеры бота """
+
 import logging
 
 from aiogram import Dispatcher, types, executor
 
 import core
 from config import BOT, ADMINS_CHAT_ID
-from consts import keyboards, texts, btns_text
+from consts import keyboards, texts
 from utils import bot_filters
 
 DP = Dispatcher(BOT)
@@ -158,26 +160,26 @@ async def message_handler(message):
     # Кнопки
 
     # Кнопка 'Что играет?'
-    if message.text == btns_text.MENU['what_playing']:
+    if message.text == keyboards.MAIN_MENU['what_playing']:
         return await core.users.song_now(message)
 
     # Кнопка 'Предложить песню'
-    if message.text == btns_text.MENU['order'] or message.text == '/song':
+    if message.text == keyboards.MAIN_MENU['order'] or message.text == '/song':
         await BOT.send_message(message.chat.id, texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
         return await BOT.send_message(message.chat.id, texts.ORDER_INLINE_SEARCH,
                                       reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
-    if message.text == btns_text.MENU['feedback']:
+    if message.text == keyboards.MAIN_MENU['feedback']:
         return await BOT.send_message(message.chat.id, texts.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
-    if message.text == btns_text.MENU['help'] or message.text == '/help':
+    if message.text == keyboards.MAIN_MENU['help'] or message.text == '/help':
         return await BOT.send_message(message.chat.id, texts.HELP['start'],
                                       reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
-    if message.text == btns_text.MENU['timetable']:
+    if message.text == keyboards.MAIN_MENU['timetable']:
         return await core.users.timetable(message)
 
     # Просто сообщение
