@@ -91,9 +91,7 @@ async def callback_query_handler(query):
 
     # Выбрал время но туда не влезет
     elif cmd[0] == 'order_notime':
-        await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
-                                            reply_markup=await keyboards.choice_time(int(cmd[1]), int(cmd[2]) - 1))
-        await BOT.answer_callback_query(query.id, texts.ORDER_ERR_TOOLATE)
+        await core.order.order_no_time(query, int(cmd[1]), int(cmd[2]))
 
     #
     # Принять / отклонить
@@ -115,9 +113,8 @@ async def callback_query_handler(query):
 
     # Кнопка "все ок" когда закинул неподобающий трек
     elif cmd[0] == 'bad_order_but_ok':
-        await BOT.edit_message_caption(
-            query.message.chat.id, query.message.message_id,
-            caption=texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
+        await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
+                                       caption=texts.ORDER_CHOOSE_DAY, reply_markup=await keyboards.choice_day())
 
     try:
         await BOT.answer_callback_query(query.id)

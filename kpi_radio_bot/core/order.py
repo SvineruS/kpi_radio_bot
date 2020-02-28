@@ -61,6 +61,18 @@ async def order_cancel(query):
     await users.menu(query.message)
 
 
+async def order_no_time(query, day, attempts):
+    try:
+        await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
+                                            reply_markup=await keyboards.choice_time(day, attempts - 1))
+    except exceptions.MessageNotModified:
+        pass
+    await BOT.answer_callback_query(query.id, texts.ORDER_ERR_TOOLATE)
+
+
+#
+
+
 async def admin_choice(query, day: int, time: int, status: str):
     audio_name = get_by.get_audio_name(query.message.audio)
     user = get_by.get_user_from_entity(query.message)
