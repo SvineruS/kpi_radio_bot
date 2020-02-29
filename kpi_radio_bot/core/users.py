@@ -135,7 +135,10 @@ async def _get_playlist(day: int = None, time: int = None) -> str:
         if not (playback := files.get_downloaded_tracks(day, time)):
             return name + "❗️Еще ничего не заказали"
 
-        return name + '\n'.join([
-            f"🕖<b>{i + 1}</b> {track.name}"
+        text = name + '\n'.join([
+            f"🕖<b>{i + 1}</b> {track.stem}"
             for i, track in enumerate(playback[:10])
         ])
+        if len(playback) > 10:
+            text += '\n    ...'
+        return text
