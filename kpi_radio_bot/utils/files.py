@@ -44,7 +44,7 @@ def move_to_archive(day: int = None) -> None:
 
 
 async def download_audio(audio: Audio, path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     await audio.download(path, timeout=60)
 
 
