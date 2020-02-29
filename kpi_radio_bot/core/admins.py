@@ -79,23 +79,25 @@ async def show_playlist_control(message: types.Message):
                            reply_markup=await consts.keyboards.playlist_move())
 
 
-async def playlist_move(query: types.CallbackQuery, index, max_time, title_hash):
+async def playlist_move(query: types.CallbackQuery, track_index, track_start_time):
     playback = await playlist.get_next()
-    _in_playback = [i for i, track in enumerate(playback) if track.index == index and hash(track.title) == title_hash]
+    _in_playback = [i for i, track in enumerate(playback) if
+                    track.index == track_index and track.time_start.timestamp() == track_start_time]
 
-    if index == -1:  # просто обновить
+    if track_index == -1:  # просто обновить
         pass
-    elif index == 0:
-        await query.answer("Она сейчас играет -_-")
-    elif time() > max_time or not _in_playback:
+    elif time() > track_start_time or not _in_playback:
         await query.answer("Кнопка неактуальна, давай еще раз")
         playback = await playlist.get_next()
+    elif _in_playback[0] == playback[1].index:
+        await query.answer("Она сейчас играет -_-")
     else:
-        if await radioboss.radioboss_api(action='move', pos1=index, pos2=playback[1].index):
+        if await radioboss.radioboss_api(action='move', pos1=track_index, pos2=playback[1].index):
             playback.insert(1, playback.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
             await query.answer("Ошибка")
+
     try:
         await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
                                             reply_markup=await consts.keyboards.playlist_move(playback))

@@ -78,8 +78,11 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
     moder = query.from_user
     text_datetime = broadcast.get_broadcast_name(day=day, time=time)
     admin_text = await _gen_order_caption(day, time, user, status=status, moder=moder)
-    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
-                                   reply_markup=keyboards.admin_unchoose(day, time, status))
+    try:
+        await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
+                                       reply_markup=keyboards.admin_unchoose(day, time, status))
+    except exceptions.MessageNotModified:
+        pass
 
     stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
     stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
@@ -123,17 +126,23 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
                                            caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, text_datetime))
                 communication.cache_add(mes.message_id, query.message)
 
-    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption=admin_text + '\n🕑 ' + when_playing,
-                                   reply_markup=keyboards.admin_unchoose(day, time, status))
+    try:
+        await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
+                                       caption=admin_text + '\n🕑 ' + when_playing,
+                                       reply_markup=keyboards.admin_unchoose(day, time, status))
+    except exceptions.MessageNotModified:
+        pass
 
 
 async def admin_unchoice(query: CallbackQuery, day: int, time: int, status: str):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
-    await BOT.edit_message_caption(ADMINS_CHAT_ID, query.message.message_id, caption=admin_text,
-                                   reply_markup=keyboards.admin_choose(day, time))
+    try:
+        await BOT.edit_message_caption(ADMINS_CHAT_ID, query.message.message_id, caption=admin_text,
+                                       reply_markup=keyboards.admin_choose(day, time))
+    except exceptions.MessageNotModified:
+        pass
 
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)

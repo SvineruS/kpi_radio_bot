@@ -129,7 +129,7 @@ async def callback_query_handler(query):
 
     # Админская кнопка перемещения трека в плейлисте
     elif cmd[0] == 'playlist_move':
-        await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]), int(cmd[3]))
+        await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]))
 
     try:
         await query.answer()

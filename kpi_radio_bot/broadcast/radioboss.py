@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union
 from urllib.parse import quote_plus
 
+import aiohttp
 from aiogram.types import User
 
 from config import RADIOBOSS_DATA, AIOHTTP_SESSION
@@ -24,8 +25,11 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
             if res == 'OK':
                 return True
             return Etree.fromstring(res)
-    except Exception as ex:
+
+    except aiohttp.ClientConnectionError as ex:
         logging.error(f'radioboss: {ex} {res} {url}')
+        return False
+    except Exception as ex:
         logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
         return False
 
