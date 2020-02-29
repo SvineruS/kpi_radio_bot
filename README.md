@@ -2,13 +2,10 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c1dec8efe5a64262961b86b9b670e5c8)](https://app.codacy.com/manual/svinerus/kpi_radio_bot?utm_source=github.com&utm_medium=referral&utm_content=SvineruS/kpi_radio_bot&utm_campaign=Badge_Grade_Settings)
 
-Сам бот http://t.me/kpiradio_bot
+Сам бот [@kpiradio_bot](http://t.me/kpiradio_bot)
 
-Так же канал истории https://t.me/rkpi_music
+Также канал истории [@rkpi_music](https://t.me/rkpi_music)
 
+Автор [@svinerus](https://t.me/svinerus)
 
-Автор http://t.me/svinerus
-
-Бесплатно
-Для КПИ
-
+Бесплатно Для КПИ

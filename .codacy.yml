@@ -1,1 +1,3 @@
-base_sub_dir: test/baseDir
+---
+engines:
+ base_sub_dir: kpi_radio_bot
