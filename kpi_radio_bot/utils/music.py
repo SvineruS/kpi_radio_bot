@@ -1,6 +1,7 @@
 """Методы, для работы с треками (поиск, поиск текста, определение опенингов и матов)"""
 
 import logging
+import re
 from collections import namedtuple
 from json import JSONDecodeError
 from typing import Tuple, Union, List
@@ -16,6 +17,7 @@ PARSER = MyHTMLParser()
 
 
 Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'url'))
+_RE_GENIUS_BRACKETS = re.compile(r" \([\w\d ]+\) ")
 
 
 @my_lru(maxsize=200, ttl=60 * 60 * 12)
@@ -68,8 +70,12 @@ async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
         if res.status != 200:
             return False
         lyrics = await res.text()
+
+    title = _RE_GENIUS_BRACKETS.sub(" ", title)  # убрать транслитерацию в скобках
+
     lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
     lyrics = PARSER.parse(lyrics).strip()
+
     return title, lyrics
 
 
