@@ -10,7 +10,7 @@ from aiogram.types import CallbackQuery
 
 import broadcast
 from config import BOT, ADMINS_CHAT_ID, HOST
-from consts import texts, TIMES_NAME, keyboards
+from consts import texts, keyboards
 from core import communication, users
 from utils import user_utils, files, db, stats, music, get_by
 
@@ -43,7 +43,7 @@ async def order_choose_time(query: CallbackQuery, day: int):
     is_moder = await user_utils.is_admin(query.from_user.id)
     await BOT.edit_message_caption(
         query.message.chat.id, query.message.message_id,
-        caption=texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
+        caption=texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
         reply_markup=await keyboards.order_choose_time(day, 0 if is_moder else 5)
     )
 
@@ -156,7 +156,7 @@ async def _gen_order_caption(day, time, user, audio_name=None, status=None, mode
     is_now = broadcast.is_this_broadcast_now(day, time)
     is_now_text = ' (сейчас!)' if is_now else ''
     user_name = get_by.get_user_name(user)
-    text_datetime = TIMES_NAME['week_days'][day] + ', ' + broadcast.get_broadcast_name(time)
+    text_datetime = broadcast.get_broadcast_name(day=day, time=time)
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'

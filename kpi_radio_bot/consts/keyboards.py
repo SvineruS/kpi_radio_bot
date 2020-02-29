@@ -71,10 +71,10 @@ async def order_choose_time(day: int, attempts: int = 5) -> types.InlineKeyboard
 
         if free_mins == 0 and attempts > 0:
             return types.InlineKeyboardButton(
-                get_broadcast_name(time_), callback_data=_callback('order_notime', day, attempts)
+                get_broadcast_name(time=time_), callback_data=_callback('order_notime', day, attempts)
             )
         return types.InlineKeyboardButton(
-            ('⚠' if free_mins < 5 else '') + get_broadcast_name(time_),
+            ('⚠' if free_mins < 5 else '') + get_broadcast_name(time=time_),
             callback_data=_callback('order_time', day, time_)
         )
 
@@ -113,14 +113,14 @@ def playlist_choose_day() -> types.InlineKeyboardMarkup:
     for day in range(4):
         day = (day + today) % 7
         btns.append(types.InlineKeyboardButton(
-            TIMES_NAME['week_days'][day], callback_data=_callback('playlist_day', day)
+            get_broadcast_name(day=day), callback_data=_callback('playlist_day', day)
         ))
     return types.InlineKeyboardMarkup(row_width=4).add(*btns)
 
 
 def playlist_choose_time(day: int) -> types.InlineKeyboardMarkup:
     btns = [
-        types.InlineKeyboardButton(get_broadcast_name(time), callback_data=_callback('playlist_time', day, time))
+        types.InlineKeyboardButton(get_broadcast_name(time=time), callback_data=_callback('playlist_time', day, time))
         for time in BROADCAST_TIMES_[day]
     ]
     btns.append(types.InlineKeyboardButton(_btns_text.BACK, callback_data='playlist_back'))

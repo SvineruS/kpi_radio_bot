@@ -32,7 +32,7 @@ async def send_history(fields):
 
 
 async def broadcast_begin(time):
-    await BOT.send_message(HISTORY_CHAT_ID, broadcast.get_broadcast_name(time))
+    await BOT.send_message(HISTORY_CHAT_ID, broadcast.get_broadcast_name(time=time))
     await radioboss.radioboss_api(cmd='setvol 100')  # включить музло на перерыве
 
 

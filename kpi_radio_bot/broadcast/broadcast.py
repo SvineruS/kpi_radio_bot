@@ -18,15 +18,22 @@ def get_broadcast_num(dt_: datetime = None) -> Union[bool, int]:
     return False
 
 
-def get_broadcast_name(time: int) -> str:
-    return consts.TIMES_NAME['times'][time]
+def get_broadcast_name(day: int = None, time: int = None) -> str:
+    text = ''
+    if day is not None:
+        text += consts.TIMES_NAME['week_days'][day]
+        if time is not None:
+            text += ", "
+    if time is not None:
+        text += consts.TIMES_NAME['times'][time]
+    return text
 
 
 def get_broadcast_path(day: int, time: int = False) -> Path:
     path = consts.PATHS['orders']
     path /= f"D0{day + 1}"
     if time is not False:  # так и должно быть
-        path /= '{0} {1}'.format(time, consts.TIMES_NAME['times'][time])
+        path /= '{0} {1}'.format(time, get_broadcast_name(time=time))
     return path
 
 

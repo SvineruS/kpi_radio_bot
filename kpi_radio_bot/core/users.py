@@ -6,7 +6,7 @@ from aiogram.utils import exceptions
 
 from broadcast import broadcast, playlist
 from config import BOT
-from consts import BROADCAST_TIMES, texts, keyboards, TIMES_NAME
+from consts import BROADCAST_TIMES, texts, keyboards
 from utils import get_by, db, music, files
 
 
@@ -41,7 +41,7 @@ async def playlist_choose_day(query: CallbackQuery):
 
 async def playlist_choose_time(query: CallbackQuery, day: int):
     await BOT.edit_message_text(
-        texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
+        texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
         query.message.chat.id, query.message.message_id,
         reply_markup=keyboards.playlist_choose_time(day)
     )
@@ -63,7 +63,7 @@ async def timetable(message: Message):
     for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
         text += f"{day_name} \n"
         for break_num, (start, stop) in BROADCAST_TIMES[day_num].items():
-            text += f"   {start} - {stop}   {broadcast.get_broadcast_name(break_num)} \n"
+            text += f"   {start} - {stop}   {broadcast.get_broadcast_name(time=break_num)} \n"
 
     # todo
     # text += "До ближайшего эфира ..."
@@ -131,9 +131,11 @@ async def _get_playlist(day: int = None, time: int = None) -> str:
             for track in playback[:10]
         ])
     else:
+        name = f"<b>{broadcast.get_broadcast_name(day, time)}</b>\n"
         if not (playback := files.get_downloaded_tracks(day, time)):
-            return "❗️Еще ничего не заказали"
-        return '\n'.join([
-            f"🕖<b>{i}</b> {track.name}"
+            return name + "❗️Еще ничего не заказали"
+
+        return name + '\n'.join([
+            f"🕖<b>{i + 1}</b> {track.name}"
             for i, track in enumerate(playback[:10])
         ])
