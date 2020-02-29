@@ -75,15 +75,15 @@ async def callback_query_handler(query):
     #
     # Выбрали день
     if cmd[0] == 'order_day':
-        await core.order.order_day_choiced(query, int(cmd[1]))
+        await core.order.order_choose_time(query, int(cmd[1]))
 
     # Выбрали время
     elif cmd[0] == 'order_time':
-        await core.order.order_time_choiced(query, int(cmd[1]), int(cmd[2]))
+        await core.order.order_make(query, int(cmd[1]), int(cmd[2]))
 
     # Кнопка назад при выборе времени
-    elif cmd[0] == 'order_back_day':
-        await core.order.order_day_unchoiced(query)
+    elif cmd[0] == 'order_back_day' or cmd[0] == 'bad_order_but_ok':
+        await core.order.order_choose_day(query)
 
     # Кнопка отмены при выборе дня
     elif cmd[0] == 'order_cancel':
@@ -123,11 +123,6 @@ async def callback_query_handler(query):
     # Кнопка в сообщении с инструкцией
     elif cmd[0] == 'help':
         await core.users.help_change(query, cmd[1])
-
-    # Кнопка "все ок" когда закинул неподобающий трек
-    elif cmd[0] == 'bad_order_but_ok':
-        await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                       caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
 
     try:
         await BOT.answer_callback_query(query.id)

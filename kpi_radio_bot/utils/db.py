@@ -6,7 +6,7 @@
     'notification_mute': если True - не уведомлять юзера о том, что заиграл его трек
 }
 """
-
+from datetime import datetime
 from time import time
 
 from motor import motor_asyncio
@@ -29,7 +29,8 @@ async def ban_get(id_):
     ban_time = user['ban']
     if ban_time < time():
         return False
-    return ban_time
+
+    return datetime.fromtimestamp(ban_time)
 
 
 async def ban_set(id_, time_):

@@ -14,25 +14,13 @@ from core import communication, users
 from utils import user_utils, files, db, stats, music, get_by
 
 
-async def order_day_choiced(query, day: int):
-    is_moder = await user_utils.is_admin(query.from_user.id)
-    await BOT.edit_message_caption(
-        query.message.chat.id, query.message.message_id,
-        caption=texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
-        reply_markup=await keyboards.order_choice_time(day, 0 if is_moder else 5)
-    )
-
-
-async def order_time_choiced(query, day: int, time: int):
+async def order_make(query, day: int, time: int):
     user = query.from_user
 
-    is_ban = await db.ban_get(user.id)
-    if is_ban:
-        return await BOT.send_message(query.message.chat.id, texts.BAN_TRY_ORDER.format(
-            datetime.fromtimestamp(is_ban).strftime("%d.%m %H:%M")))
+    if is_ban := await db.ban_get(user.id):
+        return await BOT.send_message(query.message.chat.id, texts.BAN_TRY_ORDER.format(is_ban.strftime("%d.%m %H:%M")))
 
-    admin_text, also = await _gen_order_caption(day, time, user,
-                                                audio_name=get_by.get_audio_name(query.message.audio))
+    admin_text, also = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
 
     try:
         await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
@@ -43,20 +31,30 @@ async def order_time_choiced(query, day: int, time: int):
 
     await users.menu(query.message)
 
+    # todo use ffmpeg
     mes = await BOT.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                                reply_markup=keyboards.admin_choose(day, time))
     communication.cache_add(mes.message_id, query.message)
     communication.cache_add(query.message.message_id, mes)
 
 
-async def order_day_unchoiced(query):
-    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
+async def order_choose_time(query, day: int):
+    is_moder = await user_utils.is_admin(query.from_user.id)
+    await BOT.edit_message_caption(
+        query.message.chat.id, query.message.message_id,
+        caption=texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
+        reply_markup=await keyboards.order_choice_time(day, 0 if is_moder else 5)
+    )
+
+
+async def order_choose_day(query):
+    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=texts.CHOOSE_DAY,
+                                   reply_markup=await keyboards.order_choice_day())
 
 
 async def order_cancel(query):
-    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                   caption=texts.ORDER_CANCELED, reply_markup=types.InlineKeyboardMarkup())
+    await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=texts.ORDER_CANCELED,
+                                   reply_markup=types.InlineKeyboardMarkup())
     await users.menu(query.message)
 
 
