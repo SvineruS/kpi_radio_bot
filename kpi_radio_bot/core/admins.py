@@ -44,7 +44,7 @@ async def set_volume(message: types.Message):
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
-            await radioboss.radioboss_api(cmd=f'setvol {volume}')
+            await radioboss.setvol(volume)
             return await message.reply(f'Громкость выставлена в {volume}!')
 
     await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
@@ -92,7 +92,7 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
     elif _in_playback[0] == playback[1].index:
         await query.answer("Она сейчас играет -_-")
     else:
-        if await radioboss.radioboss_api(action='move', pos1=track_index, pos2=playback[1].index):
+        if await radioboss.move(track_index, playback[1].index):
             playback.insert(1, playback.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
@@ -114,7 +114,7 @@ async def get_log(message: types.Message):
 
 
 async def next_track(message: types.Message):
-    if not await radioboss.radioboss_api(cmd='next'):
+    if not await radioboss.next():
         await BOT.send_message(message.chat.id, 'хуй знает, не работает')
     prev, now, _ = await playlist.get_now()
     await BOT.send_message(message.chat.id, f'<i>{prev} ➡ {now}</i>')

@@ -4,15 +4,14 @@ from pathlib import Path
 from typing import List, Union
 
 from consts.others import PATHS, BROADCAST_TIMES_
-from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now
-from broadcast.radioboss import radioboss_api
+from broadcast import radioboss, broadcast
 from utils import files, get_by, other
 
 PlaylistItem = namedtuple("namedtuple", ('title', 'time_start', 'filename', 'index', 'is_order'))
 
 
 async def get_now():
-    playback = await radioboss_api(action='playbackinfo')
+    playback = await radioboss.playbackinfo()
     if not playback or playback[3].attrib['state'] == 'stop':
         return False
 
@@ -29,7 +28,7 @@ async def get_next() -> List[PlaylistItem]:
     if not (playlist := await _get_playlist()):
         return []
 
-    b_n = get_broadcast_num()
+    b_n = broadcast.get_broadcast_num()
     time_min = datetime.now().time()
     time_max = BROADCAST_TIMES_[datetime.now().weekday()][b_n][1] if b_n else None
 
@@ -64,7 +63,7 @@ async def find_in_playlist_by_path(path: Union[str, Path]) -> List[PlaylistItem]
 async def get_broadcast_freetime(day: int, time: int) -> int:
     broadcast_start, broadcast_finish = map(get_by.time_to_datetime, BROADCAST_TIMES_[day][time])
 
-    if is_this_broadcast_now(day, time):
+    if broadcast.is_this_broadcast_now(day, time):
         if not (last_order := await get_new_order_pos()):
             return 0
         last_order_start = last_order.time_start
@@ -80,7 +79,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
 #
 
 async def _get_playlist() -> List[PlaylistItem]:
-    if not (playlist := await radioboss_api(action='getplaylist2')):
+    if not (playlist := await radioboss.getplaylist2()):
         return []
 
     result = []
@@ -109,6 +108,6 @@ async def _calculate_tracks_duration(day: int, time: int) -> float:
 async def _calculate_tracks_duration_(files_):
     duration = 0
     for file in files_:
-        if tags := await radioboss_api(action='readtag', fn=file):
+        if tags := await radioboss.readtag(file):
             duration += int(tags[0].attrib['Duration'])
     return duration / 1000 / 60  # minutes

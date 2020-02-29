@@ -97,7 +97,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
 
     if status == 'now':  # кнопка сейчас
         when_playing = 'прямо сейчас!'
-        await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=-2)
+        await broadcast.radioboss.inserttrack(path, -2)
         mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
         communication.cache_add(mes.message_id, query.message)
 
@@ -116,7 +116,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
                 minutes_left = round((last_track.time_start - datetime.now()).seconds / 60)
                 when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
 
-                await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track.index)
+                await broadcast.radioboss.inserttrack(path, last_track.index)
                 mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
                 communication.cache_add(mes.message_id, query.message)
             else:
@@ -148,7 +148,7 @@ async def admin_unchoice(query: CallbackQuery, day: int, time: int, status: str)
         path = _get_audio_path(day, time, audio_name)
         files.delete_file(path)  # удалить с диска
         for track in await broadcast.playlist.find_in_playlist_by_path(path):
-            await broadcast.radioboss.radioboss_api(action='delete', pos=track.index)
+            await broadcast.radioboss.delete(track.index)
 
 
 #
