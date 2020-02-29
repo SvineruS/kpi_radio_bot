@@ -43,7 +43,7 @@ BAD_ORDER_BUT_OK = types.InlineKeyboardMarkup(row_width=1).add(
 #
 
 
-async def order_choice_day() -> types.InlineKeyboardMarkup:
+async def order_choose_day() -> types.InlineKeyboardMarkup:
     day = datetime.today().weekday()
     b_n = get_broadcast_num()
     btns = []
@@ -65,7 +65,7 @@ async def order_choice_day() -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup(row_width=1).add(*btns)
 
 
-async def order_choice_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
+async def order_choose_time(day: int, attempts: int = 5) -> types.InlineKeyboardMarkup:
     async def get_btn(time_: int) -> types.InlineKeyboardButton:
         free_mins = await playlist.get_broadcast_freetime(day, time_)
 

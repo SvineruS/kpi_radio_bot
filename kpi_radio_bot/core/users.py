@@ -113,7 +113,7 @@ async def send_audio(chat: int, tg_audio: Audio = None, api_audio: dict = None):
         text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
         await BOT.send_audio(chat, file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
-        await BOT.send_audio(chat, file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choice_day())
+        await BOT.send_audio(chat, file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
 
 
 async def add_in_db(message: Message):

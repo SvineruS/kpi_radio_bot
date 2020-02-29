@@ -44,13 +44,13 @@ async def order_choose_time(query: CallbackQuery, day: int):
     await BOT.edit_message_caption(
         query.message.chat.id, query.message.message_id,
         caption=texts.CHOOSE_TIME.format(TIMES_NAME['week_days'][day]),
-        reply_markup=await keyboards.order_choice_time(day, 0 if is_moder else 5)
+        reply_markup=await keyboards.order_choose_time(day, 0 if is_moder else 5)
     )
 
 
 async def order_choose_day(query: CallbackQuery):
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=texts.CHOOSE_DAY,
-                                   reply_markup=await keyboards.order_choice_day())
+                                   reply_markup=await keyboards.order_choose_day())
 
 
 async def order_cancel(query: CallbackQuery):
@@ -62,7 +62,7 @@ async def order_cancel(query: CallbackQuery):
 async def order_no_time(query: CallbackQuery, day: int, attempts: int):
     try:
         await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
-                                            reply_markup=await keyboards.order_choice_time(day, attempts - 1))
+                                            reply_markup=await keyboards.order_choose_time(day, attempts - 1))
     except exceptions.MessageNotModified:
         pass
     await BOT.answer_callback_query(query.id, texts.ORDER_ERR_TOOLATE)
@@ -118,7 +118,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
             else:
                 when_playing = 'не успел :('
                 mes = await BOT.send_audio(user.id, query.message.audio.file_id,
-                                           reply_markup=await keyboards.order_choice_day(),
+                                           reply_markup=await keyboards.order_choose_day(),
                                            caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.
                                            format(audio_name, also['text_datetime']))
                 communication.cache_add(mes.message_id, query.message)
