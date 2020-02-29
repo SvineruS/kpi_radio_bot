@@ -131,9 +131,9 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
 async def admin_unchoice(query: CallbackQuery, day: int, time: int, status: str):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
-    admin_text, _ = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
-    await BOT.edit_message_caption(ADMINS_CHAT_ID, query.message.message_id,
-                                   caption=admin_text, reply_markup=keyboards.admin_choose(day, time))
+    admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
+    await BOT.edit_message_caption(ADMINS_CHAT_ID, query.message.message_id, caption=admin_text,
+                                   reply_markup=keyboards.admin_choose(day, time))
 
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)
