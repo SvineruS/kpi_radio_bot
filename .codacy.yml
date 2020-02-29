@@ -1,4 +1,1 @@
-engines:
- prospector:
-  base_sub_dir: kpi_radio_bot
 base_sub_dir: kpi_radio_bot
