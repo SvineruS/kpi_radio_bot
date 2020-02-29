@@ -21,11 +21,12 @@ async def order_make(query: CallbackQuery, day: int, time: int):
     if is_ban := await db.ban_get(user.id):
         return await BOT.send_message(query.message.chat.id, texts.BAN_TRY_ORDER.format(is_ban.strftime("%d.%m %H:%M")))
 
-    admin_text, also = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
 
     try:
         await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
-                                       caption=texts.ORDER_ON_MODERATION.format(also['text_datetime']),
+                                       caption=texts.ORDER_ON_MODERATION.format(
+                                           broadcast.get_broadcast_name(day=day, time=time)),
                                        reply_markup=types.InlineKeyboardMarkup())
     except exceptions.MessageNotModified:
         pass
