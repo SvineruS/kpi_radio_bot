@@ -17,7 +17,7 @@ PARSER = MyHTMLParser()
 
 
 Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'url'))
-_RE_GENIUS_BRACKETS = re.compile(r" \([\w\d ]+\) ")
+_RE_GENIUS_BRACKETS = re.compile(r" \([\w\d ]+\)")
 
 
 @my_lru(maxsize=200, ttl=60 * 60 * 12)
@@ -71,7 +71,7 @@ async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
             return False
         lyrics = await res.text()
 
-    title = _RE_GENIUS_BRACKETS.sub(" ", title)  # убрать транслитерацию в скобках
+    title = _RE_GENIUS_BRACKETS.sub("", title)  # убрать транслитерацию в скобках
 
     lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
     lyrics = PARSER.parse(lyrics).strip()
