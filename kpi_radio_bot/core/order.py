@@ -168,7 +168,7 @@ async def _gen_order_caption(day, time, user, audio_name=None, status=None, mode
         moder_name = get_by.get_user_name(moder)
         text = f'Заказ: {text_datetime}{is_now_text} от {user_name} {status_text} ({moder_name})'
 
-    return text, {'text_datetime': text_datetime, 'now': is_now}
+    return text
 
 
 def _get_audio_path(day, time, audio_name):
