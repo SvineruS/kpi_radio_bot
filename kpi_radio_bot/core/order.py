@@ -94,6 +94,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
         return communication.cache_add(mes.message_id, query.message)
 
     path = _get_audio_path(day, time, audio_name)
+    await BOT.send_chat_action(query.message.chat.id, 'record_audio')
     await files.download_audio(query.message.audio, path)
     await broadcast.radioboss.write_track_additional_info(path, user, query.message.message_id)
 
@@ -193,7 +194,7 @@ async def _get_bad_words_text(audio_name):
 
     title, b_w = res
     title = ("⚠" if b_w else "🆗") + f" {title}"
-    title = f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">{title}</a>: '  # ограничение по длинне юрл
+    title = f'<a href="https://{HOST}/gettext/{quote(audio_name[:100])}">{title}</a>: '  # ограничение по длинне юрл тг
     return title + ', '.join(b_w)
 
 

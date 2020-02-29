@@ -17,7 +17,7 @@ async def start_handler(message):
         return
 
     await core.users.add_in_db(message)
-    await BOT.send_message(message.chat.id, texts.START)
+    await message.answer(texts.START)
     await core.users.menu(message)
 
 
@@ -133,12 +133,12 @@ async def callback_query_handler(query):
 
     try:
         await query.answer()
-    except exceptions.InvalidQueryID as ex:
+    except exceptions.InvalidQueryID:
         pass
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
-async def message_handler(message):
+async def message_handler(message: types.Message):
     # Форс реплаи
     if message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id:
 
@@ -155,12 +155,11 @@ async def message_handler(message):
         if message.reply_to_message.text == texts.FEEDBACK or \
                 core.communication.cache_is_set(message.reply_to_message.message_id):
             await core.communication.user_message(message)
-            return await BOT.send_message(message.chat.id, texts.FEEDBACK_THANKS,
-                                          reply_markup=keyboards.START)
+            return await message.answer(texts.FEEDBACK_THANKS, reply_markup=keyboards.START)
 
         # Реплай, но на какую то хуйню
         if not message.audio:
-            return await BOT.send_message(message.chat.id, texts.FEEDBACK_PLS_USE_BUTTON)
+            return await message.answer(texts.FEEDBACK_PLS_USE_BUTTON)
 
     if message.chat.id < 0:
         return
@@ -177,26 +176,23 @@ async def message_handler(message):
 
     # Кнопка 'Предложить песню'
     if message.text == keyboards.MAIN_MENU['order'] or message.text == '/song':
-        await BOT.send_message(message.chat.id, texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        return await BOT.send_message(message.chat.id, texts.ORDER_INLINE_SEARCH,
-                                      reply_markup=keyboards.ORDER_INLINE)
+        await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+        return await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
     if message.text == keyboards.MAIN_MENU['feedback']:
-        return await BOT.send_message(message.chat.id, texts.FEEDBACK, reply_markup=types.ForceReply())
+        return await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
     if message.text == keyboards.MAIN_MENU['help'] or message.text == '/help':
-        return await BOT.send_message(message.chat.id, texts.HELP['start'],
-                                      reply_markup=keyboards.CHOICE_HELP)
+        return await message.answer(texts.HELP['start'], reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
     if message.text == keyboards.MAIN_MENU['timetable']:
         return await core.users.timetable(message)
 
     # Просто сообщение
-    await BOT.send_document(message.chat.id, "BQADAgADlgQAAsedmEuFDrds0XauthYE",
-                            caption=texts.UNKNOWN_CMD, reply_markup=keyboards.START)
+    await message.answer_document("BQADAgADlgQAAsedmEuFDrds0XauthYE", texts.UNKNOWN_CMD, reply_markup=keyboards.START)
 
 
 @DP.inline_handler()

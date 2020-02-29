@@ -14,7 +14,7 @@ from utils import music
 async def search_audio(message: types.Message):
     await BOT.send_chat_action(message.chat.id, 'upload_audio')
     if not (audio := await music.search(message.text)):
-        return await BOT.send_message(message.chat.id, consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
+        return await message.answer(consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]
     try:
@@ -22,13 +22,13 @@ async def search_audio(message: types.Message):
     except Exception as ex:
         logging.error(f'send audio: {ex} {audio.url}')
         logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
-        await BOT.send_message(message.chat.id, consts.texts.ERROR, reply_markup=keyboards.START)
+        await message.answer(consts.texts.ERROR, reply_markup=keyboards.START)
 
 
 async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
     if not (audios := await music.search(name)):
-        return await BOT.answer_inline_query(inline_query.id, [])  # todo что то писать
+        return await inline_query.answer([])  # todo что то писать
 
     articles = [
         types.InlineQueryResultAudio(
@@ -41,7 +41,7 @@ async def inline_search(inline_query: types.InlineQuery):
     ]
 
     try:
-        await BOT.answer_inline_query(inline_query.id, articles)
+        return await inline_query.answer(articles)
     except exceptions.NetworkError as ex:
         logging.warning(f"inline_search file too large {ex}")
-        await BOT.answer_inline_query(inline_query.id, [])
+        return await inline_query.answer([])

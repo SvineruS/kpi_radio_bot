@@ -11,49 +11,46 @@ from utils import get_by, db, music, files
 
 
 async def menu(message: Message):
-    await BOT.send_message(message.chat.id, texts.MENU, reply_markup=keyboards.START)
+    await message.answer(texts.MENU, reply_markup=keyboards.START)
 
 
 async def playlist_now(message: Message):
     playback = await playlist.get_now()
     if not playback or not broadcast.is_broadcast_right_now():
-        return await BOT.send_message(message.chat.id, texts.SONG_NO_NOW, reply_markup=keyboards.WHAT_PLAYING)
+        return await message.answer(texts.SONG_NO_NOW, reply_markup=keyboards.WHAT_PLAYING)
+
     playback = [i if i else r'¯\_(ツ)_/¯' for i in playback]
-    await BOT.send_message(message.chat.id, texts.WHAT_PLAYING.format(*playback), reply_markup=keyboards.WHAT_PLAYING)
+    await message.answer(texts.WHAT_PLAYING.format(*playback), reply_markup=keyboards.WHAT_PLAYING)
 
 
 async def playlist_next(query: CallbackQuery):
     if broadcast.is_broadcast_right_now():
         text = await _get_playlist()
         day = datetime.today().weekday()
-        await BOT.send_message(query.message.chat.id, text, reply_markup=keyboards.playlist_choose_time(day))
+        await query.message.answer(text, reply_markup=keyboards.playlist_choose_time(day))
     else:
         text = texts.CHOOSE_DAY
-        await BOT.send_message(query.message.chat.id, text, reply_markup=keyboards.playlist_choose_day())
+        await query.message.answer(text, reply_markup=keyboards.playlist_choose_day())
 
 
 async def playlist_choose_day(query: CallbackQuery):
-    await BOT.edit_message_text(
-        texts.CHOOSE_DAY, query.message.chat.id, query.message.message_id,
-        reply_markup=keyboards.playlist_choose_day()
-    )
+    try:
+        await query.message.edit_text(texts.CHOOSE_DAY, reply_markup=keyboards.playlist_choose_day())
+    except exceptions.MessageNotModified:
+        pass
 
 
 async def playlist_choose_time(query: CallbackQuery, day: int):
-    await BOT.edit_message_text(
-        texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
-        query.message.chat.id, query.message.message_id,
-        reply_markup=keyboards.playlist_choose_time(day)
-    )
+    try:
+        await query.message.edit_text(texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
+                                      reply_markup=keyboards.playlist_choose_time(day))
+    except exceptions.MessageNotModified:
+        pass
 
 
 async def playlist_show(query: CallbackQuery, day: int, time: int):
     try:
-        await BOT.edit_message_text(
-            await _get_playlist(day, time),
-            query.message.chat.id, query.message.message_id,
-            reply_markup=keyboards.playlist_choose_time(day)
-        )
+        await query.message.edit_text(await _get_playlist(day, time),reply_markup=keyboards.playlist_choose_time(day))
     except exceptions.MessageNotModified:
         pass
 
@@ -68,13 +65,12 @@ async def timetable(message: Message):
     # todo
     # text += "До ближайшего эфира ..."
 
-    await BOT.send_message(message.chat.id, text)
+    await message.answer(text)
 
 
 async def help_change(query: CallbackQuery, key: str):
     try:
-        await BOT.edit_message_text(texts.HELP[key], query.message.chat.id, query.message.message_id,
-                                    reply_markup=keyboards.CHOICE_HELP)
+        await query.message.edit_text(texts.HELP[key], reply_markup=keyboards.CHOICE_HELP)
     except exceptions.MessageNotModified:
         pass
 
@@ -84,7 +80,7 @@ async def notify_switch(message: Message):
     await db.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
-    await BOT.send_message(message.chat.id, text)
+    await message.answer(text)
 
 
 async def send_audio(chat: int, tg_audio: Audio = None, api_audio: music.Audio = None):
