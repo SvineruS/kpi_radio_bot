@@ -125,3 +125,23 @@ def playlist_choose_time(day: int) -> types.InlineKeyboardMarkup:
     ]
     btns.append(types.InlineKeyboardButton(_btns_text.BACK, callback_data='playlist_back'))
     return types.InlineKeyboardMarkup(row_width=3).add(*btns)
+
+
+#
+
+_emoji_numbers = ("▶️", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
+
+
+async def playlist_move(playback=None):
+    if playback is None:
+        playback = await playlist.get_next()
+    track_now_end_time = int(playback[1].time_start.timestamp())
+    btns = [
+        types.InlineKeyboardButton(
+            f"{_emoji_numbers[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
+            callback_data=_callback('playlist_move', track.index if i else 0, track_now_end_time, hash(track.title))
+        )
+        for i, track in enumerate(playback[0:11])
+    ]
+    btns.append(types.InlineKeyboardButton(f"🔄Обновить", callback_data=_callback('playlist_move', -1, 0, 0)))
+    return types.InlineKeyboardMarkup(row_width=1).add(*btns)

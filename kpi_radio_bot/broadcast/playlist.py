@@ -3,11 +3,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Union
 
-import consts
+from consts.others import PATHS, BROADCAST_TIMES_
 from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now
 from broadcast.radioboss import radioboss_api
-from utils.files import get_downloaded_tracks
-from utils.get_by import time_to_datetime
+from utils import files, get_by, other
 
 PlaylistItem = namedtuple("namedtuple", ('title', 'time_start', 'filename', 'index', 'is_order'))
 
@@ -18,7 +17,7 @@ async def get_now():
         return False
 
     result = [''] * 3
-    for i, track in enumerate(playback[0:2]):
+    for i, track in enumerate(playback[0:3]):
         title = track[0].attrib['CASTTITLE']
         if "setvol" not in title:
             result[i] = title
@@ -27,21 +26,19 @@ async def get_now():
 
 
 async def get_next() -> List[PlaylistItem]:
-    playlist = await _get_playlist()
-    b_n = get_broadcast_num()
-    if not playlist or b_n is False:
+    if not (playlist := await _get_playlist()):
         return []
 
-    dt_now = datetime.now()
-    time_min = dt_now.time()
-    time_max = consts.BROADCAST_TIMES_[dt_now.weekday()][b_n][1]
+    b_n = get_broadcast_num()
+    time_min = datetime.now().time()
+    time_max = BROADCAST_TIMES_[datetime.now().weekday()][b_n][1] if b_n else None
 
     result = []
     for track in playlist:
         time_start = track.time_start.time()
         if time_start < time_min:
             continue
-        if time_start > time_max:
+        if time_max and time_start > time_max:
             break
         result.append(track)
 
@@ -65,7 +62,7 @@ async def find_in_playlist_by_path(path: Union[str, Path]) -> List[PlaylistItem]
 
 
 async def get_broadcast_freetime(day: int, time: int) -> int:
-    broadcast_start, broadcast_finish = map(time_to_datetime, consts.BROADCAST_TIMES_[day][time])
+    broadcast_start, broadcast_finish = map(get_by.time_to_datetime, BROADCAST_TIMES_[day][time])
 
     if is_this_broadcast_now(day, time):
         if not (last_order := await get_new_order_pos()):
@@ -87,17 +84,17 @@ async def _get_playlist() -> List[PlaylistItem]:
         return []
 
     result = []
-    for track in playlist:
+    for track in playlist[:100]:  # оптимизация: максимум 100 треков, что покрывает самый длинный эфир, ~ 7 часов
         track = track.attrib
         if not track['STARTTIME']:  # если STARTTIME == "" скорее всего это не песня (либо она стартанет через >=сутки)
             continue
 
         track = PlaylistItem(
             title=track['CASTTITLE'],
-            time_start=time_to_datetime(datetime.strptime(track['STARTTIME'], '%H:%M:%S').time()),  # set today date
+            time_start=get_by.time_to_datetime(datetime.strptime(track['STARTTIME'], '%H:%M:%S').time()),  # set today
             filename=track['FILENAME'],
             index=int(track['INDEX']),
-            is_order=str(consts.PATHS['orders']) in track["FILENAME"]
+            is_order=str(PATHS['orders']) in track["FILENAME"]
         )
         result.append(track)
 
@@ -105,8 +102,13 @@ async def _get_playlist() -> List[PlaylistItem]:
 
 
 async def _calculate_tracks_duration(day: int, time: int) -> float:
+    return await _calculate_tracks_duration_(tuple(files.get_downloaded_tracks(day, time)))
+
+
+@other.my_lru(maxsize=7 * 7, ttl=60 * 60 * 12)
+async def _calculate_tracks_duration_(files_):
     duration = 0
-    for file in get_downloaded_tracks(day, time):
+    for file in files_:
         if tags := await radioboss_api(action='readtag', fn=file):
             duration += int(tags[0].attrib['Duration'])
     return duration / 1000 / 60  # minutes

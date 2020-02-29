@@ -24,7 +24,7 @@ async def playlist_now(message: Message):
 
 async def playlist_next(query: CallbackQuery):
     if broadcast.is_broadcast_right_now():
-        text = _get_playlist()
+        text = await _get_playlist()
         day = datetime.today().weekday()
         await BOT.send_message(query.message.chat.id, text, reply_markup=keyboards.playlist_choose_time(day))
     else:

@@ -1,8 +1,6 @@
 """ Хендлеры бота """
 
-import logging
-
-from aiogram import Dispatcher, types, executor
+from aiogram import Dispatcher, types, executor, exceptions
 
 import core
 from config import BOT, ADMINS_CHAT_ID
@@ -65,6 +63,11 @@ async def log_handler(message):
     await core.admins.get_log(message)
 
 
+@DP.message_handler(commands=['playlist'], admins_chat=True)
+async def laylist_handler(message):
+    await core.admins.show_playlist_control(message)
+
+
 # endregion
 
 
@@ -124,10 +127,14 @@ async def callback_query_handler(query):
     elif cmd[0] == 'help':
         await core.users.help_change(query, cmd[1])
 
+    # Админская кнопка перемещения трека в плейлисте
+    elif cmd[0] == 'playlist_move':
+        await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]), int(cmd[3]))
+
     try:
-        await BOT.answer_callback_query(query.id)
-    except Exception as ex:
-        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
+        await query.answer()
+    except exceptions.InvalidQueryID as ex:
+        pass
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
