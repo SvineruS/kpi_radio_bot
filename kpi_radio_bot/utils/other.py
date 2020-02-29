@@ -10,8 +10,11 @@ def my_lru(maxsize: int = None, ttl: int = None):
 
         @functools.wraps(function)
         async def wrapper(*args, **kwargs):
+            k = tuple(args), tuple(kwargs.items())
+            if k in function.cache:
+                return function.cache[k]
             result = await function(*args, **kwargs)
-            function.cache[tuple(args), tuple(kwargs.items())] = result
+            function.cache[k] = result
             return result
 
         return wrapper
