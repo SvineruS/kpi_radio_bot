@@ -4,6 +4,8 @@ import io
 import os
 from urllib.parse import unquote
 
+from aiogram.types import Message
+
 import consts
 from broadcast import radioboss, playlist
 from config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
@@ -11,7 +13,7 @@ from core import communication
 from utils import user_utils, db, stats, get_by
 
 
-async def ban(message):
+async def ban(message: Message):
     if message.reply_to_message is None or message.reply_to_message.from_user.id != (await BOT.me).id:
         return await BOT.send_message(message.chat.id, "Перешлите сообщение пользователя, которого нужно забанить")
 
@@ -38,7 +40,7 @@ async def ban(message):
     await BOT.send_message(user, consts.texts.BAN_YOU_BANNED.format(ban_time_text, reason))
 
 
-async def set_volume(message):
+async def set_volume(message: Message):
     if message.get_args().isdigit():
         volume = int(message.get_args())
         if 0 <= volume <= 100:
@@ -48,7 +50,7 @@ async def set_volume(message):
     await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
 
 
-async def get_stats(message):
+async def get_stats(message: Message):
     if 'csv' in message.get_args():
         return await BOT.send_document(message.chat.id, (PATH_STUFF / 'stats.csv').open('rb'))
 
@@ -72,7 +74,7 @@ async def get_stats(message):
     await BOT.send_photo(message.chat.id, stats.PATH_STATS_PNG.open('rb'), caption=caption)
 
 
-async def get_log(message):
+async def get_log(message: Message):
     text = PATH_LOG.read_text()
     text = unquote(text)  # unquote urls logged by aiohttp
     file = io.StringIO(text)
@@ -80,7 +82,7 @@ async def get_log(message):
     await BOT.send_document(message.chat.id, file)
 
 
-async def next_track(message):
+async def next_track(message: Message):
     res = await radioboss.radioboss_api(cmd='next')
     if not res:
         await BOT.send_message(message.chat.id, 'хуй знает, не работает')
@@ -88,6 +90,6 @@ async def next_track(message):
     await BOT.send_message(message.chat.id, f'<i>{prev} ➡ {now}</i>')
 
 
-async def update(message):
+async def update(message: Message):
     await BOT.send_message(message.chat.id, 'Ребутаюсь..')
     os.system(rf'cmd.exe /C start {PATH_ROOT}\\update.bat')

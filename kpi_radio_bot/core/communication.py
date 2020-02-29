@@ -1,4 +1,8 @@
 """Обеспечение удобного общения юзеров и админов на основе кеша и реплаев"""
+from typing import Tuple
+
+from aiogram.types import Message
+
 import utils.get_by
 from config import BOT, ADMINS_CHAT_ID
 from utils.other import LRU
@@ -7,19 +11,19 @@ from utils.other import LRU
 MESSAGES_CACHE = LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
 
 
-def cache_add(to_msg_id, from_message):
+def cache_add(to_msg_id: int, from_message: Message):
     MESSAGES_CACHE[to_msg_id] = (from_message.chat.id, from_message.message_id)
 
 
-def cache_get(message_id):
+def cache_get(message_id: int) -> Tuple[int, int]:
     return MESSAGES_CACHE[message_id]
 
 
-def cache_is_set(message_id):
+def cache_is_set(message_id: int) -> bool:
     return message_id in MESSAGES_CACHE
 
 
-async def user_message(message):
+async def user_message(message: Message):
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
     else:
@@ -29,7 +33,7 @@ async def user_message(message):
     await _resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
-async def admin_message(message):
+async def admin_message(message: Message):
     if message.text and message.text.startswith("!"):  # игнор ответа
         return
 
@@ -55,7 +59,7 @@ async def admin_message(message):
 #
 
 
-async def _resend_message(message, chat, additional_text='', reply_to=None):
+async def _resend_message(message: Message, chat: int, additional_text: str = '', reply_to: int = None):
     if additional_text and (message.audio or message.sticker):
         mes = await BOT.send_message(chat, additional_text)
         cache_add(mes.message_id, message)

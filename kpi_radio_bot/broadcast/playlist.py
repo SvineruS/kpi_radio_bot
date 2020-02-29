@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Union
 
 import consts
-from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now, get_broadcast_path
+from broadcast.broadcast import get_broadcast_num, is_this_broadcast_now
 from broadcast.radioboss import radioboss_api
 from utils.get_by import time_to_datetime
 from utils.files import get_downloaded_tracks
@@ -59,7 +59,8 @@ async def get_new_order_pos() -> Union[None, PlaylistItem]:
     return playlist[0]  # если нету заказов - вернуть самый первый трек в очереди
 
 
-async def find_in_playlist_by_path(path) -> List[PlaylistItem]:
+async def find_in_playlist_by_path(path: Union[str, Path]) -> List[PlaylistItem]:
+    path = str(path)
     return [track for track in await _get_playlist() if track.filename == path]
 
 
@@ -105,7 +106,7 @@ async def _get_playlist() -> List[PlaylistItem]:
     return result
 
 
-async def _calculate_tracks_duration(day, time) -> float:
+async def _calculate_tracks_duration(day: int, time: int) -> float:
     duration = 0
     try:
         for file in get_downloaded_tracks(day, time):

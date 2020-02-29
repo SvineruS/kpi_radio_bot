@@ -1,14 +1,15 @@
 """Методы, конвентирующие всякую хрень"""
-from datetime import datetime
+import datetime
+from typing import Union
 
-from aiogram import types
+from aiogram.types import Message, User, Audio
 
 
-def get_audio_name(audio: types.Audio) -> str:
+def get_audio_name(audio: Audio) -> str:
     return get_audio_name_(audio.performer, audio.title)
 
 
-def get_audio_name_(performer, title) -> str:
+def get_audio_name_(performer: str, title: str) -> str:
     if performer and title:
         name = f'{performer} - {title}'
     elif not performer and not title:
@@ -19,7 +20,7 @@ def get_audio_name_(performer, title) -> str:
     return name
 
 
-def get_user_name(user_obj: types.User) -> str:
+def get_user_name(user_obj: User) -> str:
     return get_user_name_(user_obj.id, user_obj.first_name)
 
 
@@ -27,7 +28,7 @@ def get_user_name_(id_: int, name: str) -> str:
     return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
 
 
-def get_user_from_entity(message):
+def get_user_from_entity(message: Message) -> Union[bool, User]:
     entities = message.caption_entities if message.audio or message.photo else message.entities
     if not entities:
         return False
@@ -44,5 +45,5 @@ def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
     return c_3
 
 
-def time_to_datetime(time):
-    return datetime.combine(datetime.today(), time)
+def time_to_datetime(time: datetime.time) -> datetime.datetime:
+    return datetime.datetime.combine(datetime.datetime.today(), time)

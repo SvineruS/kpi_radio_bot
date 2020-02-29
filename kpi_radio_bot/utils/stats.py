@@ -37,7 +37,7 @@ def change_username_to_id(changes):  # todo remove
         file.write(content)
 
 
-async def line_plot(moder_id):
+async def line_plot(moder_id: int):
     stats = _parse_stats(60)
     moder_id = str(moder_id)  # todo remove
 
@@ -59,7 +59,7 @@ async def line_plot(moder_id):
     return moderation_per_day
 
 
-async def bars_plot(days):
+async def bars_plot(days: int):
     stats = _parse_stats(days)
     moders = await get_admins()
 
@@ -86,6 +86,9 @@ async def bars_plot(days):
 
     plt.legend(loc="lower right")
     plt.savefig(PATH_STATS_PNG)
+
+
+#
 
 
 def _parse_stats(n_days=float('nan')):

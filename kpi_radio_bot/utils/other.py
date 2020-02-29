@@ -4,7 +4,7 @@ from html.parser import HTMLParser
 from time import time
 
 
-def my_lru(maxsize=None, ttl=None):
+def my_lru(maxsize: int = None, ttl: int = None):
     def decorator(function):
         function.cache = LRU(maxsize=maxsize, ttl=ttl)
 
@@ -82,7 +82,7 @@ _HASHTAG_CHARS = ''.join(set(
 ))
 
 
-def id_to_hashtag(id_):
+def id_to_hashtag(id_: int) -> str:
     base = len(_HASHTAG_CHARS)
     res = ""
     while id_:

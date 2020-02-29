@@ -1,8 +1,11 @@
 import json
 import logging
 import xml.etree.ElementTree as Etree
+from pathlib import Path
 from typing import Union
 from urllib.parse import quote_plus
+
+from aiogram.types import User
 
 from config import RADIOBOSS_DATA, AIOHTTP_SESSION
 
@@ -28,30 +31,33 @@ async def radioboss_api(**kwargs) -> Union[Etree.Element, bool]:
 
 
 # todo тут не только инфа отправителя, надо как нить переименовать (зачеркнуто) и переструктурировать
-async def write_track_additional_info(path, user_obj, moderation_id):
+async def write_track_additional_info(path: Path, user_obj: User, moderation_id: int):
     tag = {
         'id': user_obj.id,
         'name': user_obj.first_name,
         'moderation_id': moderation_id
     }
     tag = json.dumps(tag)
-    await write_comment_tag(path, tag)
+    await _write_comment_tag(path, tag)
 
 
-async def read_track_additional_info(path):
+async def read_track_additional_info(path: Path):
     tags = await radioboss_api(action='readtag', fn=path)
     tag = tags[0].attrib['Comment']
     try:
         return json.loads(tag)
-    except Exception as ex:
-        logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
+    except json.JSONDecodeError:
+        logging.warning(f"can't read track comment")
 
 
-async def clear_track_additional_info(path):
-    await write_comment_tag(path, '')
+async def clear_track_additional_info(path: Path):
+    await _write_comment_tag(path, '')
 
 
-async def write_comment_tag(path, tag):
+#
+
+
+async def _write_comment_tag(path: Path, tag: str):
     tags = await radioboss_api(action='readtag', fn=path)
     tags[0].attrib['Comment'] = tag
     xmlstr = Etree.tostring(tags, encoding='utf8', method='xml').decode('utf-8')

@@ -6,6 +6,7 @@ from datetime import datetime
 from urllib.parse import quote
 
 from aiogram import types, exceptions
+from aiogram.types import CallbackQuery
 
 import broadcast
 from config import BOT, ADMINS_CHAT_ID, HOST
@@ -14,7 +15,7 @@ from core import communication, users
 from utils import user_utils, files, db, stats, music, get_by
 
 
-async def order_make(query, day: int, time: int):
+async def order_make(query: CallbackQuery, day: int, time: int):
     user = query.from_user
 
     if is_ban := await db.ban_get(user.id):
@@ -38,7 +39,7 @@ async def order_make(query, day: int, time: int):
     communication.cache_add(query.message.message_id, mes)
 
 
-async def order_choose_time(query, day: int):
+async def order_choose_time(query: CallbackQuery, day: int):
     is_moder = await user_utils.is_admin(query.from_user.id)
     await BOT.edit_message_caption(
         query.message.chat.id, query.message.message_id,
@@ -47,18 +48,18 @@ async def order_choose_time(query, day: int):
     )
 
 
-async def order_choose_day(query):
+async def order_choose_day(query: CallbackQuery):
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=texts.CHOOSE_DAY,
                                    reply_markup=await keyboards.order_choice_day())
 
 
-async def order_cancel(query):
+async def order_cancel(query: CallbackQuery):
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=texts.ORDER_CANCELED,
                                    reply_markup=types.InlineKeyboardMarkup())
     await users.menu(query.message)
 
 
-async def order_no_time(query, day, attempts):
+async def order_no_time(query: CallbackQuery, day: int, attempts: int):
     try:
         await BOT.edit_message_reply_markup(query.message.chat.id, query.message.message_id,
                                             reply_markup=await keyboards.order_choice_time(day, attempts - 1))
@@ -70,7 +71,7 @@ async def order_no_time(query, day, attempts):
 #
 
 
-async def admin_choice(query, day: int, time: int, status: str):
+async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
     audio_name = get_by.get_audio_name(query.message.audio)
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
@@ -102,7 +103,7 @@ async def admin_choice(query, day: int, time: int, status: str):
             when_playing = 'Заиграет когда надо'
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
             communication.cache_add(mes.message_id, query.message)
-        elif await broadcast.playlist.find_in_playlist_by_path(str(path)):
+        elif await broadcast.playlist.find_in_playlist_by_path(path):
             when_playing = 'Такой же трек уже принят на этот эфир'
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
             communication.cache_add(mes.message_id, query.message)
@@ -130,7 +131,7 @@ async def admin_choice(query, day: int, time: int, status: str):
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
 
-async def admin_unchoice(query, day: int, time: int, status: str):
+async def admin_unchoice(query: CallbackQuery, day: int, time: int, status: str):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
     admin_text, _ = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
@@ -140,7 +141,7 @@ async def admin_unchoice(query, day: int, time: int, status: str):
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)
         files.delete_file(path)  # удалить с диска
-        for track in await broadcast.playlist.find_in_playlist_by_path(str(path)):
+        for track in await broadcast.playlist.find_in_playlist_by_path(path):
             await broadcast.radioboss.radioboss_api(action='delete', pos=track.index)
 
 

@@ -1,6 +1,7 @@
 """Методы, для работы с треками (поиск, поиск текста, определение опенингов и матов)"""
 
 import logging
+from typing import Tuple, Union, List
 from urllib.parse import quote_plus
 
 import consts
@@ -11,7 +12,7 @@ PARSER = MyHTMLParser()
 
 
 @my_lru(maxsize=200, ttl=60 * 60 * 12)
-async def search(name):
+async def search(name: str):  # todo return nametuple
     url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
         if res.status != 200:
@@ -24,7 +25,7 @@ async def search(name):
             return False
 
 
-def get_download_url(url, artist=None, title=None):
+def get_download_url(url: str, artist: str = None, title: str = None) -> str:
     url = f'http://svinua.cf/api/music/?download={url}'
     if artist:
         url += '&artist=' + quote_plus(artist)
@@ -34,7 +35,7 @@ def get_download_url(url, artist=None, title=None):
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
-async def search_text(name):
+async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
         if res.status != 200:
@@ -64,7 +65,7 @@ async def search_text(name):
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
-async def is_anime(audio_name):
+async def is_anime(audio_name: str) -> bool:
     async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
                                    headers={'user-agent': 'my custom agent'}) as res:
         if res.status != 200:
@@ -75,18 +76,18 @@ async def is_anime(audio_name):
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 
-def is_bad_name(audio_name):
+def is_bad_name(audio_name: str) -> bool:
     audio_name = audio_name.lower()
     return any(bad_name in audio_name for bad_name in consts.BAD_NAMES)
 
 
-async def is_contain_bad_words(audio_name):
+async def is_contain_bad_words(audio_name: str) -> bool:
     res = await get_bad_words(audio_name)
     return res and res[1]
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
-async def get_bad_words(audio_name):
+async def get_bad_words(audio_name: str) -> Union[bool, Tuple[str, List[str]]]:
     res = await search_text(audio_name)
     if not res:
         return False

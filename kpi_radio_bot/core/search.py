@@ -3,6 +3,7 @@
 import logging
 
 from aiogram import types, exceptions
+from aiogram.types import InlineQuery, Message
 
 import consts
 import core
@@ -11,7 +12,7 @@ from consts import keyboards
 from utils import music
 
 
-async def search_audio(message):
+async def search_audio(message: Message):
     await BOT.send_chat_action(message.chat.id, 'upload_audio')
     audio = await music.search(message.text)
 
@@ -27,7 +28,7 @@ async def search_audio(message):
         await BOT.send_message(message.chat.id, consts.texts.ERROR, reply_markup=keyboards.START)
 
 
-async def inline_search(inline_query):
+async def inline_search(inline_query: InlineQuery):
     name = inline_query.query
     audios = await music.search(name)
     if not audios:
