@@ -140,5 +140,5 @@ async def _get_playlist(day: int = None, time: int = None) -> str:
             for i, track in enumerate(playback[:10])
         ])
         if len(playback) > 10:
-            text += '\n    ...'
+            text += '\n<pre>   ...</pre>'
         return text
