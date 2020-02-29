@@ -12,6 +12,9 @@ import csv
 from collections import Counter
 from datetime import datetime, timedelta
 
+import matplotlib
+
+matplotlib.use('agg')
 from matplotlib import pyplot as plt
 
 from config import PATH_STUFF
@@ -73,8 +76,8 @@ async def bars_plot(days: int):
         )
         for moder_id, moder in stats.items()
         if moder_id in moders and
-        moders[moder_id].custom_title and
-        'Модер' in moders[moder_id].custom_title
+           moders[moder_id].custom_title and
+           'Модер' in moders[moder_id].custom_title
     ]
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
     names, alls, owns = zip(*stats)
