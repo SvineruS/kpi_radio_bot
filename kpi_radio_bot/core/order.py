@@ -108,22 +108,19 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
             communication.cache_add(mes.message_id, query.message)
         else:
-            last_track = await broadcast.playlist.get_new_order_pos()
-            if not last_track:  # нету места
+            if last_track := await broadcast.playlist.get_new_order_pos():
+                minutes_left = round((last_track.time_start - datetime.now()).seconds / 60)
+                when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
+
+                await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track.index)
+                mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
+                communication.cache_add(mes.message_id, query.message)
+            else:
                 when_playing = 'не успел :('
                 mes = await BOT.send_audio(user.id, query.message.audio.file_id,
                                            reply_markup=await keyboards.order_choice_day(),
                                            caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.
                                            format(audio_name, also['text_datetime']))
-                communication.cache_add(mes.message_id, query.message)
-
-            else:  # есть место
-                minutes_left = round((last_track.time_start - datetime.now()).seconds / 60)
-                when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-
-                await broadcast.radioboss.radioboss_api(action='inserttrack', filename=path, pos=last_track.index)
-                mes = await BOT.send_message(user.id,
-                                             texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
                 communication.cache_add(mes.message_id, query.message)
 
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,
@@ -149,8 +146,7 @@ async def admin_unchoice(query: CallbackQuery, day: int, time: int, status: str)
 
 async def _gen_order_caption(day, time, user, audio_name=None, status=None, moder=None):
     async def get_bad_words_():
-        res = await music.get_bad_words(audio_name)
-        if not res:
+        if not (res := await music.get_bad_words(audio_name)):
             return ''
 
         title, b_w = res

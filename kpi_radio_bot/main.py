@@ -54,8 +54,7 @@ async def webhook_handle(request):
 
 
 async def on_startup(_):
-    webhook = await config.BOT.get_webhook_info()
-    if webhook.url != config.WEBHOOK_URL:
+    if (await config.BOT.get_webhook_info()).url != config.WEBHOOK_URL:
         await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=config.SSL_CERT.open('rb'))
 
     asyncio.create_task(scheduler.start())

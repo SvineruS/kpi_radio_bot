@@ -82,14 +82,12 @@ def is_bad_name(audio_name: str) -> bool:
 
 
 async def is_contain_bad_words(audio_name: str) -> bool:
-    res = await get_bad_words(audio_name)
-    return res and res[1]
+    return (res := await get_bad_words(audio_name)) and res[1]
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
 async def get_bad_words(audio_name: str) -> Union[bool, Tuple[str, List[str]]]:
-    res = await search_text(audio_name)
-    if not res:
+    if not (res := await search_text(audio_name)):
         return False
 
     title, lyrics = res

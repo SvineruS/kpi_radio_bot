@@ -24,14 +24,11 @@ async def add(id_: int):
 
 
 async def ban_get(id_: int) -> Union[bool, datetime]:
-    user = await _get_user(id_)
-    if not user or 'ban' not in user:
+    if not (user := await _get_user(id_)) or 'ban' not in user:
         return False
-    ban_time = user['ban']
-    if ban_time < time():
+    if user['ban'] < time():
         return False
-
-    return datetime.fromtimestamp(ban_time)
+    return datetime.fromtimestamp(user['ban'])
 
 
 async def ban_set(id_: int, time_: int):
@@ -40,8 +37,7 @@ async def ban_set(id_: int, time_: int):
 
 
 async def notification_get(id_: int) -> bool:
-    user = await _get_user(id_)
-    if not user or 'notification_mute' not in user:
+    if not (user := await _get_user(id_)) or 'notification_mute' not in user:
         return False
     return user['notification_mute']
 

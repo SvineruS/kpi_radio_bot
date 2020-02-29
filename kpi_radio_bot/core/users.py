@@ -131,8 +131,7 @@ async def _get_playlist(day: int = None, time: int = None) -> str:
             for track in playback[:10]
         ])
     else:
-        playback = files.get_downloaded_tracks(day, time)
-        if not playback:
+        if not (playback := files.get_downloaded_tracks(day, time)):
             return "❗️Еще ничего не заказали"
         return '\n'.join([
             f"🕖<b>{i}</b> {track.name}"

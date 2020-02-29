@@ -25,14 +25,13 @@ def get_user_name(user_obj: User) -> str:
 
 
 def get_user_name_(id_: int, name: str) -> str:
-    return '<a href="tg://user?id={0}">{1}</a>'.format(id_, name)
+    return f'<a href="tg://user?id={id_}">{name}</a>'
 
 
 def get_user_from_entity(message: Message) -> Union[bool, User]:
-    entities = message.caption_entities if message.audio or message.photo else message.entities
-    if not entities:
-        return False
-    return entities[0].user
+    if entities := message.caption_entities if message.audio or message.photo else message.entities:
+        return entities[0].user
+    return False
 
 
 def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:

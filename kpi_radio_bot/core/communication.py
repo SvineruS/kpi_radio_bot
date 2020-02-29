@@ -41,10 +41,9 @@ async def admin_message(message: Message):
         user, reply_to = cache_get(message.reply_to_message.message_id)
         text = ''
     else:
-        user = utils.get_by.get_user_from_entity(message.reply_to_message)
-        reply_to = None
-        if not user:
+        if not (user := utils.get_by.get_user_from_entity(message.reply_to_message)):
             return
+        reply_to = None
         user = user.id
 
         if message.reply_to_message.audio:

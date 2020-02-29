@@ -7,7 +7,7 @@ import consts
 from broadcast import radioboss, broadcast
 from config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
 from consts import keyboards
-from utils import get_by, db
+from utils import get_by, db, files
 
 
 async def send_history(fields):
@@ -46,10 +46,9 @@ async def start_up():
 
 
 async def perezaklad(day, time):
-    tracks = broadcast.get_broadcast_path(day, time).iterdir()
+    tracks = files.get_downloaded_tracks(day, time)
     for track_path in tracks:
-        tag = await radioboss.read_track_additional_info(track_path)
-        if not tag:
+        if not (tag := await radioboss.read_track_additional_info(track_path)):
             continue
 
         with open(str(track_path), 'rb') as file:
@@ -58,6 +57,6 @@ async def perezaklad(day, time):
                                      reply_markup=await keyboards.order_choice_day())
             except Exception as ex:
                 logging.info(f"perezaklad send msg: {ex}")
-                logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
+                logging.warning(f"pls pls add exception {type(ex)}{ex} in except")
 
         await asyncio.sleep(3)

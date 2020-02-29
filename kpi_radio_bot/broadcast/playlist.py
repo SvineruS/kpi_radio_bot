@@ -68,8 +68,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
     broadcast_start, broadcast_finish = map(time_to_datetime, consts.BROADCAST_TIMES_[day][time])
 
     if is_this_broadcast_now(day, time):
-        last_order = await get_new_order_pos()
-        if not last_order:
+        if not (last_order := await get_new_order_pos()):
             return 0
         last_order_start = last_order.time_start
     else:
@@ -84,8 +83,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
 #
 
 async def _get_playlist() -> List[PlaylistItem]:
-    playlist = await radioboss_api(action='getplaylist2')
-    if not playlist:
+    if not (playlist := await radioboss_api(action='getplaylist2')):
         return []
 
     result = []
@@ -108,11 +106,7 @@ async def _get_playlist() -> List[PlaylistItem]:
 
 async def _calculate_tracks_duration(day: int, time: int) -> float:
     duration = 0
-    try:
-        for file in get_downloaded_tracks(day, time):
-            tags = await radioboss_api(action='readtag', fn=file)
-            if tags:
-                duration += int(tags[0].attrib['Duration'])
-    except FileNotFoundError:  # это бблядь как
-        return 0
+    for file in get_downloaded_tracks(day, time):
+        if tags := await radioboss_api(action='readtag', fn=file):
+            duration += int(tags[0].attrib['Duration'])
     return duration / 1000 / 60  # minutes

@@ -14,9 +14,7 @@ from utils import music
 
 async def search_audio(message: Message):
     await BOT.send_chat_action(message.chat.id, 'upload_audio')
-    audio = await music.search(message.text)
-
-    if not audio:
+    if not (audio := await music.search(message.text)):
         return await BOT.send_message(message.chat.id, consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]

@@ -22,8 +22,7 @@ async def ban(message: Message):
     if communication.cache_is_set(message.reply_to_message.message_id):
         user, _ = communication.cache_get(message.reply_to_message.message_id)
     else:
-        user = get_by.get_user_from_entity(message.reply_to_message)
-        if not user:
+        if not (user := get_by.get_user_from_entity(message.reply_to_message)):
             return await message.reply("Бля, не могу забанить")
         user = user.id
 
@@ -83,8 +82,7 @@ async def get_log(message: Message):
 
 
 async def next_track(message: Message):
-    res = await radioboss.radioboss_api(cmd='next')
-    if not res:
+    if not await radioboss.radioboss_api(cmd='next'):
         await BOT.send_message(message.chat.id, 'хуй знает, не работает')
     prev, now, _ = await playlist.get_now()
     await BOT.send_message(message.chat.id, f'<i>{prev} ➡ {now}</i>')
