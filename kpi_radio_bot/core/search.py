@@ -32,7 +32,7 @@ async def inline_search(inline_query: types.InlineQuery):
 
     articles = [
         types.InlineQueryResultAudio(
-            id=str(audio.url),
+            id=str(audio.id),
             audio_url=music.get_download_url(audio.url, audio.artist, audio.title),
             performer=audio.artist,
             title=audio.title
