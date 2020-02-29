@@ -1,8 +1,12 @@
 """Методы, для работы с треками (поиск, поиск текста, определение опенингов и матов)"""
 
 import logging
+from collections import namedtuple
+from json import JSONDecodeError
 from typing import Tuple, Union, List
 from urllib.parse import quote_plus
+
+from aiohttp import ClientResponseError
 
 import consts
 from config import AIOHTTP_SESSION
@@ -11,18 +15,21 @@ from utils.other import MyHTMLParser, my_lru
 PARSER = MyHTMLParser()
 
 
+Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'url'))
+
+
 @my_lru(maxsize=200, ttl=60 * 60 * 12)
-async def search(name: str):  # todo return nametuple
+async def search(name: str) -> List[Audio]:
     url = "http://svinua.cf/api/music/?search=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
-        if res.status != 200:
-            return False
         try:
-            return await res.json()
-        except Exception as ex:
+            res.raise_for_status()
+            audio = await res.json(content_type=None)
+            audio = [Audio(**{k: v for k, v in audio_.items() if k in Audio._fields}) for audio_ in audio]
+            return audio
+        except (JSONDecodeError, ClientResponseError) as ex:
             logging.error(f'search song: {ex} {name}')
-            logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
-            return False
+            return []
 
 
 def get_download_url(url: str, artist: str = None, title: str = None) -> str:
@@ -38,10 +45,12 @@ def get_download_url(url: str, artist: str = None, title: str = None) -> str:
 async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
-        if res.status != 200:
+        try:
+            res.raise_for_status()
+            res_json = await res.json(content_type=None)
+        except (JSONDecodeError, ClientResponseError) as ex:
+            logging.warning(f"search song text: {ex} {name}")
             return False
-
-        res_json = await res.json(content_type=None)
 
     sections = res_json['response']['sections']
     for sec in sections:

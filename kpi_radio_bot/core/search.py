@@ -3,7 +3,6 @@
 import logging
 
 from aiogram import types, exceptions
-from aiogram.types import InlineQuery, Message
 
 import consts
 import core
@@ -12,7 +11,7 @@ from consts import keyboards
 from utils import music
 
 
-async def search_audio(message: Message):
+async def search_audio(message: types.Message):
     await BOT.send_chat_action(message.chat.id, 'upload_audio')
     if not (audio := await music.search(message.text)):
         return await BOT.send_message(message.chat.id, consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
@@ -21,28 +20,26 @@ async def search_audio(message: Message):
     try:
         await core.users.send_audio(message.chat.id, api_audio=audio)
     except Exception as ex:
-        logging.error(f'send audio: {ex} {audio["url"]}')
+        logging.error(f'send audio: {ex} {audio.url}')
         logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
         await BOT.send_message(message.chat.id, consts.texts.ERROR, reply_markup=keyboards.START)
 
 
-async def inline_search(inline_query: InlineQuery):
+async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
-    audios = await music.search(name)
-    if not audios:
+    if not (audios := await music.search(name)):
         return await BOT.answer_inline_query(inline_query.id, [])  # todo что то писать
 
-    articles = []
-    for i in range(min(50, len(audios))):
-        audio = audios[i]
-        if not audio or not audio['url']:
-            continue
-        articles.append(types.InlineQueryResultAudio(
-            id=str(hash(audio['url'])),
-            audio_url=music.get_download_url(audio['url'], audio['artist'], audio['title']),
-            performer=audio['artist'],
-            title=audio['title']
-        ))
+    articles = [
+        types.InlineQueryResultAudio(
+            id=str(audio.url),
+            audio_url=music.get_download_url(audio.url, audio.artist, audio.title),
+            performer=audio.artist,
+            title=audio.title
+        )
+        for audio in audios[:50]
+    ]
+
     try:
         await BOT.answer_inline_query(inline_query.id, articles)
     except exceptions.NetworkError as ex:

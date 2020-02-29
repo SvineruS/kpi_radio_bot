@@ -87,15 +87,15 @@ async def notify_switch(message: Message):
     await BOT.send_message(message.chat.id, text)
 
 
-async def send_audio(chat: int, tg_audio: Audio = None, api_audio: dict = None):
+async def send_audio(chat: int, tg_audio: Audio = None, api_audio: music.Audio = None):
     if tg_audio:
         file = tg_audio.file_id
         name = get_by.get_audio_name(tg_audio)
         duration = tg_audio.duration
     elif api_audio:
-        file = music.get_download_url(api_audio['url'], api_audio['artist'], api_audio['title'])
-        name = get_by.get_audio_name_(api_audio['artist'], api_audio['title'])
-        duration = int(api_audio['duration'])
+        file = music.get_download_url(api_audio.url, api_audio.artist, api_audio.title)
+        name = get_by.get_audio_name_(api_audio.artist, api_audio.title)
+        duration = api_audio.duration
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
 
