@@ -75,8 +75,8 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
     audio_name = get_by.get_audio_name(query.message.audio)
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
-
-    admin_text, also = await _gen_order_caption(day, time, user, status=status, moder=moder)
+    text_datetime = broadcast.get_broadcast_name(day=day, time=time)
+    admin_text = await _gen_order_caption(day, time, user, status=status, moder=moder)
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id, caption=admin_text,
                                    reply_markup=keyboards.admin_unchoose(day, time, status))
 
@@ -84,7 +84,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
     stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
 
     if status == 'reject':  # кнопка отмена
-        mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, also['text_datetime']))
+        mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime))
         return communication.cache_add(mes.message_id, query.message)
 
     path = _get_audio_path(day, time, audio_name)
@@ -99,13 +99,13 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
 
     if status == 'queue':  # кнопка принять
 
-        if not also['now']:  # если щас не этот эфир то похуй
+        if not broadcast.is_this_broadcast_now(day, time):  # если щас не этот эфир то похуй
             when_playing = 'Заиграет когда надо'
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
+            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
             communication.cache_add(mes.message_id, query.message)
         elif await broadcast.playlist.find_in_playlist_by_path(path):
             when_playing = 'Такой же трек уже принят на этот эфир'
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, also['text_datetime']))
+            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
             communication.cache_add(mes.message_id, query.message)
         else:
             if last_track := await broadcast.playlist.get_new_order_pos():
@@ -119,8 +119,7 @@ async def admin_choice(query: CallbackQuery, day: int, time: int, status: str):
                 when_playing = 'не успел :('
                 mes = await BOT.send_audio(user.id, query.message.audio.file_id,
                                            reply_markup=await keyboards.order_choose_day(),
-                                           caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.
-                                           format(audio_name, also['text_datetime']))
+                                           caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, text_datetime))
                 communication.cache_add(mes.message_id, query.message)
 
     await BOT.edit_message_caption(query.message.chat.id, query.message.message_id,

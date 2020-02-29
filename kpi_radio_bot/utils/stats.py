@@ -11,6 +11,7 @@
 import csv
 from collections import Counter
 from datetime import datetime, timedelta
+from typing import Dict
 
 import matplotlib
 
@@ -76,8 +77,8 @@ async def bars_plot(days: int):
         )
         for moder_id, moder in stats.items()
         if moder_id in moders and
-           moders[moder_id].custom_title and
-           'Модер' in moders[moder_id].custom_title
+        moders[moder_id].custom_title and
+        'Модер' in moders[moder_id].custom_title
     ]
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
     names, alls, owns = zip(*stats)
@@ -94,7 +95,7 @@ async def bars_plot(days: int):
 #
 
 
-def _parse_stats(n_days: int = float('nan')) -> dict:
+def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
     def set_all_days(date_how_old_):  # добавить все даты от начала модерации до сегодня
         counter = Counter()
         for days in range(date_how_old_):
