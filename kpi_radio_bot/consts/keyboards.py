@@ -3,7 +3,8 @@ from datetime import datetime
 from aiogram import types
 
 from broadcast import playlist, get_broadcast_num, get_broadcast_name
-from consts import _btns_text, TIMES_NAME, BROADCAST_TIMES_
+from consts import _btns_text
+from consts.others import TIMES_NAME, BROADCAST_TIMES_
 
 
 def _callback(*args):
@@ -119,7 +120,7 @@ def playlist_choose_day() -> types.InlineKeyboardMarkup:
 
 def playlist_choose_time(day: int) -> types.InlineKeyboardMarkup:
     btns = [
-        types.InlineKeyboardButton(TIMES_NAME['times'][time], callback_data=_callback('playlist_time', day, time))
+        types.InlineKeyboardButton(get_broadcast_name(time), callback_data=_callback('playlist_time', day, time))
         for time in BROADCAST_TIMES_[day]
     ]
     btns.append(types.InlineKeyboardButton(_btns_text.BACK, callback_data='playlist_back'))

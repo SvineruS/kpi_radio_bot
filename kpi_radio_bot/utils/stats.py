@@ -91,7 +91,7 @@ async def bars_plot(days: int):
 #
 
 
-def _parse_stats(n_days=float('nan')):
+def _parse_stats(n_days: int = float('nan')) -> dict:
     def set_all_days(date_how_old_):  # добавить все даты от начала модерации до сегодня
         counter = Counter()
         for days in range(date_how_old_):
