@@ -54,7 +54,6 @@ async def writetag(filename: Path, data: str) -> bool:
 #
 
 
-# todo тут не только инфа отправителя, надо как нить переименовать (зачеркнуто) и переструктурировать
 async def write_track_additional_info(path: Path, user_obj: User, moderation_id: int) -> bool:
     tag = {
         'id': user_obj.id,
