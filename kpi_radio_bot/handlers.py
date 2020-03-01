@@ -2,9 +2,10 @@
 from contextlib import suppress
 
 from aiogram import Dispatcher, types, executor, exceptions
+from aiogram.dispatcher.handler import SkipHandler
 
 import core
-from config import BOT, ADMINS_CHAT_ID
+from config import BOT
 from consts import keyboards, texts
 from utils import bot_filters
 
@@ -12,68 +13,125 @@ DP = Dispatcher(BOT)
 bot_filters.bind_filters(DP)
 
 
-@DP.message_handler(commands=['start'])
-async def start_handler(message):
-    if message.chat.id < 0:
-        return
-
+@DP.message_handler(commands=['start'], pm=True)
+async def start_handler(message: types.Message):
     await core.users.add_in_db(message)
     await message.answer(texts.START)
     await core.users.menu(message)
 
 
-@DP.message_handler(commands=['cancel'])
-async def cancel(message):
+@DP.message_handler(commands=['cancel'], pm=True)
+async def cancel(message: types.Message):
     await core.users.menu(message)
 
 
-@DP.message_handler(commands=['notify'])
-async def notify_handler(message):
+@DP.message_handler(commands=['notify'], pm=True)
+async def notify_handler(message: types.Message):
     await core.users.notify_switch(message)
+
+
+@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, pm=True)
+async def user_reply_message_handler(message: types.Message):
+    reply_to = message.reply_to_message
+
+    # Реплай на сообщение обратной связи или сообщение от модера
+    if reply_to.text == texts.FEEDBACK or core.communication.cache_is_set(reply_to.message_id):
+        await core.communication.user_message(message)
+        return await message.answer(texts.FEEDBACK_THANKS, reply_markup=keyboards.START)
+
+    # Ввод названия песни
+    if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
+        return await core.search.search_audio(message)
+
+    raise SkipHandler
+
+
+@DP.message_handler(content_types=['audio'], pm=True)
+async def user_audio_handler(message: types.Message):
+    # Пользователь скинул аудио
+    return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
+
+
+@DP.message_handler(pm=True)
+async def user_buttons_handler(message: types.Message):
+    # Кнопка 'Что играет?'
+    if message.text == keyboards.MAIN_MENU['what_playing']:
+        await core.users.playlist_now(message)
+
+    # Кнопка 'Заказать песню'
+    elif message.text == keyboards.MAIN_MENU['order']:
+        await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+        await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=keyboards.ORDER_INLINE)
+
+    # Кнопка 'Обратная связь'
+    elif message.text == keyboards.MAIN_MENU['feedback']:
+        await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
+
+    # Кнопка 'Помощь'
+    elif message.text == keyboards.MAIN_MENU['help'] or message.text == '/help':
+        await message.answer(texts.HELP['start'], reply_markup=keyboards.CHOICE_HELP)
+
+    # Кнопка 'Расписание'
+    elif message.text == keyboards.MAIN_MENU['timetable']:
+        await core.users.timetable(message)
+
+    else:
+        raise SkipHandler
+
+
+@DP.message_handler(pm=True)
+async def user_other_handler(message: types.Message):
+    # Говорим пользователю что он дурак
+    await message.answer_document("BQADAgADlgQAAsedmEuFDrds0XauthYE", texts.UNKNOWN_CMD, reply_markup=keyboards.START)
 
 
 # region admins
 
 @DP.message_handler(commands=['next'], admins_chat=True)
-async def next_handler(message):
+async def next_handler(message: types.Message):
     await core.admins.next_track(message)
 
 
 @DP.message_handler(commands=['update'], admins_chat=True)
-async def update_handler(message):
+async def update_handler(message: types.Message):
     await core.admins.update(message)
 
 
 @DP.message_handler(commands=['ban'], admins_chat=True)
-async def ban_handler(message):
+async def ban_handler(message: types.Message):
     await core.admins.ban(message)
 
 
 @DP.message_handler(commands=['vol', 'volume'], admins_chat=True)
-async def volume_handler(message):
+async def volume_handler(message: types.Message):
     await core.admins.set_volume(message)
 
 
 @DP.message_handler(commands=['stats'], admins_chat=True)
-async def stats_handler(message):
+async def stats_handler(message: types.Message):
     await core.admins.get_stats(message)
 
 
 @DP.message_handler(commands=['log'], admins_chat=True)
-async def log_handler(message):
+async def log_handler(message: types.Message):
     await core.admins.get_log(message)
 
 
 @DP.message_handler(commands=['playlist'], admins_chat=True)
-async def laylist_handler(message):
+async def playlist_handler(message: types.Message):
     await core.admins.show_playlist_control(message)
+
+
+@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, admins_chat=True)
+async def admins_reply_message_handler(message: types.Message):
+    return await core.communication.admin_message(message)
 
 
 # endregion
 
 
 @DP.callback_query_handler()
-async def callback_query_handler(query):
+async def callback_query_handler(query: types.CallbackQuery):
     cmd = query.data.split('-|-')
 
     #
@@ -129,73 +187,15 @@ async def callback_query_handler(query):
         await core.users.help_change(query, cmd[1])
 
     # Админская кнопка перемещения трека в плейлисте
-    elif cmd[0] == 'playlist_move':
+    elif cmd[0] == 'admin_playlist_move':
         await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]))
 
     with suppress(exceptions.InvalidQueryID):
         await query.answer()
 
 
-@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])
-async def message_handler(message: types.Message):
-    # Форс реплаи
-    if message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id:
-
-        # Одменские команды
-        if message.chat.id == ADMINS_CHAT_ID:
-            # Одмены отвечают
-            return await core.communication.admin_message(message)
-
-        # Ввод названия песни
-        if message.reply_to_message.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-            return await core.search.search_audio(message)
-
-        # Реплай на сообщение обратной связи или сообщение от модера
-        if message.reply_to_message.text == texts.FEEDBACK or \
-                core.communication.cache_is_set(message.reply_to_message.message_id):
-            await core.communication.user_message(message)
-            return await message.answer(texts.FEEDBACK_THANKS, reply_markup=keyboards.START)
-
-        # Реплай, но на какую то хуйню
-        if not message.audio:
-            return await message.answer(texts.FEEDBACK_PLS_USE_BUTTON)
-
-    if message.chat.id < 0:
-        return
-
-    # Пользователь скинул аудио
-    if message.audio:
-        return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
-
-    # Кнопки
-
-    # Кнопка 'Что играет?'
-    if message.text == keyboards.MAIN_MENU['what_playing']:
-        return await core.users.playlist_now(message)
-
-    # Кнопка 'Предложить песню'
-    if message.text == keyboards.MAIN_MENU['order'] or message.text == '/song':
-        await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        return await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=keyboards.ORDER_INLINE)
-
-    # Кнопка 'Обратная связь'
-    if message.text == keyboards.MAIN_MENU['feedback']:
-        return await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
-
-    # Кнопка 'Помощь'
-    if message.text == keyboards.MAIN_MENU['help'] or message.text == '/help':
-        return await message.answer(texts.HELP['start'], reply_markup=keyboards.CHOICE_HELP)
-
-    # Кнопка 'Расписание'
-    if message.text == keyboards.MAIN_MENU['timetable']:
-        return await core.users.timetable(message)
-
-    # Просто сообщение
-    await message.answer_document("BQADAgADlgQAAsedmEuFDrds0XauthYE", texts.UNKNOWN_CMD, reply_markup=keyboards.START)
-
-
 @DP.inline_handler()
-async def query_text(inline_query):
+async def query_text_handler(inline_query: types.InlineQuery):
     await core.search.inline_search(inline_query)
 
 

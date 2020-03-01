@@ -138,9 +138,9 @@ async def playlist_move(playback=None):
     btns = [
         types.InlineKeyboardButton(
             f"{_emoji_numbers[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
-            callback_data=_callback('playlist_move', track.index, track.time_start.timestamp())
+            callback_data=_callback('admin_playlist_move', track.index, track.time_start.timestamp())
         )
         for i, track in enumerate(playback[:10])
     ]
-    btns.append(types.InlineKeyboardButton(f"🔄Обновить", callback_data=_callback('playlist_move', -1, 0, 0)))
+    btns.append(types.InlineKeyboardButton(f"🔄Обновить", callback_data=_callback('admin_playlist_move', -1, 0, 0)))
     return types.InlineKeyboardMarkup(row_width=1).add(*btns)
