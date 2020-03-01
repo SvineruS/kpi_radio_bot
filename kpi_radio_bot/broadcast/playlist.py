@@ -12,12 +12,12 @@ PlaylistItem = namedtuple("namedtuple", ('title', 'time_start', 'filename', 'ind
 
 async def get_now():
     playback = await radioboss.playbackinfo()
-    if not playback or playback[3].attrib['state'] == 'stop':
+    if not playback or playback['Playback']['@state'] == 'stop':
         return False
 
     result = [''] * 3
-    for i, track in enumerate(playback[0:3]):
-        title = track[0].attrib['CASTTITLE']
+    for i, k in enumerate(('PrevTrack', 'CurrentTrack', 'NextTrack')):
+        title = playback[k]['TRACK']['@CASTTITLE']
         if "setvol" not in title:
             result[i] = title
 
@@ -83,17 +83,16 @@ async def _get_playlist() -> List[PlaylistItem]:
         return []
 
     result = []
-    for track in playlist[:100]:  # оптимизация: максимум 100 треков, что покрывает самый длинный эфир, ~ 7 часов
-        track = track.attrib
-        if not track['STARTTIME']:  # если STARTTIME == "" скорее всего это не песня (либо она стартанет через >=сутки)
+    for track in playlist['TRACK'][:100]:  # оптимизация: максимум 100 треков, покрывает самый длинный эфир, ~ 7 часов
+        if not track['@STARTTIME']:  # если STARTTIME == "" скорее всего это не песня (либо она стартанет через >=сутки)
             continue
 
         track = PlaylistItem(
-            title=track['CASTTITLE'],
-            time_start=get_by.time_to_datetime(datetime.strptime(track['STARTTIME'], '%H:%M:%S').time()),  # set today
-            filename=track['FILENAME'],
-            index=int(track['INDEX']),
-            is_order=str(PATHS['orders']) in track["FILENAME"]
+            title=track['@CASTTITLE'],
+            time_start=get_by.time_to_datetime(datetime.strptime(track['@STARTTIME'], '%H:%M:%S').time()),  # set today
+            filename=track['@FILENAME'],
+            index=int(track['@INDEX']),
+            is_order=str(PATHS['orders']) in track['@FILENAME']
         )
         result.append(track)
 
@@ -108,6 +107,6 @@ async def _calculate_tracks_duration(day: int, time: int) -> float:
 async def _calculate_tracks_duration_(files_):
     duration = 0
     for file in files_:
-        if tags := await radioboss.readtag(file):
-            duration += int(tags[0].attrib['Duration'])
+        if tag_info := await radioboss.readtag(file):
+            duration += int(tag_info['TagInfo']['File']['@Duration'])
     return duration / 1000 / 60  # minutes
