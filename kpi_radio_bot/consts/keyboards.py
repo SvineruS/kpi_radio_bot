@@ -139,7 +139,7 @@ def playlist_choose_time(day: int) -> types.InlineKeyboardMarkup:
 
 #
 
-_emoji_numbers = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
+_EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
 
 
 async def playlist_move(playback=None):
@@ -147,7 +147,7 @@ async def playlist_move(playback=None):
         playback = await playlist.get_next()
     btns = [
         types.InlineKeyboardButton(
-            f"{_emoji_numbers[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
+            f"{_EMOJI_NUMBERS[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
             callback_data=_parse(CB.PLAYLIST, CB.MOVE, track.index, track.time_start.timestamp())
         )
         for i, track in enumerate(playback[:10])

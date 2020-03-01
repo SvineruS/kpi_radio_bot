@@ -167,7 +167,7 @@ async def _gen_order_caption(day: int, time: int, user: types.User,
 
         return f'{is_now_mark} Новый заказ: \n' \
                f'{text_datetime} \n' \
-               f'от {user_name}   {texts.HASHTAG_MODERATE}\n' \
+               f'от {user_name}<code>   </code>{texts.HASHTAG_MODERATE}\n' \
                f'{is_anime}{bad_words}'
     else:
         status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
