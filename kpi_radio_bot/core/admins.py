@@ -114,7 +114,7 @@ async def get_log(message: types.Message):
 
 
 async def next_track(message: types.Message):
-    if not await radioboss.next():
+    if not await radioboss.cmd_next():
         await message.answer('хуй знает, не работает')
     prev, now, _ = await playlist.get_now()
     await message.answer(f'<i>{prev} ➡ {now}</i>')

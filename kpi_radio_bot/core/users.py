@@ -47,7 +47,7 @@ async def playlist_choose_time(query: CallbackQuery, day: int):
 
 async def playlist_show(query: CallbackQuery, day: int, time: int):
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_text(await _get_playlist(day, time),reply_markup=keyboards.playlist_choose_time(day))
+        await query.message.edit_text(await _get_playlist(day, time), reply_markup=keyboards.playlist_choose_time(day))
 
 
 async def timetable(message: Message):

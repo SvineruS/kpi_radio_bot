@@ -1,11 +1,11 @@
 import json
 import logging
-import xmltodict
 from pathlib import Path
 from typing import Union
 from urllib.parse import quote_plus
 
 import aiohttp
+import xmltodict
 from aiogram.types import User
 
 from config import RADIOBOSS_DATA, AIOHTTP_SESSION
@@ -15,7 +15,7 @@ async def setvol(vol: int, fade: int = 500) -> bool:
     return await _radioboss_api(cmd=f'setvol {vol} {fade}')
 
 
-async def next() -> bool:
+async def cmd_next() -> bool:
     return await _radioboss_api(cmd='next')
 
 
@@ -65,7 +65,7 @@ async def write_track_additional_info(path: Path, user_obj: User, moderation_id:
     return await _write_comment_tag(path, tag)
 
 
-async def read_track_additional_info(path: Path) -> Union[bool, str]:
+async def read_track_additional_info(path: Path) -> Union[bool, dict]:
     if not (tag_info := await readtag(path)):
         return False
     tag = tag_info['TagInfo']['File']['@Comment']
