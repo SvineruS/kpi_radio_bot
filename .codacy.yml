@@ -1,1 +1,2 @@
-base_sub_dir: kpi_radio_bot
+engines:
+ base_sub_dir: kpi_radio_bot
