@@ -66,7 +66,7 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 #
 
 
-async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: str):
+async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
     audio_name = get_by.get_audio_name(query.message.audio)
@@ -81,7 +81,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
     stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
     stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
 
-    if status == 'reject':  # кнопка отмена
+    if status == keyboards.STATUS.REJECT:  # кнопка отмена
         mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime))
         return communication.cache_add(mes, query.message)
 
@@ -90,7 +90,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
     await files.download_audio(query.message.audio, path)
     await broadcast.radioboss.write_track_additional_info(path, user, query.message.message_id)
 
-    if status == 'now':  # кнопка сейчас
+    if status == keyboards.STATUS.NOW:  # кнопка сейчас
         when_playing = 'прямо сейчас!'
         await broadcast.radioboss.inserttrack(path, -2)
         mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
@@ -135,7 +135,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
                                          reply_markup=keyboards.admin_unchoose(day, time, status))
 
 
-async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status: str):
+async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))

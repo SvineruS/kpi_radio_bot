@@ -1,6 +1,10 @@
 from datetime import datetime
 from pathlib import Path
 
+
+HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
+
+
 BAD_WORDS = [
     'пизд',
     'бля',

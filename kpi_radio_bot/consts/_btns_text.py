@@ -1,10 +1,22 @@
-MENU = {
-    'order': '📝Заказать песню',
-    'what_playing': '🎧Что играет?',
-    'help': '⁉️Помощь',
-    'timetable': '⏱Расписание эфиров',
-    'feedback': '🖌Обратная связь',
-}
+from enum import IntEnum
+
+CALLBACKS = IntEnum("CALLBACKS", (
+    'ORDER', 'PLAYLIST', 'OTHER',
+    'DAY', 'TIME', 'BACK', 'CANCEL', 'NOTIME', 'MODERATE', 'UNMODERATE',
+    'NEXT', 'MOVE', 'HELP',
+
+))
+
+STATUS = IntEnum("STATUS", ('QUEUE', 'NOW', 'REJECT'))
+
+
+class MENU:
+    ORDER = '📝Заказать песню'
+    WHAT_PLAYING = '🎧Что играет?'
+    HELP = '⁉️Помощь'
+    TIMETABLE = '⏱Расписание эфиров'
+    FEEDBACK = '🖌Обратная связь'
+
 
 HELP = {
     'orders': '📝Заказ песни',

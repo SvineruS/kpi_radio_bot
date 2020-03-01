@@ -1,5 +1,6 @@
 """ Хендлеры бота """
 from contextlib import suppress
+from typing import List
 
 from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
@@ -55,24 +56,24 @@ async def user_audio_handler(message: types.Message):
 @DP.message_handler(pm=True)
 async def user_buttons_handler(message: types.Message):
     # Кнопка 'Что играет?'
-    if message.text == keyboards.MAIN_MENU['what_playing']:
+    if message.text == keyboards.MENU.WHAT_PLAYING:
         await core.users.playlist_now(message)
 
     # Кнопка 'Заказать песню'
-    elif message.text == keyboards.MAIN_MENU['order']:
+    elif message.text == keyboards.MENU.ORDER:
         await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
         await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=keyboards.ORDER_INLINE)
 
     # Кнопка 'Обратная связь'
-    elif message.text == keyboards.MAIN_MENU['feedback']:
+    elif message.text == keyboards.MENU.FEEDBACK:
         await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
 
     # Кнопка 'Помощь'
-    elif message.text == keyboards.MAIN_MENU['help'] or message.text == '/help':
+    elif message.text == keyboards.MENU.HELP or message.text == '/help':
         await message.answer(texts.HELP['start'], reply_markup=keyboards.CHOICE_HELP)
 
     # Кнопка 'Расписание'
-    elif message.text == keyboards.MAIN_MENU['timetable']:
+    elif message.text == keyboards.MENU.TIMETABLE:
         await core.users.timetable(message)
 
     else:
@@ -132,71 +133,92 @@ async def admins_reply_message_handler(message: types.Message):
 
 @DP.callback_query_handler()
 async def callback_query_handler(query: types.CallbackQuery):
-    cmd = query.data.split('-|-')
+    category, cmd, *params = keyboards.unparse(query.data)
 
-    #
-    # Выбрали день
-    if cmd[0] == 'order_day':
-        await core.order.order_choose_time(query, int(cmd[1]))
+    if category == keyboards.CB.ORDER:
+        await order_callback_handler(query, cmd, params)
 
-    # Выбрали время
-    elif cmd[0] == 'order_time':
-        await core.order.order_make(query, int(cmd[1]), int(cmd[2]))
+    elif category == keyboards.CB.PLAYLIST:
+        await playlist_callback_handler(query, cmd, params)
 
-    # Кнопка назад при выборе времени
-    elif cmd[0] == 'order_back_day' or cmd[0] == 'bad_order_but_ok':
-        await core.order.order_choose_day(query)
+    elif category == keyboards.CB.OTHER:
+        await other_callback_handler(query, cmd, params)
 
-    # Кнопка отмены при выборе дня
-    elif cmd[0] == 'order_cancel':
-        await core.order.order_cancel(query)
-
-    # Выбрал время но туда не влезет
-    elif cmd[0] == 'order_notime':
-        await core.order.order_no_time(query, int(cmd[1]), int(cmd[2]))
-
-    #
-    # Принять / отклонить
-    elif cmd[0] == 'admin_choice':
-        await core.order.admin_choice(query, int(cmd[1]), int(cmd[2]), cmd[3])
-
-    # Отменить выбор
-    elif cmd[0] == 'admin_unchoice':
-        await core.order.admin_unchoice(query, int(cmd[1]), int(cmd[2]), cmd[3])
-
-    #
-    # Кнопка "что будет играть" в сообщении "что играет"
-    elif cmd[0] == 'playlist_next':
-        await core.users.playlist_next(query)
-
-    # Выбор дня
-    elif cmd[0] == 'playlist_day':
-        await core.users.playlist_choose_time(query, int(cmd[1]))
-
-    # Выбор времени
-    elif cmd[0] == 'playlist_time':
-        await core.users.playlist_show(query, int(cmd[1]), int(cmd[2]))
-
-    # Выбор времени
-    elif cmd[0] == 'playlist_back':
-        await core.users.playlist_choose_day(query)
-
-    #
-    # Кнопка в сообщении с инструкцией
-    elif cmd[0] == 'help':
-        await core.users.help_change(query, cmd[1])
-
-    # Админская кнопка перемещения трека в плейлисте
-    elif cmd[0] == 'admin_playlist_move':
-        await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]))
-
-    with suppress(exceptions.InvalidQueryID):
-        await query.answer()
+    else:
+        with suppress(exceptions.InvalidQueryID):
+            await query.answer("Кнопка устарела")
 
 
 @DP.inline_handler()
 async def query_text_handler(inline_query: types.InlineQuery):
     await core.search.inline_search(inline_query)
+
+
+async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: list):
+    # Выбрали день
+    if cmd == keyboards.CB.DAY:
+        *_, day = params
+        await core.order.order_choose_time(query, day)
+
+    # Выбрали время
+    if cmd == keyboards.CB.TIME:
+        *_, day, time = params
+        await core.order.order_make(query, day, time)
+
+    # Кнопка назад при выборе времени
+    if cmd == keyboards.CB.BACK:
+        await core.order.order_choose_day(query)
+
+    # Кнопка отмены при выборе дня
+    if cmd == keyboards.CB.CANCEL:
+        await core.order.order_cancel(query)
+
+    # Выбрал время но туда не влезет
+    if cmd == keyboards.CB.NOTIME:
+        *_, day, attempts = params
+        await core.order.order_no_time(query, day, attempts)
+
+    # Принять / отклонить
+    if cmd == keyboards.CB.MODERATE:
+        *_, day, time, status = params
+        await core.order.admin_choice(query, day, time, keyboards.STATUS(status))
+
+    # Отменить выбор
+    if cmd == keyboards.CB.UNMODERATE:
+        *_, day, time, status = params
+        await core.order.admin_unchoice(query, day, time, status)
+
+
+async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
+    # Кнопка "что будет играть" в сообщении "что играет"
+    if cmd == keyboards.CB.NEXT:
+        await core.users.playlist_next(query)
+
+    # Выбор дня
+    if cmd == keyboards.CB.DAY:
+        *_, day = params
+        await core.users.playlist_choose_time(query, day)
+
+    # Выбор времени
+    if cmd == keyboards.CB.TIME:
+        *_, day, time = params
+        await core.users.playlist_show(query, day, time)
+
+    # Кнопка назад при выборе времени
+    if cmd == keyboards.CB.BACK:
+        await core.users.playlist_choose_day(query)
+
+    # Админская кнопка перемещения трека в плейлисте
+    if cmd == keyboards.CB.MOVE:
+        *_, track_index, track_start_time = params
+        await core.admins.playlist_move(query, track_index, track_start_time)
+
+
+async def other_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
+    # Кнопка в сообщении с инструкцией
+    if cmd == keyboards.CB.HELP:
+        *_, key = params
+        await core.users.help_change(query, key)
 
 
 if __name__ == '__main__':
