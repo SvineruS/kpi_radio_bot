@@ -11,8 +11,8 @@ from utils.other import LRU
 MESSAGES_CACHE = LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
 
 
-def cache_add(to_msg_id: int, from_message: Message):
-    MESSAGES_CACHE[to_msg_id] = (from_message.chat.id, from_message.message_id)
+def cache_add(to_message: Message, from_message: Message):
+    MESSAGES_CACHE[to_message.message_id] = (from_message.chat.id, from_message.message_id)
 
 
 def cache_get(message_id: int) -> Tuple[int, int]:
@@ -61,7 +61,7 @@ async def admin_message(message: Message):
 async def _resend_message(message: Message, chat: int, additional_text: str = '', reply_to: int = None):
     if additional_text and (message.audio or message.sticker):
         mes = await BOT.send_message(chat, additional_text)
-        cache_add(mes.message_id, message)
+        cache_add(mes, message)
 
     if message.audio:
         mes = await BOT.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)
@@ -73,4 +73,4 @@ async def _resend_message(message: Message, chat: int, additional_text: str = ''
     else:
         mes = await BOT.send_message(chat, additional_text + (message.text or ''), reply_to_message_id=reply_to)
 
-    cache_add(mes.message_id, message)
+    cache_add(mes, message)
