@@ -1,4 +1,5 @@
 """Обработка действий обычных пользователей"""
+from contextlib import suppress
 from datetime import datetime
 
 from aiogram.types import Message, CallbackQuery, Audio
@@ -34,25 +35,19 @@ async def playlist_next(query: CallbackQuery):
 
 
 async def playlist_choose_day(query: CallbackQuery):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_text(texts.CHOOSE_DAY, reply_markup=keyboards.playlist_choose_day())
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def playlist_choose_time(query: CallbackQuery, day: int):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_text(texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
                                       reply_markup=keyboards.playlist_choose_time(day))
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def playlist_show(query: CallbackQuery, day: int, time: int):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_text(await _get_playlist(day, time),reply_markup=keyboards.playlist_choose_time(day))
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def timetable(message: Message):
@@ -69,10 +64,8 @@ async def timetable(message: Message):
 
 
 async def help_change(query: CallbackQuery, key: str):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_text(texts.HELP[key], reply_markup=keyboards.CHOICE_HELP)
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def notify_switch(message: Message):

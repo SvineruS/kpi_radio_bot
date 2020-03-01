@@ -2,6 +2,7 @@
 
 import io
 import os
+from contextlib import suppress
 from time import time
 from urllib.parse import unquote
 
@@ -99,10 +100,8 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
         else:
             await query.answer("Ошибка")
 
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_reply_markup(await keyboards.playlist_move(playback))
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def get_log(message: types.Message):

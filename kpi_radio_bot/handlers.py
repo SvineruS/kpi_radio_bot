@@ -1,4 +1,5 @@
 """ Хендлеры бота """
+from contextlib import suppress
 
 from aiogram import Dispatcher, types, executor, exceptions
 
@@ -131,10 +132,8 @@ async def callback_query_handler(query):
     elif cmd[0] == 'playlist_move':
         await core.admins.playlist_move(query, int(cmd[1]), int(cmd[2]))
 
-    try:
+    with suppress(exceptions.InvalidQueryID):
         await query.answer()
-    except exceptions.InvalidQueryID:
-        pass
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'])

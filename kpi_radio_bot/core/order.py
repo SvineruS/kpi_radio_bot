@@ -1,7 +1,7 @@
 """Обработка заказов"""
 
 # todo refactor this
-
+from contextlib import suppress
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
@@ -26,7 +26,7 @@ async def order_make(query: types.CallbackQuery, day: int, time: int):
             reply_markup=types.InlineKeyboardMarkup(),
         )
     except exceptions.MessageNotModified:
-        pass
+        return  # если не отредачилось значит кидать второе меню тоже не нужно
 
     await users.menu(query.message)
 
@@ -39,35 +39,27 @@ async def order_make(query: types.CallbackQuery, day: int, time: int):
 
 async def order_choose_time(query: types.CallbackQuery, day: int):
     is_moder = await user_utils.is_admin(query.from_user.id)
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(
             caption=texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
             reply_markup=await keyboards.order_choose_time(day, 0 if is_moder else 5)
         )
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def order_choose_day(query: types.CallbackQuery):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def order_cancel(query: types.CallbackQuery):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(texts.ORDER_CANCELED, reply_markup=types.InlineKeyboardMarkup())
         await users.menu(query.message)
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_reply_markup(await keyboards.order_choose_time(day, attempts - 1))
-    except exceptions.MessageNotModified:
-        pass
     await query.answer(texts.ORDER_ERR_TOOLATE)
 
 
@@ -84,7 +76,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
     try:
         await query.message.edit_caption(admin_text, reply_markup=keyboards.admin_unchoose(day, time, status))
     except exceptions.MessageNotModified:
-        pass
+        return  # если не отредачилось значит кнопка уже отработалась
 
     stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
     stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
@@ -138,11 +130,9 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
             )
             communication.cache_add(mes, query.message)
 
-    try:
+    with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
                                          reply_markup=keyboards.admin_unchoose(day, time, status))
-    except exceptions.MessageNotModified:
-        pass
 
 
 async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status: str):
@@ -153,7 +143,7 @@ async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status
     try:
         await query.message.edit_caption(admin_text, reply_markup=keyboards.admin_choose(day, time))
     except exceptions.MessageNotModified:
-        pass
+        return  # если не отредачилось значит кнопка уже отработалась
 
     if status != 'reject':  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)
