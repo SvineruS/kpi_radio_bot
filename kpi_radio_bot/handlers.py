@@ -133,20 +133,24 @@ async def admins_reply_message_handler(message: types.Message):
 
 @DP.callback_query_handler()
 async def callback_query_handler(query: types.CallbackQuery):
-    category, cmd, *params = keyboards.unparse(query.data)
+    try:
+        category, cmd, *params = keyboards.unparse(query.data)
+    except:  # todo remove
+        with suppress(exceptions.InvalidQueryID):
+            await query.answer("Кнопка устарела")
+        return
 
     if category == keyboards.CB.ORDER:
         await order_callback_handler(query, cmd, params)
 
-    elif category == keyboards.CB.PLAYLIST:
+    if category == keyboards.CB.PLAYLIST:
         await playlist_callback_handler(query, cmd, params)
 
-    elif category == keyboards.CB.OTHER:
+    if category == keyboards.CB.OTHER:
         await other_callback_handler(query, cmd, params)
 
-    else:
-        with suppress(exceptions.InvalidQueryID):
-            await query.answer("Кнопка устарела")
+    with suppress(exceptions.InvalidQueryID):
+        await query.answer()
 
 
 @DP.inline_handler()
