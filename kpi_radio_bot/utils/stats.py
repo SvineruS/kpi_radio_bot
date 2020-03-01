@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 import matplotlib
-
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
 

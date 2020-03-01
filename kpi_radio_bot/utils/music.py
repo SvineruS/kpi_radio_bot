@@ -87,7 +87,6 @@ async def is_anime(audio_name: str) -> bool:
             return False
         text = (await res.text()).lower()
 
-    # todo проверять реджексом с учетом конца слова
     return any(anime_word in text for anime_word in consts.ANIME_WORDS)
 
 
