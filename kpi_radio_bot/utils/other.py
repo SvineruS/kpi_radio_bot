@@ -18,7 +18,6 @@ def my_lru(maxsize: int = None, ttl: int = None):
             return result
 
         return wrapper
-
     return decorator
 
 
@@ -31,19 +30,19 @@ class LRU(OrderedDict):
     def __getitem__(self, key):
         val = super().__getitem__(key)
         ttl, value = val
-        if ttl and ttl != self.get_ttl():
+        if ttl and ttl != self._get_ttl():
             del self[key]
             return None
         self.move_to_end(key)
         return value
 
     def __setitem__(self, key, value):
-        val = (self.get_ttl(), value)
+        val = (self._get_ttl(), value)
         super().__setitem__(key, val)
         if len(self) > self.maxsize:
             del self[next(iter(self))]
 
-    def get_ttl(self):
+    def _get_ttl(self):
         if not self.ttl:
             return None
         return round(time() / self.ttl)
