@@ -4,10 +4,17 @@ from datetime import datetime
 
 from aiogram import types, exceptions
 
-from broadcast import playlist, Broadcast
-from config import BOT
-from consts import texts, keyboards, others
-from utils import get_by, db, music, files
+from backend import playlist
+from backend.playlist import Broadcast
+
+import backend.music.musicless
+
+import backend.music.check
+from consts.config import BOT
+from consts import texts, others
+from utils import get_by, db
+from backend import music, files
+from frontend.frontend_utils import keyboards
 
 
 async def menu(message: types.Message):
@@ -86,7 +93,7 @@ async def send_audio(chat: int, tg_audio: types.Audio = None, api_audio: music.A
         name = get_by.get_audio_name(tg_audio)
         duration = tg_audio.duration
     elif api_audio:
-        file = music.get_download_url(api_audio.url, api_audio.artist, api_audio.title)
+        file = backend.music.musicless.get_download_url(api_audio.url, api_audio.artist, api_audio.title)
         name = get_by.get_audio_name_(api_audio.artist, api_audio.title)
         duration = api_audio.duration
     else:
@@ -95,9 +102,9 @@ async def send_audio(chat: int, tg_audio: types.Audio = None, api_audio: music.A
     bad_list = (
         (texts.BAD_ORDER_SHORT, duration < 60),
         (texts.BAD_ORDER_LONG, duration > 60 * 6),
-        (texts.BAD_ORDER_BADWORDS, await music.is_contain_bad_words(name)),
-        (texts.BAD_ORDER_ANIME, await music.is_anime(name)),
-        (texts.BAD_ORDER_PERFORMER, music.is_bad_name(name)),
+        (texts.BAD_ORDER_BADWORDS, await backend.music.check.is_contain_bad_words(name)),
+        (texts.BAD_ORDER_ANIME, await backend.music.check.is_anime(name)),
+        (texts.BAD_ORDER_PERFORMER, backend.music.check.is_bad_name(name)),
     )
 
     warnings = [text for text, b in bad_list if b]

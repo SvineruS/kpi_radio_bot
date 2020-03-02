@@ -11,7 +11,7 @@ https://aiogram.readthedocs.io/en/latest/dispatcher/filters.html#boundfilter
 from aiogram.dispatcher.filters.filters import BoundFilter
 from aiogram.types import Message, ChatType
 
-from config import ADMINS_CHAT_ID, BOT
+from consts.config import ADMINS_CHAT_ID, BOT
 
 
 class AdminChatFilter(BoundFilter):

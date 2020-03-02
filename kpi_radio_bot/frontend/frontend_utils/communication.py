@@ -3,9 +3,9 @@ from typing import Tuple, Optional
 
 from aiogram.types import Message
 
-from config import BOT, ADMINS_CHAT_ID
+from consts.config import BOT, ADMINS_CHAT_ID
 from utils import get_by
-from utils.other import LRU
+from utils.lru import LRU
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
 MESSAGES_CACHE = LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)

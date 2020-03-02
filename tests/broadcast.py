@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from kpi_radio_bot.broadcast import playlist, Broadcast
+from kpi_radio_bot.broadcast import Broadcast
+from backend import playlist
 import datetime
 
 dt = datetime.datetime(2019, 11, 11, 8, 20, 0)

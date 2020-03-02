@@ -4,17 +4,16 @@ from typing import Optional, List, Union
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import files
-import get_by
-import other
+from . import files
+from utils import get_by
+
 from consts import others
-from . import radioboss
-from get_by import time_to_datetime
-from other import my_lru
+from backend import radioboss
+from utils.lru import lru
 
 
 class Broadcast:
-    @my_lru()
+    @lru()
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
 
@@ -37,10 +36,10 @@ class Broadcast:
         return ', '.join((others.WEEK_DAYS[self.day], others.TIMES[self.num]))
 
     def start_time(self) -> datetime:
-        return time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][0])
+        return get_by.time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][0])
 
     def stop_time(self) -> datetime:
-        return time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][1])
+        return get_by.time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][1])
 
     def is_today(self) -> bool:
         return self.day == datetime.now().weekday()
@@ -170,7 +169,7 @@ async def _calculate_tracks_duration(broadcast) -> float:
     return await _calculate_tracks_duration_(tuple(files.get_downloaded_tracks(broadcast.path())))
 
 
-@other.my_lru(maxsize=7 * 7, ttl=60 * 60 * 12)
+@lru(maxsize=7 * 7, ttl=60 * 60 * 12)
 async def _calculate_tracks_duration_(files_):
     duration = 0
     for file in files_:

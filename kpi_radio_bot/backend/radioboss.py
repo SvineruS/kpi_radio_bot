@@ -8,7 +8,7 @@ import aiohttp
 import xmltodict
 from aiogram.types import User
 
-from config import RADIOBOSS_DATA, AIOHTTP_SESSION
+from consts.config import RADIOBOSS_DATA, AIOHTTP_SESSION
 
 
 async def setvol(vol: int, fade: int = 500) -> bool:

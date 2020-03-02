@@ -4,9 +4,10 @@ from typing import List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from broadcast import playlist, Broadcast
-from consts import _btns_text
-from consts._btns_text import MENU, CALLBACKS as CB, STATUS
+from backend.playlist import Broadcast
+from backend import playlist
+from consts import btns_text
+from consts.btns_text import MENU, CALLBACKS as CB, STATUS
 from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
 
 
@@ -25,7 +26,7 @@ def _ikb(text: str, *cb_data) -> InlineKeyboardButton:  # shortcut
 
 
 ORDER_INLINE = InlineKeyboardMarkup().add(
-    InlineKeyboardButton(_btns_text.INLINE_SEARCH, switch_inline_query_current_chat="")
+    InlineKeyboardButton(btns_text.INLINE_SEARCH, switch_inline_query_current_chat="")
 )
 
 START = ReplyKeyboardMarkup(resize_keyboard=True).add(
@@ -34,18 +35,18 @@ START = ReplyKeyboardMarkup(resize_keyboard=True).add(
 )
 
 WHAT_PLAYING = InlineKeyboardMarkup(row_width=2).add(
-    InlineKeyboardButton(_btns_text.HISTORY, url=HISTORY_CHANNEL_LINK),
-    InlineKeyboardButton(_btns_text.NEXT, callback_data=_parse(CB.PLAYLIST, CB.NEXT))
+    InlineKeyboardButton(btns_text.HISTORY, url=HISTORY_CHANNEL_LINK),
+    InlineKeyboardButton(btns_text.NEXT, callback_data=_parse(CB.PLAYLIST, CB.NEXT))
 )
 
 CHOICE_HELP = InlineKeyboardMarkup(row_width=1).add(*[
     _ikb(help_value, CB.OTHER, CB.HELP, help_key)
-    for help_key, help_value in _btns_text.HELP.items()
+    for help_key, help_value in btns_text.HELP.items()
 ])
 
 BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
-    _ikb(_btns_text.BAD_ORDER_BUT_OK, CB.ORDER, CB.BACK),
-    _ikb(_btns_text.CANCEL, CB.ORDER, CB.CANCEL)
+    _ikb(btns_text.BAD_ORDER_BUT_OK, CB.ORDER, CB.BACK),
+    _ikb(btns_text.CANCEL, CB.ORDER, CB.CANCEL)
 )
 
 
@@ -66,7 +67,7 @@ async def order_choose_day() -> InlineKeyboardMarkup:
     for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
         btns.append(_ikb(NEXT_DAYS[i], CB.ORDER, CB.DAY, (today + i) % 7))
 
-    btns.append(_ikb(_btns_text.CANCEL, CB.ORDER, CB.CANCEL))
+    btns.append(_ikb(btns_text.CANCEL, CB.ORDER, CB.CANCEL))
     return InlineKeyboardMarkup(row_width=1).add(*btns)
 
 
@@ -86,7 +87,7 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
 
         btns.append(btn)
 
-    btns.append(_ikb(_btns_text.BACK, CB.ORDER, CB.BACK))
+    btns.append(_ikb(btns_text.BACK, CB.ORDER, CB.BACK))
     return InlineKeyboardMarkup(row_width=2).add(*btns)
 
 
@@ -97,15 +98,15 @@ def admin_moderate(broadcast: Broadcast) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup().add(*[
         _ikb(text, CB.ORDER, CB.MODERATE, *broadcast, status)
         for status, text in {
-            STATUS.QUEUE: _btns_text.QUEUE,
-            STATUS.NOW: _btns_text.NOW,
-            STATUS.REJECT: _btns_text.REJECT
+            STATUS.QUEUE: btns_text.QUEUE,
+            STATUS.NOW: btns_text.NOW,
+            STATUS.REJECT: btns_text.REJECT
         }.items()
     ])
 
 
 def admin_unmoderate(broadcast: Broadcast, status: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup().add(_ikb(_btns_text.CANCEL, CB.ORDER, CB.UNMODERATE, *broadcast, status))
+    return InlineKeyboardMarkup().add(_ikb(btns_text.CANCEL, CB.ORDER, CB.UNMODERATE, *broadcast, status))
 
 
 #
@@ -125,7 +126,7 @@ def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
         _ikb(TIMES[time], CB.PLAYLIST, CB.TIME, day, time)
         for time in BROADCAST_TIMES_[day]
     ]
-    btns.append(_ikb(_btns_text.BACK, CB.PLAYLIST, CB.BACK))
+    btns.append(_ikb(btns_text.BACK, CB.PLAYLIST, CB.BACK))
     return InlineKeyboardMarkup(row_width=3).add(*btns)
 
 

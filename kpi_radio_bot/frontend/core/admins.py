@@ -9,11 +9,11 @@ from urllib.parse import unquote
 
 from aiogram import types, exceptions
 
-from consts import texts, keyboards
-from broadcast import radioboss, playlist
-from config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
-from core import communication
-from utils import user_utils, db, stats, get_by
+from consts import texts
+from backend import radioboss, playlist
+from consts.config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
+from frontend.frontend_utils import communication, keyboards, stats
+from utils import user_utils, db, get_by
 
 
 async def ban(message: types.Message):
@@ -142,4 +142,3 @@ async def _get_moderator_from_mention(message: types.Message) -> Optional[types.
         return await user_utils.get_admin_by_username(moderator)
     else:
         return message.entities[1].user
-

@@ -5,11 +5,12 @@ from typing import List
 from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
 
-import core
-from broadcast import Broadcast
-from config import BOT
-from consts import keyboards, texts
-from utils import bot_filters
+import backend.music.musicless
+from backend.playlist import Broadcast
+from consts.config import BOT
+from consts import texts
+from frontend import core
+from frontend.frontend_utils import bot_filters, keyboards, communication
 
 DP = Dispatcher(BOT)
 bot_filters.bind_filters(DP)
@@ -37,13 +38,13 @@ async def user_reply_message_handler(message: types.Message):
     reply_to = message.reply_to_message
 
     # Реплай на сообщение обратной связи или сообщение от модера
-    if reply_to.text == texts.FEEDBACK or core.communication.cache_is_set(reply_to.message_id):
-        await core.communication.user_message(message)
+    if reply_to.text == texts.FEEDBACK or communication.cache_is_set(reply_to.message_id):
+        await communication.user_message(message)
         return await message.answer(texts.FEEDBACK_THANKS, reply_markup=keyboards.START)
 
     # Ввод названия песни
     if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-        return await core.search.search_audio(message)
+        return await backend.music.musicless.search.search_audio(message)
 
     raise SkipHandler
 
@@ -126,7 +127,7 @@ async def playlist_handler(message: types.Message):
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, admins_chat=True)
 async def admins_reply_message_handler(message: types.Message):
-    return await core.communication.admin_message(message)
+    return await communication.admin_message(message)
 
 
 # endregion
@@ -156,7 +157,7 @@ async def callback_query_handler(query: types.CallbackQuery):
 
 @DP.inline_handler()
 async def query_text_handler(inline_query: types.InlineQuery):
-    await core.search.inline_search(inline_query)
+    await backend.music.musicless.search.inline_search(inline_query)
 
 
 async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):

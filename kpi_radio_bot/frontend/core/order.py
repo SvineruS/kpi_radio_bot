@@ -8,11 +8,17 @@ from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-from broadcast import Broadcast, radioboss, playlist
-from config import BOT, ADMINS_CHAT_ID, HOST
-from consts import texts, keyboards, others
-from core import communication, users
-from utils import user_utils, files, db, stats, music, get_by, other
+from backend import playlist
+from backend.playlist import Broadcast
+
+import backend.music.check
+import frontend.frontend_utils.id_to_hashtag
+from backend import radioboss, music, files
+from consts.config import BOT, ADMINS_CHAT_ID, HOST
+from consts import texts, others
+from frontend.core import users
+from frontend.frontend_utils import communication, keyboards, stats
+from utils import user_utils, db, get_by
 
 
 async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
@@ -156,16 +162,16 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
 
 #
 
-async def _gen_order_caption(broadcast: Broadcast,  user: types.User,
+async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                              audio_name: str = None, status: keyboards.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_now()
-    user_name = get_by.get_user_name(user) + ' #' + other.id_to_hashtag(user.id)
+    user_name = get_by.get_user_name(user) + ' #' + frontend.frontend_utils.id_to_hashtag.id_to_hashtag(user.id)
     text_datetime = broadcast.name() + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await _get_bad_words_text(audio_name)
-        is_anime = '🅰️' if await music.is_anime(audio_name) else ''
+        is_anime = '🅰️' if await backend.music.check.is_anime(audio_name) else ''
 
         return f'{is_now_mark} Новый заказ: \n' \
                f'{text_datetime} \n' \
@@ -182,7 +188,7 @@ async def _gen_order_caption(broadcast: Broadcast,  user: types.User,
 
 
 async def _get_bad_words_text(audio_name: str) -> str:
-    if not (res := await music.get_bad_words(audio_name)):
+    if not (res := await backend.music.check.get_bad_words(audio_name)):
         return ''
 
     title, b_w = res

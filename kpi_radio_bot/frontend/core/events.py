@@ -3,10 +3,12 @@
 import asyncio
 import logging
 
-from broadcast import radioboss, Broadcast
-from config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
-from consts import keyboards, texts, others
-from utils import get_by, db, files
+from backend.playlist import Broadcast
+from backend import radioboss, files
+from consts.config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
+from consts import texts, others
+from frontend.frontend_utils import keyboards
+from utils import get_by, db
 
 
 async def send_history(fields):
@@ -41,6 +43,10 @@ async def broadcast_end(day, time):
 
 async def start_up():
     await BOT.send_message(ADMINS_CHAT_ID, "Ребутнулся!")
+
+
+def shut_down():
+    pass  # todo dump playlist
 
 
 async def perezaklad(day, time):

@@ -17,7 +17,7 @@ import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot as plt
 
-from config import PATH_STUFF
+from consts.config import PATH_STUFF
 from utils.user_utils import get_admins
 
 PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
