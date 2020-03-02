@@ -61,12 +61,7 @@ async def get_stats(message: types.Message):
     await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
-        if message.entities[1].type == 'mention':
-            moderator = message.entities[1].get_text(message.text)[1:]
-            moderator = (await user_utils.get_admin_by_username(moderator))
-        else:
-            moderator = message.entities[1].user
-
+        moderator = _get_moderator_from_mention(message)
         if not (res := await stats.line_plot(moderator.id)):
             return await message.reply(f"Хз кто это")
         caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
@@ -125,3 +120,13 @@ async def next_track(message: types.Message):
 async def update(message: types.Message):
     await message.answer('Ребутаюсь..')
     os.system(rf'cmd.exe /C start {PATH_ROOT}\\update.bat')
+
+
+#
+
+def _get_moderator_from_mention(message: types.Message) -> types.User:
+    if message.entities[1].type == 'mention':
+        moderator = message.entities[1].get_text(message.text)[1:]
+        return await user_utils.get_admin_by_username(moderator)
+    else:
+        return message.entities[1].user
