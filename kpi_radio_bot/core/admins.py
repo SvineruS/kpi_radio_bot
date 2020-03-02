@@ -50,7 +50,7 @@ async def get_stats(message: types.Message):
     await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
-        if not (moderator := _get_moderator_from_mention(message)):
+        if not (moderator := await _get_moderator_from_mention(message)):
             return await message.reply(f"Хз кто это")
         if not (res := await stats.line_plot(moderator.id)):
             return await message.reply(f"Он шото модерил ваще?")
@@ -136,7 +136,7 @@ def _get_volume_from_message(message: types.Message) -> Optional[int]:
     return None
 
 
-def _get_moderator_from_mention(message: types.Message) -> Optional[types.User]:
+async def _get_moderator_from_mention(message: types.Message) -> Optional[types.User]:
     if message.entities[1].type == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
         return await user_utils.get_admin_by_username(moderator)
