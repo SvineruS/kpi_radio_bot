@@ -4,20 +4,35 @@ from html.parser import HTMLParser
 from time import time
 
 
+# не знаю как это работает но мне собственно и до пизды
 def my_lru(maxsize: int = None, ttl: int = None):
     def decorator(function):
-        function.cache = LRU(maxsize=maxsize, ttl=ttl)
+        cache = LRU(maxsize=maxsize, ttl=ttl)
+
+        def get_key(args, kwargs):
+            return tuple(args), tuple(kwargs.items())
+
+        def cache_clear():
+            cache.clear()
+
+        def cache_del(*args, **kwargs):
+            del cache[get_key(args, kwargs)]
 
         @functools.wraps(function)
-        async def wrapper(*args, **kwargs):
-            k = tuple(args), tuple(kwargs.items())
-            if k in function.cache:
-                return function.cache[k]
+        async def on_call(*args, **kwargs):
+            k = get_key(args, kwargs)
+            if k in on_call.cache:
+                return on_call.cache[k]
+
             result = await function(*args, **kwargs)
-            function.cache[k] = result
+            on_call.cache[k] = result
             return result
 
-        return wrapper
+        on_call.cache = cache
+        on_call.cache_clear = cache_clear
+        on_call.cache_del = cache_del
+
+        return on_call
     return decorator
 
 
@@ -39,7 +54,7 @@ class LRU(OrderedDict):
     def __setitem__(self, key, value):
         val = (self._get_ttl(), value)
         super().__setitem__(key, val)
-        if len(self) > self.maxsize:
+        if self.maxsize and len(self) > self.maxsize:
             del self[next(iter(self))]
 
     def _get_ttl(self):
