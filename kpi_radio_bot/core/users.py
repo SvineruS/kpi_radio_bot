@@ -14,6 +14,8 @@ async def menu(message: types.Message):
     await message.answer(texts.MENU, reply_markup=keyboards.START)
 
 
+# region playlist
+
 async def playlist_now(message: types.Message):
     playback = await playlist.get_now()
     if not playback or not broadcast.is_broadcast_right_now():
@@ -48,6 +50,8 @@ async def playlist_show(query: types.CallbackQuery, day: int, time: int):
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_text(await _get_playlist(day, time), reply_markup=keyboards.playlist_choose_time(day))
 
+
+# endregion
 
 async def timetable(message: types.Message):
     text = ''

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from aiogram.types import ChatMember, User
 
@@ -16,7 +16,7 @@ async def get_admins() -> Dict[int, ChatMember]:
 
 
 @my_lru(maxsize=10, ttl=60 * 60 * 12)
-async def get_admin_by_username(username: str) -> User:
+async def get_admin_by_username(username: str) -> Optional[User]:
     for admin in (await get_admins()).values():
         if admin.user.username == username:
             return admin.user
