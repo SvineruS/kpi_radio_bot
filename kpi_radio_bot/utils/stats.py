@@ -11,7 +11,7 @@
 import csv
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, Optional
 
 import matplotlib
 matplotlib.use('agg')
@@ -40,12 +40,12 @@ def change_username_to_id(changes):  # todo remove
         file.write(content)
 
 
-async def line_plot(moder_id: int):
+async def line_plot(moder_id: int) -> Optional[float]:
     stats = _parse_stats(60)
     moder_id = str(moder_id)  # todo remove
 
     if moder_id not in stats:
-        return False
+        return None
     moder = stats[moder_id]
 
     moderation_all, moderation_own = moder['all'], moder['own']

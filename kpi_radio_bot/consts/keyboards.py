@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
+from typing import List
 
 from aiogram import types
 
 from broadcast import playlist, get_broadcast_num, get_broadcast_name
-from consts import _btns_text
+from consts import _btns_text, TIMES_NAME, BROADCAST_TIMES_, HISTORY_CHANNEL_LINK
 from consts._btns_text import MENU, CALLBACKS as CB, STATUS
-from consts.others import TIMES_NAME, BROADCAST_TIMES_, HISTORY_CHANNEL_LINK
 
 
 def _parse(*args) -> str:
@@ -55,7 +55,7 @@ async def order_choose_day() -> types.InlineKeyboardMarkup:
     b_n = get_broadcast_num()
     btns = []
 
-    if b_n is not False and (await playlist.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
+    if b_n is not None and (await playlist.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
         btns.append(types.InlineKeyboardButton(
             TIMES_NAME['next_days'][-1], callback_data=_parse(CB.ORDER, CB.TIME, day, b_n)
         ))
@@ -142,7 +142,7 @@ def playlist_choose_time(day: int) -> types.InlineKeyboardMarkup:
 _EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
 
 
-async def playlist_move(playback=None):
+async def playlist_move(playback: List[playlist.PlaylistItem] = None):
     if playback is None:
         playback = await playlist.get_next()
     btns = [

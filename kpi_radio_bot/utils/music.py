@@ -4,7 +4,7 @@ import logging
 import re
 from collections import namedtuple
 from json import JSONDecodeError
-from typing import Tuple, Union, List
+from typing import Tuple, List, Optional
 from urllib.parse import quote_plus
 
 from aiohttp import ClientResponseError
@@ -44,7 +44,7 @@ def get_download_url(url: str, artist: str = None, title: str = None) -> str:
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
-async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
+async def search_text(name: str) -> Optional[Tuple[str, str]]:
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
         try:
@@ -52,14 +52,14 @@ async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
             res_json = await res.json(content_type=None)
         except (JSONDecodeError, ClientResponseError) as ex:
             logging.warning(f"search song text: {ex} {name}")
-            return False
+            return None
 
     sections = res_json['response']['sections']
     for sec in sections:
         if sec['type'] == 'song' and sec['hits']:
             break
     else:  # если не брейк
-        return False
+        return None
 
     res = sec['hits'][0]['result']
 
@@ -68,7 +68,7 @@ async def search_text(name: str) -> Union[bool, Tuple[str, str]]:
 
     async with AIOHTTP_SESSION.get(lyrics_url) as res:
         if res.status != 200:
-            return False
+            return None
         lyrics = await res.text()
 
     title = _RE_GENIUS_BRACKETS.sub("", title)  # убрать транслитерацию в скобках
@@ -96,13 +96,13 @@ def is_bad_name(audio_name: str) -> bool:
 
 
 async def is_contain_bad_words(audio_name: str) -> bool:
-    return (res := await get_bad_words(audio_name)) and res[1]
+    return (res := await get_bad_words(audio_name)) is not None and res[1]
 
 
 @my_lru(maxsize=100, ttl=60 * 60 * 12)
-async def get_bad_words(audio_name: str) -> Union[bool, Tuple[str, List[str]]]:
+async def get_bad_words(audio_name: str) -> Optional[Tuple[str, List[str]]]:
     if not (res := await search_text(audio_name)):
-        return False
+        return None
 
     title, lyrics = res
     b_w = [word for word in consts.BAD_WORDS if word in lyrics]

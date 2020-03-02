@@ -67,8 +67,7 @@ async def get_stats(message: types.Message):
         else:
             moderator = message.entities[1].user
 
-        res = await stats.line_plot(moderator.id)
-        if res is False:
+        if not (res := await stats.line_plot(moderator.id)):
             return await message.reply(f"Хз кто это")
         caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
 

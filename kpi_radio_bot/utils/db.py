@@ -8,7 +8,7 @@
 """
 from datetime import datetime
 from time import time
-from typing import Union
+from typing import Optional
 
 from motor import motor_asyncio
 
@@ -23,11 +23,9 @@ async def add(id_: int):
         await DB.insert_one({'usr': id_})
 
 
-async def ban_get(id_: int) -> Union[bool, datetime]:
-    if not (user := await _get_user(id_)) or 'ban' not in user:
-        return False
-    if user['ban'] < time():
-        return False
+async def ban_get(id_: int) -> Optional[datetime]:
+    if not (user := await _get_user(id_)) or 'ban' not in user or user['ban'] < time():
+        return None
     return datetime.fromtimestamp(user['ban'])
 
 

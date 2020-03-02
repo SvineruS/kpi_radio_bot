@@ -6,7 +6,6 @@ from aiogram import types, exceptions
 
 import consts
 import core
-from config import BOT
 from consts import keyboards
 from utils import music
 

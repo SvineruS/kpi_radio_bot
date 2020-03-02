@@ -1,7 +1,7 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
 from consts.others import PATHS, BROADCAST_TIMES_
 from broadcast import radioboss, broadcast
@@ -10,10 +10,10 @@ from utils import files, get_by, other
 PlaylistItem = namedtuple("namedtuple", ('title', 'time_start', 'filename', 'index', 'is_order'))
 
 
-async def get_now():
+async def get_now() -> Optional[List[str]]:
     playback = await radioboss.playbackinfo()
     if not playback or playback['Playback']['@state'] == 'stop':
-        return False
+        return None
 
     result = [''] * 3
     for i, k in enumerate(('PrevTrack', 'CurrentTrack', 'NextTrack')):
@@ -30,7 +30,7 @@ async def get_next() -> List[PlaylistItem]:
 
     b_n = broadcast.get_broadcast_num()
     time_min = datetime.now().time()
-    time_max = BROADCAST_TIMES_[datetime.now().weekday()][b_n][1] if b_n else None
+    time_max = BROADCAST_TIMES_[datetime.now().weekday()][b_n][1] if b_n is not None else None
 
     result = []
     for track in playlist:
@@ -44,7 +44,7 @@ async def get_next() -> List[PlaylistItem]:
     return result
 
 
-async def get_new_order_pos() -> Union[None, PlaylistItem]:
+async def get_new_order_pos() -> Optional[PlaylistItem]:
     playlist = await get_next()
     if not playlist or playlist[-1].is_order:  # если последний трек, что успеет проиграть, это заказ - вернем None
         return None
@@ -64,7 +64,7 @@ async def get_broadcast_freetime(day: int, time: int) -> int:
     broadcast_start, broadcast_finish = map(get_by.time_to_datetime, BROADCAST_TIMES_[day][time])
 
     if broadcast.is_this_broadcast_now(day, time):
-        if not (last_order := await get_new_order_pos()):
+        if last_order := await get_new_order_pos() is None:
             return 0
         last_order_start = last_order.time_start
     else:

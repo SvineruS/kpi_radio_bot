@@ -15,11 +15,9 @@ ROUTES = web.RouteTableDef()
 
 @ROUTES.get("/gettext/{name}")
 async def gettext(request):
-    name = request.match_info.get('name')
-    if not name:
+    if not (name := request.match_info.get('name')):
         return web.Response(text="Использование: /gettext/имя_песни")
-    res = await music.search_text(name)
-    if not res:
+    if not (res := await music.search_text(name)):
         return web.Response(text="Ошибка поиска")
     title, text = res
     return web.Response(text=f"{title} \n\n{text}")

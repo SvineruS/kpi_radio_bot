@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -31,20 +31,22 @@ async def delete(pos: int) -> bool:
     return await _radioboss_api(action='delete', pos=pos)
 
 
-async def playbackinfo() -> Union[bool, dict]:
+async def playbackinfo() -> Optional[dict]:
     if not (playback := await _radioboss_api(action='playbackinfo')):
-        return False
+        return None
     return playback['Info']
 
 
-async def getplaylist2() -> Union[bool, dict]:
+async def getplaylist2() -> Optional[dict]:
     if not (playlist := await _radioboss_api(action='getplaylist2')):
-        return False
+        return None
     return playlist['Playlist']
 
 
-async def readtag(filename: Path) -> Union[bool, dict]:
-    return await _radioboss_api(action='readtag', fn=filename)
+async def readtag(filename: Path) -> Optional[dict]:
+    if not (tag := await _radioboss_api(action='readtag', fn=filename)):
+        return None
+    return tag
 
 
 async def writetag(filename: Path, data: str) -> bool:
@@ -64,15 +66,15 @@ async def write_track_additional_info(path: Path, user_obj: User, moderation_id:
     return await _write_comment_tag(path, tag)
 
 
-async def read_track_additional_info(path: Path) -> Union[bool, dict]:
+async def read_track_additional_info(path: Path) -> Optional[dict]:
     if not (tag_info := await readtag(path)):
-        return False
+        return None
     tag = tag_info['TagInfo']['File']['@Comment']
     try:
         return json.loads(tag)
     except json.JSONDecodeError:
         logging.warning(f"can't read track comment")
-        return False
+        return None
 
 
 async def clear_track_additional_info(path: Path) -> bool:

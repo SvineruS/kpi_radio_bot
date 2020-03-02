@@ -3,10 +3,9 @@
 import asyncio
 import logging
 
-import consts
 from broadcast import radioboss, broadcast
 from config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
-from consts import keyboards
+from consts import keyboards, texts
 from utils import get_by, db, files
 
 
@@ -18,14 +17,13 @@ async def send_history(fields):
         fields['title'] = fields['casttitle']
 
     sender_name = ''
-    tag = await radioboss.read_track_additional_info(fields['path'])
-    await radioboss.clear_track_additional_info(fields['path'])  # Очистить тег, что бы уведомление не пришло еще раз
-
-    if tag:
-        sender_name = consts.texts.HISTORY_TITLE.format(get_by.get_user_name_(tag['id'], tag['name']))
+    if tag := await radioboss.read_track_additional_info(fields['path']):
+        sender_name = texts.HISTORY_TITLE.format(get_by.get_user_name_(tag['id'], tag['name']))
         if not await db.notification_get(tag['id']):
-            await BOT.send_message(tag['id'], consts.texts.ORDER_PLAYING.format(fields['casttitle']))
+            await BOT.send_message(tag['id'], texts.ORDER_PLAYING.format(fields['casttitle']))
         await BOT.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
+
+    await radioboss.clear_track_additional_info(fields['path'])  # Очистить тег, что бы уведомление не пришло еще раз
 
     with open(fields['path'], 'rb') as file:
         await BOT.send_audio(HISTORY_CHAT_ID, file, sender_name, performer=fields['artist'], title=fields['title'])
@@ -53,7 +51,7 @@ async def perezaklad(day, time):
 
         with open(str(track_path), 'rb') as file:
             try:
-                await BOT.send_audio(tag['id'], file, caption=consts.texts.ORDER_PEREZAKLAD,
+                await BOT.send_audio(tag['id'], file, caption=texts.ORDER_PEREZAKLAD,
                                      reply_markup=await keyboards.order_choose_day())
             except Exception as ex:
                 logging.info(f"perezaklad send msg: {ex}")
