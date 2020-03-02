@@ -4,6 +4,7 @@ import io
 import os
 from contextlib import suppress
 from time import time
+from typing import Tuple, Optional
 from urllib.parse import unquote
 
 from aiogram import types, exceptions
@@ -23,34 +24,22 @@ async def ban(message: types.Message):
         return await message.reply("Бля, не могу забанить")
     user, _ = res
 
-    ban_time = 60 * 24
-    reason = ''
-
-    cmd = message.get_args().split(' ', maxsplit=1)
-    if len(cmd) >= 1 and cmd[0].isdigit():
-        ban_time = int(cmd[0])
-    if len(cmd) >= 2:
-        reason = f" Бан по причине: <i>{cmd[1]}</i>"
-
+    ban_time, reason = _get_ban_time_and_reason_from_message(message)
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
         return await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
 
-    ban_time_text = str(ban_time) + ' ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+    ban_time_text = f'{ban_time} ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
     await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
     mes = await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason))
     communication.cache_add(mes, message)
 
 
 async def set_volume(message: types.Message):
-    if message.get_args().isdigit():
-        volume = int(message.get_args())
-        if 0 <= volume <= 100:
-            await radioboss.setvol(volume)
-            return await message.reply(f'Громкость выставлена в {volume}!')
-
-    await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{message.get_args()}</code>')
+    if not (volume := _get_volume_from_message(message)):
+        await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{volume}</code>')
+    await message.reply(f'Громкость выставлена в {volume}!')
 
 
 async def get_stats(message: types.Message):
@@ -61,9 +50,10 @@ async def get_stats(message: types.Message):
     await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
-        moderator = _get_moderator_from_mention(message)
-        if not (res := await stats.line_plot(moderator.id)):
+        if not (moderator := _get_moderator_from_mention(message)):
             return await message.reply(f"Хз кто это")
+        if not (res := await stats.line_plot(moderator.id)):
+            return await message.reply(f"Он шото модерил ваще?")
         caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
 
     else:
@@ -124,9 +114,32 @@ async def update(message: types.Message):
 
 #
 
-def _get_moderator_from_mention(message: types.Message) -> types.User:
+
+def _get_ban_time_and_reason_from_message(message: types.Message) -> Tuple[int, str]:
+    ban_time = 60 * 24
+    reason = ''
+
+    cmd = message.get_args().split(' ', maxsplit=1)
+    if len(cmd) >= 1 and cmd[0].isdigit():
+        ban_time = int(cmd[0])
+    if len(cmd) >= 2:
+        reason = f" Бан по причине: <i>{cmd[1]}</i>"
+
+    return ban_time, reason
+
+
+def _get_volume_from_message(message: types.Message) -> Optional[int]:
+    if message.get_args().isdigit():
+        volume = int(message.get_args())
+        if 0 <= volume <= 100:
+            return volume
+    return None
+
+
+def _get_moderator_from_mention(message: types.Message) -> Optional[types.User]:
     if message.entities[1].type == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
         return await user_utils.get_admin_by_username(moderator)
     else:
         return message.entities[1].user
+
