@@ -5,8 +5,9 @@ from typing import List
 from aiogram import types
 
 from broadcast import playlist, get_broadcast_num, get_broadcast_name
-from consts import _btns_text, TIMES_NAME, BROADCAST_TIMES_, HISTORY_CHANNEL_LINK
+from consts import _btns_text
 from consts._btns_text import MENU, CALLBACKS as CB, STATUS
+from consts.others import TIMES_NAME, BROADCAST_TIMES_, HISTORY_CHANNEL_LINK
 
 
 def _parse(*args) -> str:
