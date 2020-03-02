@@ -4,9 +4,9 @@ from datetime import datetime
 
 from aiogram import types, exceptions
 
-from broadcast import broadcast, playlist
+from broadcast import playlist, Broadcast
 from config import BOT
-from consts import BROADCAST_TIMES, texts, keyboards
+from consts import texts, keyboards, others
 from utils import get_by, db, music, files
 
 
@@ -18,7 +18,7 @@ async def menu(message: types.Message):
 
 async def playlist_now(message: types.Message):
     playback = await playlist.get_now()
-    if not playback or not broadcast.is_broadcast_right_now():
+    if not playback or not Broadcast.is_broadcast_right_now():
         return await message.answer(texts.SONG_NO_NOW, reply_markup=keyboards.WHAT_PLAYING)
 
     playback = [i if i else r'¯\_(ツ)_/¯' for i in playback]
@@ -26,8 +26,8 @@ async def playlist_now(message: types.Message):
 
 
 async def playlist_next(query: types.CallbackQuery):
-    if broadcast.is_broadcast_right_now():
-        text = await _get_playlist()
+    if broadcast := Broadcast.now():
+        text = await _get_playlist(broadcast)
         day = datetime.today().weekday()
         await query.message.answer(text, reply_markup=keyboards.playlist_choose_time(day))
     else:
@@ -42,13 +42,14 @@ async def playlist_choose_day(query: types.CallbackQuery):
 
 async def playlist_choose_time(query: types.CallbackQuery, day: int):
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_text(texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
+        await query.message.edit_text(texts.CHOOSE_TIME.format(others.WEEK_DAYS[day]),
                                       reply_markup=keyboards.playlist_choose_time(day))
 
 
-async def playlist_show(query: types.CallbackQuery, day: int, time: int):
+async def playlist_show(query: types.CallbackQuery, broadcast: Broadcast):
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_text(await _get_playlist(day, time), reply_markup=keyboards.playlist_choose_time(day))
+        await query.message.edit_text(await _get_playlist(broadcast),
+                                      reply_markup=keyboards.playlist_choose_time(broadcast.day))
 
 
 # endregion
@@ -57,8 +58,8 @@ async def timetable(message: types.Message):
     text = ''
     for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
         text += f"{day_name} \n"
-        for break_num, (start, stop) in BROADCAST_TIMES[day_num].items():
-            text += f"   {start} - {stop}   {broadcast.get_broadcast_name(time=break_num)} \n"
+        for break_num, (start, stop) in others.BROADCAST_TIMES[day_num].items():
+            text += f"   {start} - {stop}   {others.TIMES[break_num]} \n"
 
     # todo
     # text += "До ближайшего эфира ..."
@@ -115,16 +116,16 @@ async def add_in_db(message: types.Message):
 #
 
 
-async def _get_playlist(day: int = None, time: int = None) -> str:
-    if day is None or broadcast.is_this_broadcast_now(day, time):
+async def _get_playlist(broadcast: Broadcast) -> str:
+    if broadcast.is_now():
         playback = await playlist.get_next()
         return '\n'.join([
             f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
             for track in playback[:10]
         ])
     else:
-        name = f"<b>{broadcast.get_broadcast_name(day, time)}</b>\n"
-        if not (playback := files.get_downloaded_tracks(day, time)):
+        name = f"<b>{broadcast.name()}</b>\n"
+        if not (playback := files.get_downloaded_tracks(broadcast.path())):
             return name + "❗️Еще ничего не заказали"
 
         text = name + '\n'.join([

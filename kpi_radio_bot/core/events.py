@@ -3,14 +3,14 @@
 import asyncio
 import logging
 
-from broadcast import radioboss, broadcast
+from broadcast import radioboss, Broadcast
 from config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
-from consts import keyboards, texts
+from consts import keyboards, texts, others
 from utils import get_by, db, files
 
 
 async def send_history(fields):
-    if not broadcast.is_broadcast_right_now():  # кидать только во время перерыва
+    if not Broadcast.is_broadcast_right_now():  # кидать только во время перерыва
         return
 
     if not fields['artist'] and not fields['title']:
@@ -30,7 +30,7 @@ async def send_history(fields):
 
 
 async def broadcast_begin(time):
-    await BOT.send_message(HISTORY_CHAT_ID, broadcast.get_broadcast_name(time=time))
+    await BOT.send_message(HISTORY_CHAT_ID, others.TIMES[time])
     await radioboss.setvol(100)  # включить музло на перерыве
 
 
@@ -44,7 +44,7 @@ async def start_up():
 
 
 async def perezaklad(day, time):
-    tracks = files.get_downloaded_tracks(day, time)
+    tracks = files.get_downloaded_tracks(Broadcast(day, time).path())
     for track_path in tracks:
         if not (tag := await radioboss.read_track_additional_info(track_path)):
             continue

@@ -87,12 +87,12 @@ async def is_anime(audio_name: str) -> bool:
             return False
         text = (await res.text()).lower()
 
-    return any(anime_word in text for anime_word in consts.ANIME_WORDS)
+    return any(anime_word in text for anime_word in consts.others.ANIME_WORDS)
 
 
 def is_bad_name(audio_name: str) -> bool:
     audio_name = audio_name.lower()
-    return any(bad_name in audio_name for bad_name in consts.BAD_NAMES)
+    return any(bad_name in audio_name for bad_name in consts.others.BAD_NAMES)
 
 
 async def is_contain_bad_words(audio_name: str) -> bool:
@@ -105,5 +105,5 @@ async def get_bad_words(audio_name: str) -> Optional[Tuple[str, List[str]]]:
         return None
 
     title, lyrics = res
-    b_w = [word for word in consts.BAD_WORDS if word in lyrics]
+    b_w = [word for word in consts.others.BAD_WORDS if word in lyrics]
     return title, b_w

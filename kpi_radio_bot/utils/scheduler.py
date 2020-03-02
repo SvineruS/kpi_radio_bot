@@ -8,7 +8,7 @@ import asyncio
 
 import aioschedule
 
-from consts import BROADCAST_TIMES
+from consts.others import BROADCAST_TIMES
 from core.events import broadcast_begin, broadcast_end
 from utils.files import move_to_archive
 

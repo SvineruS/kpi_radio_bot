@@ -4,10 +4,10 @@ from typing import List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from broadcast import playlist, get_broadcast_num, get_broadcast_name
+from broadcast import playlist, Broadcast
 from consts import _btns_text
 from consts._btns_text import MENU, CALLBACKS as CB, STATUS
-from consts.others import TIMES_NAME, BROADCAST_TIMES_, HISTORY_CHANNEL_LINK
+from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
 
 
 def _parse(*args) -> str:
@@ -44,7 +44,7 @@ CHOICE_HELP = InlineKeyboardMarkup(row_width=1).add(*[
 ])
 
 BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
-    _ikb(_btns_text.BAD_ORDER_BUT_OK, CB.ORDER, CB.DAY),
+    _ikb(_btns_text.BAD_ORDER_BUT_OK, CB.ORDER, CB.BACK),
     _ikb(_btns_text.CANCEL, CB.ORDER, CB.CANCEL)
 )
 
@@ -53,18 +53,18 @@ BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
 
 
 async def order_choose_day() -> InlineKeyboardMarkup:
-    day = datetime.today().weekday()
-    b_n = get_broadcast_num()
+    today = datetime.today().weekday()
+
     btns = []
 
-    if b_n is not None and (await playlist.get_broadcast_freetime(day, b_n)) != 0:  # кнопка сейчас если эфир+успевает
-        btns.append(_ikb(TIMES_NAME['next_days'][-1], CB.ORDER, CB.TIME, day, b_n))
+    if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир + влазит
+        btns.append(_ikb(NEXT_DAYS[-1], CB.ORDER, CB.TIME, today, broadcast_now.num))
 
     if datetime.now().hour < 22:  # кнопка сегодня
-        btns.append(_ikb(TIMES_NAME['next_days'][0], CB.ORDER, CB.DAY, day))
+        btns.append(_ikb(NEXT_DAYS[0], CB.ORDER, CB.DAY, today))
 
     for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
-        btns.append(_ikb(TIMES_NAME['next_days'][i], CB.ORDER, CB.DAY, (day + i) % 7))
+        btns.append(_ikb(NEXT_DAYS[i], CB.ORDER, CB.DAY, (today + i) % 7))
 
     btns.append(_ikb(_btns_text.CANCEL, CB.ORDER, CB.CANCEL))
     return InlineKeyboardMarkup(row_width=1).add(*btns)
@@ -72,16 +72,17 @@ async def order_choose_day() -> InlineKeyboardMarkup:
 
 async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup:
     btns = []
-    for time, (_, break_finish) in BROADCAST_TIMES_[day].items():
-        if day == datetime.today().weekday() and datetime.now().time() > break_finish:
+    for num in BROADCAST_TIMES_[day]:
+        broadcast = Broadcast(day, num)
+        if broadcast.is_already_play_today():
             continue  # если сегодня и перерыв прошел - не добавляем кнопку
 
-        free_minutes = await playlist.get_broadcast_freetime(day, time)
+        free_minutes = await broadcast.get_free_time()
 
         if free_minutes == 0 and attempts > 0:
-            btn = _ikb(get_broadcast_name(time=time), CB.ORDER, CB.NOTIME, day, attempts)
+            btn = _ikb(TIMES[num], CB.ORDER, CB.NOTIME, day, attempts)
         else:
-            btn = _ikb(('⚠' if free_minutes < 5 else '') + get_broadcast_name(time=time), CB.ORDER, CB.TIME, day, time)
+            btn = _ikb(('⚠' if free_minutes < 5 else '') + TIMES[num], CB.ORDER, CB.TIME, day, num)
 
         btns.append(btn)
 
@@ -92,9 +93,9 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
 #
 
 
-def admin_choose(day: int, time: int) -> InlineKeyboardMarkup:
+def admin_moderate(broadcast: Broadcast) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup().add(*[
-        _ikb(text, CB.ORDER, CB.MODERATE, day, time, status)
+        _ikb(text, CB.ORDER, CB.MODERATE, *broadcast, status)
         for status, text in {
             STATUS.QUEUE: _btns_text.QUEUE,
             STATUS.NOW: _btns_text.NOW,
@@ -103,8 +104,8 @@ def admin_choose(day: int, time: int) -> InlineKeyboardMarkup:
     ])
 
 
-def admin_unchoose(day: int, time: int, status: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup().add(_ikb(_btns_text.CANCEL, CB.ORDER, CB.DEMODERATE, day, time, status))
+def admin_unmoderate(broadcast: Broadcast, status: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup().add(_ikb(_btns_text.CANCEL, CB.ORDER, CB.UNMODERATE, *broadcast, status))
 
 
 #
@@ -115,13 +116,13 @@ def playlist_choose_day() -> InlineKeyboardMarkup:
     btns = []
     for day in range(4):
         day = (day + today) % 7
-        btns.append(_ikb(get_broadcast_name(day=day), CB.PLAYLIST, CB.DAY, day))
+        btns.append(_ikb(WEEK_DAYS[day], CB.PLAYLIST, CB.DAY, day))
     return InlineKeyboardMarkup(row_width=4).add(*btns)
 
 
 def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
     btns = [
-        _ikb(get_broadcast_name(time=time), CB.PLAYLIST, CB.TIME, day, time)
+        _ikb(TIMES[time], CB.PLAYLIST, CB.TIME, day, time)
         for time in BROADCAST_TIMES_[day]
     ]
     btns.append(_ikb(_btns_text.BACK, CB.PLAYLIST, CB.BACK))

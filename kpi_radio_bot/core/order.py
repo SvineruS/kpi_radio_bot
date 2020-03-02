@@ -8,21 +8,21 @@ from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-import broadcast
+from broadcast import Broadcast, radioboss, playlist
 from config import BOT, ADMINS_CHAT_ID, HOST
-from consts import texts, keyboards
+from consts import texts, keyboards, others
 from core import communication, users
 from utils import user_utils, files, db, stats, music, get_by, other
 
 
-async def order_make(query: types.CallbackQuery, day: int, time: int):
+async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     user = query.from_user
     if is_ban := await db.ban_get(user.id):
         return await query.message.answer(texts.BAN_TRY_ORDER.format(is_ban.strftime("%d.%m %H:%M")))
 
     try:
         await query.message.edit_caption(
-            caption=texts.ORDER_ON_MODERATION.format(broadcast.get_broadcast_name(day=day, time=time)),
+            caption=texts.ORDER_ON_MODERATION.format(broadcast.name()),
             reply_markup=types.InlineKeyboardMarkup(),
         )
     except exceptions.MessageNotModified:
@@ -30,9 +30,9 @@ async def order_make(query: types.CallbackQuery, day: int, time: int):
 
     await users.menu(query.message)
 
-    admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
     mes = await BOT.send_audio(ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
-                               reply_markup=keyboards.admin_choose(day, time))
+                               reply_markup=keyboards.admin_moderate(broadcast))
     communication.cache_add(mes, query.message)
     communication.cache_add(query.message, mes)
 
@@ -41,7 +41,7 @@ async def order_choose_time(query: types.CallbackQuery, day: int):
     is_moder = await user_utils.is_admin(query.from_user.id)
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(
-            caption=texts.CHOOSE_TIME.format(broadcast.get_broadcast_name(day=day)),
+            caption=texts.CHOOSE_TIME.format(others.WEEK_DAYS[day]),
             reply_markup=await keyboards.order_choose_time(day, 0 if is_moder else 5)
         )
 
@@ -66,15 +66,16 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 #
 
 
-async def admin_moderate(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
+async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
     audio_name = get_by.get_audio_name(query.message.audio)
-    text_datetime = broadcast.get_broadcast_name(day=day, time=time)
-    admin_text = await _gen_order_caption(day, time, user, status=status, moder=moder)
+    text_datetime = broadcast.name()
+    admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
 
     try:
-        await query.message.edit_caption(admin_text, reply_markup=keyboards.admin_unchoose(day, time, status))
+        await query.message.edit_caption(admin_text,
+                                         reply_markup=keyboards.admin_unmoderate(broadcast, status))
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
@@ -85,21 +86,21 @@ async def admin_moderate(query: types.CallbackQuery, day: int, time: int, status
         mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime))
         return communication.cache_add(mes, query.message)
 
-    path = _get_audio_path(day, time, audio_name)
+    path = _get_audio_path(broadcast, audio_name)
     await query.message.chat.do('record_audio')
     await files.download_audio(query.message.audio, path)
-    await broadcast.radioboss.write_track_additional_info(path, user, query.message.message_id)
+    await radioboss.write_track_additional_info(path, user, query.message.message_id)
 
     if status == keyboards.STATUS.NOW:  # кнопка сейчас
         when_playing = 'прямо сейчас!'
-        await broadcast.radioboss.inserttrack(path, -2)
+        await radioboss.inserttrack(path, -2)
         mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
         communication.cache_add(mes, query.message)
 
     else:  # кнопка принять
 
         # если прямо сейчас не тот эфир, на который заказ
-        if not broadcast.is_this_broadcast_now(day, time):
+        if not broadcast.is_now():
             when_playing = 'Заиграет когда надо'
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
             communication.cache_add(mes, query.message)
@@ -107,17 +108,17 @@ async def admin_moderate(query: types.CallbackQuery, day: int, time: int, status
         # тут и ниже - трек заказан на эфир, который сейчас играет
 
         # если такой трек уже есть в плейлисте
-        elif await broadcast.playlist.find_in_playlist_by_path(path):
+        elif await playlist.find_in_playlist_by_path(path):
             when_playing = 'Такой же трек уже принят на этот эфир'
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
             communication.cache_add(mes, query.message)
 
         # в плейлисте есть место для заказа
-        elif last_track := await broadcast.playlist.get_new_order_pos():
+        elif last_track := await playlist.get_new_order_pos():
             minutes_left = round((last_track.time_start - datetime.now()).seconds / 60)
             when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
 
-            await broadcast.radioboss.inserttrack(path, last_track.index)
+            await radioboss.inserttrack(path, last_track.index)
             mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
             communication.cache_add(mes, query.message)
 
@@ -132,33 +133,34 @@ async def admin_moderate(query: types.CallbackQuery, day: int, time: int, status
 
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
-                                         reply_markup=keyboards.admin_unchoose(day, time, status))
+                                         reply_markup=keyboards.admin_unmoderate(broadcast, status))
 
 
-async def admin_unmoderate(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
+async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
-    admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
 
     try:
-        await query.message.edit_caption(admin_text, reply_markup=keyboards.admin_choose(day, time))
+        await query.message.edit_caption(admin_text,
+                                         reply_markup=keyboards.admin_moderate(broadcast))
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
     if status != keyboards.STATUS.REJECT:  # если заказ был принят а щас отменяют
-        path = _get_audio_path(day, time, audio_name)
+        path = _get_audio_path(broadcast, audio_name)
         files.delete_file(path)  # удалить с диска
-        for track in await broadcast.playlist.find_in_playlist_by_path(path):
-            await broadcast.radioboss.delete(track.index)
+        for track in await playlist.find_in_playlist_by_path(path):
+            await radioboss.delete(track.index)
 
 
 #
 
-async def _gen_order_caption(day: int, time: int, user: types.User,
+async def _gen_order_caption(broadcast: Broadcast,  user: types.User,
                              audio_name: str = None, status: keyboards.STATUS = None, moder: types.User = None) -> str:
-    is_now = broadcast.is_this_broadcast_now(day, time)
+    is_now = broadcast.is_now()
     user_name = get_by.get_user_name(user) + ' #' + other.id_to_hashtag(user.id)
-    text_datetime = broadcast.get_broadcast_name(day=day, time=time) + (' (сейчас!)' if is_now else '')
+    text_datetime = broadcast.name() + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
@@ -190,5 +192,5 @@ async def _get_bad_words_text(audio_name: str) -> str:
     return f"⚠ {title}: " + ', '.join(b_w)
 
 
-def _get_audio_path(day: int, time: int, audio_name: str) -> Path:
-    return broadcast.get_broadcast_path(day, time) / (audio_name + '.mp3')
+def _get_audio_path(broadcast: Broadcast, audio_name: str) -> Path:
+    return broadcast.path() / (audio_name + '.mp3')

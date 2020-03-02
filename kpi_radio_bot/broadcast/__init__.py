@@ -1,3 +1,3 @@
 """Методы для работки с эфиром (радиобосса)"""
-from . import radioboss, playlist
-from .broadcast import *
+from . import playlist, radioboss
+from .playlist import Broadcast

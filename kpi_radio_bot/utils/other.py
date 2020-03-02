@@ -1,3 +1,4 @@
+import asyncio
 import functools
 from collections import OrderedDict
 from html.parser import HTMLParser
@@ -18,15 +19,24 @@ def my_lru(maxsize: int = None, ttl: int = None):
         def cache_del(*args, **kwargs):
             del cache[get_key(args, kwargs)]
 
-        @functools.wraps(function)
-        async def on_call(*args, **kwargs):
-            k = get_key(args, kwargs)
-            if k in on_call.cache:
-                return on_call.cache[k]
-
-            result = await function(*args, **kwargs)
-            on_call.cache[k] = result
-            return result
+        if asyncio.iscoroutinefunction(function):
+            @functools.wraps(function)
+            async def on_call(*args, **kwargs):
+                k = get_key(args, kwargs)
+                if k in on_call.cache:
+                    return on_call.cache[k]
+                result = await function(*args, **kwargs)
+                on_call.cache[k] = result
+                return result
+        else:
+            @functools.wraps(function)
+            def on_call(*args, **kwargs):
+                k = get_key(args, kwargs)
+                if k in on_call.cache:
+                    return on_call.cache[k]
+                result = function(*args, **kwargs)
+                on_call.cache[k] = result
+                return result
 
         on_call.cache = cache
         on_call.cache_clear = cache_clear
