@@ -12,7 +12,7 @@ from utils import music
 
 
 async def search_audio(message: types.Message):
-    await BOT.send_chat_action(message.chat.id, 'upload_audio')
+    await message.chat.do('upload_audio')
     if not (audio := await music.search(message.text)):
         return await message.answer(consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
 

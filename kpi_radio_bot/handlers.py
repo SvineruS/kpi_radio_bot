@@ -143,10 +143,10 @@ async def callback_query_handler(query: types.CallbackQuery):
     if category == keyboards.CB.ORDER:
         await order_callback_handler(query, cmd, params)
 
-    if category == keyboards.CB.PLAYLIST:
+    elif category == keyboards.CB.PLAYLIST:
         await playlist_callback_handler(query, cmd, params)
 
-    if category == keyboards.CB.OTHER:
+    elif category == keyboards.CB.OTHER:
         await other_callback_handler(query, cmd, params)
 
     with suppress(exceptions.InvalidQueryID):
@@ -158,39 +158,39 @@ async def query_text_handler(inline_query: types.InlineQuery):
     await core.search.inline_search(inline_query)
 
 
-async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: list):
+async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
     # Выбрали день
     if cmd == keyboards.CB.DAY:
         *_, day = params
         await core.order.order_choose_time(query, day)
 
     # Выбрали время
-    if cmd == keyboards.CB.TIME:
+    elif cmd == keyboards.CB.TIME:
         *_, day, time = params
         await core.order.order_make(query, day, time)
 
     # Кнопка назад при выборе времени
-    if cmd == keyboards.CB.BACK:
+    elif cmd == keyboards.CB.BACK:
         await core.order.order_choose_day(query)
 
     # Кнопка отмены при выборе дня
-    if cmd == keyboards.CB.CANCEL:
+    elif cmd == keyboards.CB.CANCEL:
         await core.order.order_cancel(query)
 
     # Выбрал время но туда не влезет
-    if cmd == keyboards.CB.NOTIME:
+    elif cmd == keyboards.CB.NOTIME:
         *_, day, attempts = params
         await core.order.order_no_time(query, day, attempts)
 
     # Принять / отклонить
-    if cmd == keyboards.CB.MODERATE:
+    elif cmd == keyboards.CB.MODERATE:
         *_, day, time, status = params
-        await core.order.admin_choice(query, day, time, keyboards.STATUS(status))
+        await core.order.admin_moderate(query, day, time, keyboards.STATUS(status))
 
     # Отменить выбор
-    if cmd == keyboards.CB.UNMODERATE:
+    elif cmd == keyboards.CB.UNMODERATE:
         *_, day, time, status = params
-        await core.order.admin_unchoice(query, day, time, status)
+        await core.order.admin_unmoderate(query, day, time, keyboards.STATUS(status))
 
 
 async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
@@ -199,21 +199,21 @@ async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.C
         await core.users.playlist_next(query)
 
     # Выбор дня
-    if cmd == keyboards.CB.DAY:
+    elif cmd == keyboards.CB.DAY:
         *_, day = params
         await core.users.playlist_choose_time(query, day)
 
     # Выбор времени
-    if cmd == keyboards.CB.TIME:
+    elif cmd == keyboards.CB.TIME:
         *_, day, time = params
         await core.users.playlist_show(query, day, time)
 
     # Кнопка назад при выборе времени
-    if cmd == keyboards.CB.BACK:
+    elif cmd == keyboards.CB.BACK:
         await core.users.playlist_choose_day(query)
 
     # Админская кнопка перемещения трека в плейлисте
-    if cmd == keyboards.CB.MOVE:
+    elif cmd == keyboards.CB.MOVE:
         *_, track_index, track_start_time = params
         await core.admins.playlist_move(query, track_index, track_start_time)
 

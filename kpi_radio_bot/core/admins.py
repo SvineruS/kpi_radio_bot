@@ -19,25 +19,28 @@ async def ban(message: types.Message):
     if message.reply_to_message is None or message.reply_to_message.from_user.id != (await BOT.me).id:
         return await message.reply("Перешлите сообщение пользователя, которого нужно забанить")
 
-    cmd = message.get_args().split(' ', 1)
+    if not (res := communication.get_from_message(message.reply_to_message)):
+        return await message.reply("Бля, не могу забанить")
+    user, _ = res
 
-    if communication.cache_is_set(message.reply_to_message.message_id):
-        user, _ = communication.cache_get(message.reply_to_message.message_id)
-    else:
-        if not (user := get_by.get_user_from_entity(message.reply_to_message)):
-            return await message.reply("Бля, не могу забанить")
-        user = user.id
+    ban_time = 60 * 24
+    reason = ''
 
-    ban_time = int(cmd[0]) if cmd[0].isdigit() else 60 * 24
-    reason = f" Бан по причине: <i>{cmd[1]}</i>" if len(cmd) >= 2 else ""
-    ban_time_text = str(ban_time) + ' ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+    cmd = message.get_args().split(' ', maxsplit=1)
+    if len(cmd) >= 1 and cmd[0].isdigit():
+        ban_time = int(cmd[0])
+    if len(cmd) >= 2:
+        reason = f" Бан по причине: <i>{cmd[1]}</i>"
 
     await db.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await message.answer(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
-    await message.answer(f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
-    await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason))
+        return await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
+
+    ban_time_text = str(ban_time) + ' ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+    await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
+    mes = await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason))
+    communication.cache_add(mes, message)
 
 
 async def set_volume(message: types.Message):
@@ -52,10 +55,10 @@ async def set_volume(message: types.Message):
 
 async def get_stats(message: types.Message):
     if 'csv' in message.get_args():
-        await BOT.send_chat_action(message.chat.id, 'upload_document')
+        await message.chat.do('upload_document')
         return await message.answer_document((PATH_STUFF / 'stats.csv').open('rb'))
 
-    await BOT.send_chat_action(message.chat.id, 'upload_photo')
+    await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if message.entities[1].type == 'mention':
@@ -105,7 +108,7 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
 
 
 async def get_log(message: types.Message):
-    await BOT.send_chat_action(message.chat.id, 'upload_document')
+    await message.chat.do('upload_document')
     text = PATH_LOG.read_text()
     text = unquote(text)  # unquote urls logged by aiohttp
     file = io.StringIO(text)

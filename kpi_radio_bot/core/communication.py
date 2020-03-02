@@ -1,10 +1,10 @@
 """Обеспечение удобного общения юзеров и админов на основе кеша и реплаев"""
-from typing import Tuple
+from typing import Tuple, Optional
 
 from aiogram.types import Message
 
-import utils.get_by
 from config import BOT, ADMINS_CHAT_ID
+from utils import get_by
 from utils.other import LRU
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
@@ -24,12 +24,11 @@ def cache_is_set(message_id: int) -> bool:
 
 
 async def user_message(message: Message):
+    reply_to = None
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
-    else:
-        reply_to = None
 
-    text = f"От {utils.get_by.get_user_name(message.from_user)}: \n"
+    text = f"От {get_by.get_user_name(message.from_user)}: \n"
     await _resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
@@ -37,23 +36,26 @@ async def admin_message(message: Message):
     if message.text and message.text.startswith("!"):  # игнор ответа
         return
 
-    if cache_is_set(message.reply_to_message.message_id):
-        user, reply_to = cache_get(message.reply_to_message.message_id)
-        text = ''
-    else:
-        if not (user := utils.get_by.get_user_from_entity(message.reply_to_message)):
-            return
-        reply_to = None
-        user = user.id
+    if not (res := get_from_message(message.reply_to_message)):
+        return
+    user, reply_to = res
 
-        if message.reply_to_message.audio:
-            text = "На ваш заказ <i>(" + utils.get_by.get_audio_name(
-                message.reply_to_message.audio) + ")</i> ответили: \n"
-        else:
-            text = "На ваше сообщение ответили: \n"
+    if reply_to:
+        text = None
+    elif message.reply_to_message.audio:
+        text = "На ваш заказ <i>(" + get_by.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
+    else:
+        text = "На ваше сообщение ответили: \n"
 
     await _resend_message(message, user, additional_text=text, reply_to=reply_to)
 
+
+def get_from_message(message: Message) -> Optional[Tuple[int, Optional[int]]]:
+    if cache_is_set(message.message_id):
+        return cache_get(message.message_id)
+    if user := get_by.get_user_from_entity(message):
+        return user.id, None
+    return None
 
 #
 

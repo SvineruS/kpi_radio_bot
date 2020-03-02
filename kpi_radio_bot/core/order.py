@@ -66,7 +66,7 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 #
 
 
-async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
+async def admin_moderate(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
     audio_name = get_by.get_audio_name(query.message.audio)
@@ -86,7 +86,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
         return communication.cache_add(mes, query.message)
 
     path = _get_audio_path(day, time, audio_name)
-    await BOT.send_chat_action(query.message.chat.id, 'record_audio')
+    await query.message.chat.do('record_audio')
     await files.download_audio(query.message.audio, path)
     await broadcast.radioboss.write_track_additional_info(path, user, query.message.message_id)
 
@@ -135,7 +135,7 @@ async def admin_choice(query: types.CallbackQuery, day: int, time: int, status: 
                                          reply_markup=keyboards.admin_unchoose(day, time, status))
 
 
-async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
+async def admin_unmoderate(query: types.CallbackQuery, day: int, time: int, status: keyboards.STATUS):
     user = get_by.get_user_from_entity(query.message)
     audio_name = get_by.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(day, time, user, audio_name=get_by.get_audio_name(query.message.audio))
@@ -145,7 +145,7 @@ async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
-    if status != 'reject':  # если заказ был принят а щас отменяют
+    if status != keyboards.STATUS.REJECT:  # если заказ был принят а щас отменяют
         path = _get_audio_path(day, time, audio_name)
         files.delete_file(path)  # удалить с диска
         for track in await broadcast.playlist.find_in_playlist_by_path(path):
@@ -155,7 +155,7 @@ async def admin_unchoice(query: types.CallbackQuery, day: int, time: int, status
 #
 
 async def _gen_order_caption(day: int, time: int, user: types.User,
-                             audio_name: str = None, status=None, moder: types.User = None) -> str:
+                             audio_name: str = None, status: keyboards.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_this_broadcast_now(day, time)
     user_name = get_by.get_user_name(user) + ' #' + other.id_to_hashtag(user.id)
     text_datetime = broadcast.get_broadcast_name(day=day, time=time) + (' (сейчас!)' if is_now else '')
@@ -170,7 +170,7 @@ async def _gen_order_caption(day: int, time: int, user: types.User,
                f'от {user_name}<code>   </code>{texts.HASHTAG_MODERATE}\n' \
                f'{is_anime}{bad_words}'
     else:
-        status_text = "✅Принят" if status != 'reject' else "❌Отклонен"
+        status_text = "✅Принят" if status != keyboards.STATUS.REJECT else "❌Отклонен"
         moder_name = get_by.get_user_name(moder)
 
         return f'Заказ: \n' \
