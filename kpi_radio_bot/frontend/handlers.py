@@ -5,15 +5,13 @@ from typing import List
 from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
 
-import backend.music.musicless
 from backend import Broadcast
-from consts import texts
-from consts.config import BOT
+from consts import texts, BOT
 from frontend import core
-from frontend.frontend_utils import bot_filters, keyboards, communication
+from frontend.frontend_utils import keyboards, communication, bind_filters
 
 DP = Dispatcher(BOT)
-bot_filters.bind_filters(DP)
+bind_filters(DP)
 
 
 @DP.message_handler(commands=['start'], pm=True)
@@ -44,7 +42,7 @@ async def user_reply_message_handler(message: types.Message):
 
     # Ввод названия песни
     if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-        return await backend.music.musicless.search.search_audio(message)
+        return await core.search.search_audio(message)
 
     raise SkipHandler
 

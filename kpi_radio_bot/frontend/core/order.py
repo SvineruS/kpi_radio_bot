@@ -159,7 +159,7 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
 async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_now()
-    user_name = get_by.get_user_name(user) + ' #' + frontend.frontend_utils.id_to_hashtag.id_to_hashtag(user.id)
+    user_name = get_by.get_user_name(user) + ' #' + frontend.frontend_utils.id_to_hashtag(user.id)
     text_datetime = broadcast.name() + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
