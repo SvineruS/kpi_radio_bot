@@ -8,11 +8,12 @@
 """
 from datetime import datetime
 from time import time
-from typing import Union
+from typing import Optional
 
 from motor import motor_asyncio
 
-from config import DB_URL
+from consts.config import DB_URL
+from utils.lru import lru
 
 CLIENT = motor_asyncio.AsyncIOMotorClient(DB_URL, retryWrites=False)
 DB = CLIENT.get_database()["kpiradio"]
@@ -21,19 +22,19 @@ DB = CLIENT.get_database()["kpiradio"]
 async def add(id_: int):
     if not await _get_user(id_):
         await DB.insert_one({'usr': id_})
+        _clear_user_cache(id_)
 
 
-async def ban_get(id_: int) -> Union[bool, datetime]:
-    if not (user := await _get_user(id_)) or 'ban' not in user:
-        return False
-    if user['ban'] < time():
-        return False
+async def ban_get(id_: int) -> Optional[datetime]:
+    if not (user := await _get_user(id_)) or 'ban' not in user or user['ban'] < time():
+        return None
     return datetime.fromtimestamp(user['ban'])
 
 
 async def ban_set(id_: int, time_: int):
     ban_time = time() + time_ * 60
     await DB.update_one({'usr': id_}, {'$set': {'ban': ban_time}}, upsert=True)
+    _clear_user_cache(id_)
 
 
 async def notification_get(id_: int) -> bool:
@@ -44,7 +45,15 @@ async def notification_get(id_: int) -> bool:
 
 async def notification_set(id_: int, status_: bool):
     await DB.update_one({'usr': id_}, {'$set': {'notification_mute': status_}}, upsert=True)
+    _clear_user_cache(id_)
 
 
+#
+
+@lru(maxsize=1_000, ttl=60 * 60 * 12)
 async def _get_user(id_: int):
     return await DB.find_one({'usr': id_})
+
+
+def _clear_user_cache(id_: int):
+    _get_user.cache_del(id_)
