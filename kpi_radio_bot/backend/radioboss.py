@@ -8,7 +8,7 @@ import aiohttp
 import xmltodict
 from aiogram.types import User
 
-from config import RADIOBOSS_DATA, AIOHTTP_SESSION
+from consts.config import RADIOBOSS_DATA, AIOHTTP_SESSION
 
 
 async def setvol(vol: int, fade: int = 500) -> bool:
@@ -67,9 +67,9 @@ async def write_track_additional_info(path: Path, user_obj: User, moderation_id:
 
 
 async def read_track_additional_info(path: Path) -> Optional[dict]:
-    if not (tag_info := await readtag(path)):
+    if not (tag := await _read_comment_tag(path)):
         return None
-    tag = tag_info['TagInfo']['File']['@Comment']
+
     try:
         return json.loads(tag)
     except json.JSONDecodeError:
@@ -112,3 +112,9 @@ async def _write_comment_tag(path: Path, tag: str) -> bool:
     tag_info['TagInfo']['File']['@Comment'] = tag
     xml_str = xmltodict.unparse(tag_info)
     return await writetag(path, xml_str)
+
+
+async def _read_comment_tag(path: Path) -> Optional[str]:
+    if not (tag_info := await readtag(path)):
+        return None
+    return tag_info['TagInfo']['File']['@Comment']

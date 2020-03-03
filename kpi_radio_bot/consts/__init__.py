@@ -1,5 +1,3 @@
 """Константы: текст, клавиатуры"""
-
-from . import keyboards
-from . import texts
-from .others import *
+from . import texts, others, config
+from .config import BOT

@@ -12,8 +12,8 @@ from typing import Optional
 
 from motor import motor_asyncio
 
-from config import DB_URL
-from other import my_lru
+from consts.config import DB_URL
+from utils.lru import lru
 
 CLIENT = motor_asyncio.AsyncIOMotorClient(DB_URL, retryWrites=False)
 DB = CLIENT.get_database()["kpiradio"]
@@ -50,7 +50,7 @@ async def notification_set(id_: int, status_: bool):
 
 #
 
-@my_lru(maxsize=1_000, ttl=60*60*12)
+@lru(maxsize=1_000, ttl=60 * 60 * 12)
 async def _get_user(id_: int):
     return await DB.find_one({'usr': id_})
 

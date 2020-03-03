@@ -5,13 +5,13 @@ from typing import List
 from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
 
-import core
-from config import BOT
-from consts import keyboards, texts
-from utils import bot_filters
+from backend import Broadcast
+from consts import texts, BOT
+from frontend import core
+from frontend.frontend_utils import keyboards, communication, bind_filters
 
 DP = Dispatcher(BOT)
-bot_filters.bind_filters(DP)
+bind_filters(DP)
 
 
 @DP.message_handler(commands=['start'], pm=True)
@@ -36,8 +36,8 @@ async def user_reply_message_handler(message: types.Message):
     reply_to = message.reply_to_message
 
     # Реплай на сообщение обратной связи или сообщение от модера
-    if reply_to.text == texts.FEEDBACK or core.communication.cache_is_set(reply_to.message_id):
-        await core.communication.user_message(message)
+    if reply_to.text == texts.FEEDBACK or communication.cache_is_set(reply_to.message_id):
+        await communication.user_message(message)
         return await message.answer(texts.FEEDBACK_THANKS, reply_markup=keyboards.START)
 
     # Ввод названия песни
@@ -125,7 +125,7 @@ async def playlist_handler(message: types.Message):
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, admins_chat=True)
 async def admins_reply_message_handler(message: types.Message):
-    return await core.communication.admin_message(message)
+    return await communication.admin_message(message)
 
 
 # endregion
@@ -167,7 +167,8 @@ async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, 
     # Выбрали время
     elif cmd == keyboards.CB.TIME:
         *_, day, time = params
-        await core.order.order_make(query, day, time)
+        broadcast = Broadcast(day, time)
+        await core.order.order_make(query, broadcast)
 
     # Кнопка назад при выборе времени
     elif cmd == keyboards.CB.BACK:
@@ -185,12 +186,14 @@ async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, 
     # Принять / отклонить
     elif cmd == keyboards.CB.MODERATE:
         *_, day, time, status = params
-        await core.order.admin_moderate(query, day, time, keyboards.STATUS(status))
+        broadcast = Broadcast(day, time)
+        await core.order.admin_moderate(query, broadcast, keyboards.STATUS(status))
 
     # Отменить выбор
     elif cmd == keyboards.CB.UNMODERATE:
         *_, day, time, status = params
-        await core.order.admin_unmoderate(query, day, time, keyboards.STATUS(status))
+        broadcast = Broadcast(day, time)
+        await core.order.admin_unmoderate(query, broadcast, keyboards.STATUS(status))
 
 
 async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
@@ -206,7 +209,8 @@ async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.C
     # Выбор времени
     elif cmd == keyboards.CB.TIME:
         *_, day, time = params
-        await core.users.playlist_show(query, day, time)
+        broadcast = Broadcast(day, time)
+        await core.users.playlist_show(query, broadcast)
 
     # Кнопка назад при выборе времени
     elif cmd == keyboards.CB.BACK:

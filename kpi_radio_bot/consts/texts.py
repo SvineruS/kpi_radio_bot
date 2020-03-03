@@ -58,9 +58,7 @@ BAD_ORDER_BADWORDS = 'Трек вероятно содержит маты'
 BAD_ORDER_ANIME = 'Трек вероятно является аниме опенингом'
 BAD_ORDER_PERFORMER = 'Трек вероятно является "не форматом радио"'
 
-
 HASHTAG_MODERATE = '#отмодерить'
-
 
 HELP = {
     'orders': '''

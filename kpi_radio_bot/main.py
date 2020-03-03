@@ -4,10 +4,11 @@ import ssl
 from aiogram import types, Dispatcher, Bot
 from aiohttp import web
 
-import config
-import core
-from handlers import DP
-from utils import music, scheduler
+import backend.music.text
+from consts import config
+from frontend.core import events
+from frontend.handlers import DP
+from utils import scheduler
 
 APP = web.Application()
 ROUTES = web.RouteTableDef()
@@ -17,7 +18,7 @@ ROUTES = web.RouteTableDef()
 async def gettext(request):
     if not (name := request.match_info.get('name')):
         return web.Response(text="Использование: /gettext/имя_песни")
-    if not (res := await music.search_text(name)):
+    if not (res := await backend.music.text.search_text(name)):
         return web.Response(text="Ошибка поиска")
     title, text = res
     return web.Response(text=f"{title} \n\n{text}")
@@ -35,7 +36,7 @@ async def history_save(request):
         'casttitle': args.get('casttitle'),
         'path': args.get('path'),
     }
-    await core.events.send_history(fields)
+    await events.send_history(fields)
     return web.Response(text='ok')
 
 
@@ -56,12 +57,17 @@ async def on_startup(_):
         await config.BOT.set_webhook(config.WEBHOOK_URL, certificate=config.SSL_CERT.open('rb'))
 
     asyncio.create_task(scheduler.start())
-    await core.events.start_up()
+    await events.start_up()
+
+
+async def on_shutdown(_):
+    await events.shut_down()
 
 
 def start():
     APP.add_routes(ROUTES)
     APP.on_startup.append(on_startup)
+    APP.on_shutdown.append(on_shutdown)
 
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)
