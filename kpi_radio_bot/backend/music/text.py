@@ -31,40 +31,52 @@ class MyHTMLParser(HTMLParser):
 
 
 _RE_GENIUS_BRACKETS = re.compile(r" \([\w\d ]+\)")
-PARSER = MyHTMLParser()
+_PARSER = MyHTMLParser()
 
 
 @lru(maxsize=100, ttl=60 * 60 * 12)
 async def search_text(name: str) -> Optional[Tuple[str, str]]:
+    if not (res_json := await _search(name)):
+        return
+    if not (song := _get_song_section(res_json['response']['sections'])):
+        return None
+    if not (lyrics := await _get_lyrics(song['url'])):
+        return None
+    title = _delete_translit_from_title(song['full_title'])
+    return title, lyrics
+
+
+#
+
+
+async def _search(name: str) -> Optional[dict]:
     url = "https://genius.com/api/search/multi?q=" + quote_plus(name)
     async with AIOHTTP_SESSION.get(url) as res:
         try:
             res.raise_for_status()
-            res_json = await res.json(content_type=None)
+            return await res.json(content_type=None)
         except (JSONDecodeError, ClientResponseError) as ex:
             logging.warning(f"search song text: {ex} {name}")
             return None
 
-    sections = res_json['response']['sections']
+
+def _get_song_section(sections: dict) -> Optional[dict]:
     for sec in sections:
         if sec['type'] == 'song' and sec['hits']:
-            break
-    else:  # если не брейк
-        return None
+            return sec['hits'][0]['result']
+    return None
 
-    res = sec['hits'][0]['result']
 
-    title = res['full_title']
-    lyrics_url = res['url']
+def _delete_translit_from_title(title: str) -> str:
+    return _RE_GENIUS_BRACKETS.sub("", title)
 
-    async with AIOHTTP_SESSION.get(lyrics_url) as res:
+
+async def _get_lyrics(url: str) -> Optional[str]:
+    async with AIOHTTP_SESSION.get(url) as res:
         if res.status != 200:
             return None
         lyrics = await res.text()
 
-    title = _RE_GENIUS_BRACKETS.sub("", title)  # убрать транслитерацию в скобках
-
     lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
-    lyrics = PARSER.parse(lyrics).strip()
-
-    return title, lyrics
+    lyrics = _PARSER.parse(lyrics).strip()
+    return lyrics
