@@ -1,5 +1,5 @@
 """Методы, конвентирующие всякую хрень"""
-import datetime
+from datetime import datetime
 from typing import Optional
 
 from aiogram.types import Message, User, Audio
@@ -44,5 +44,5 @@ def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
     return c_3
 
 
-def time_to_datetime(time: datetime.time) -> datetime.datetime:
-    return datetime.datetime.combine(datetime.datetime.today(), time)
+def time_to_datetime(time: datetime.time) -> datetime:
+    return datetime.combine(datetime.today(), time)

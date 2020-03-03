@@ -6,9 +6,8 @@ from aiogram import types, exceptions
 
 import backend.music.musicless
 import consts
-from frontend.frontend_utils import keyboards
 from frontend import core
-from backend import music
+from frontend.frontend_utils import keyboards
 
 
 async def search_audio(message: types.Message):

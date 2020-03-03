@@ -9,10 +9,9 @@ from urllib.parse import unquote
 
 from aiogram import types, exceptions
 
-from consts import texts
 from backend import radioboss, playlist
-from consts.config import BOT, PATH_STUFF, PATH_LOG, PATH_ROOT
-from frontend.frontend_utils import communication, keyboards, stats
+from consts import texts, config, BOT
+from frontend.frontend_utils import communication, keyboards as kb, stats
 from utils import user_utils, db, get_by
 
 
@@ -45,55 +44,55 @@ async def set_volume(message: types.Message):
 async def get_stats(message: types.Message):
     if 'csv' in message.get_args():
         await message.chat.do('upload_document')
-        return await message.answer_document((PATH_STUFF / 'stats.csv').open('rb'))
+        return await message.answer_document(stats.PATH_STATS_CSV.open('rb'))
 
     await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if not (moderator := await _get_moderator_from_mention(message)):
             return await message.reply(f"Хз кто это")
-        if not (res := await stats.line_plot(moderator.id)):
+        if not (res := await stats.moder_stats(moderator.id)):
             return await message.reply(f"Он шото модерил ваще?")
         caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
-        await stats.bars_plot(days)
+        await stats.all_moders_stats(days)
         caption = f'Стата за {days} дн.'
 
     await message.answer_photo(stats.PATH_STATS_PNG.open('rb'), caption=caption)
 
 
 async def show_playlist_control(message: types.Message):
-    await message.answer("Нажми на трек, что бы сделать его следующим", reply_markup=await keyboards.playlist_move())
+    await message.answer("Нажми на трек, что бы сделать его следующим", reply_markup=await kb.playlist_move())
 
 
 async def playlist_move(query: types.CallbackQuery, track_index, track_start_time):
-    playback = await playlist.get_next()
+    playback = await playlist.get_playlist_next()
     _in_playback = [i for i, track in enumerate(playback) if
-                    track.index == track_index and track.time_start.timestamp() == track_start_time]
+                    track.index_ == track_index and track.time_start.timestamp() == track_start_time]
 
     if track_index == -1:  # просто обновить
         pass
     elif time() > track_start_time or not _in_playback:
         await query.answer("Кнопка неактуальна, давай еще раз")
-        playback = await playlist.get_next()
-    elif _in_playback[0] == playback[1].index:
+        playback = await playlist.get_playlist_next()
+    elif _in_playback[0] == playback[1].index_:
         await query.answer("Она сейчас играет -_-")
     else:
-        if await radioboss.move(track_index, playback[1].index):
+        if await radioboss.move(track_index, playback[1].index_):
             playback.insert(1, playback.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
             await query.answer("Ошибка")
 
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_reply_markup(await keyboards.playlist_move(playback))
+        await query.message.edit_reply_markup(await kb.playlist_move(playback))
 
 
 async def get_log(message: types.Message):
     await message.chat.do('upload_document')
-    text = PATH_LOG.read_text()
+    text = config.PATH_LOG.read_text()
     text = unquote(text)  # unquote urls logged by aiohttp
     file = io.StringIO(text)
     file.name = 'log.txt'  # set filename
@@ -109,7 +108,7 @@ async def next_track(message: types.Message):
 
 async def update(message: types.Message):
     await message.answer('Ребутаюсь..')
-    os.system(rf'cmd.exe /C start {PATH_ROOT}\\update.bat')
+    os.system(rf'cmd.exe /C start {config.PATH_ROOT}\\update.bat')
 
 
 #

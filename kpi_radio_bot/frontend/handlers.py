@@ -6,9 +6,9 @@ from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
 
 import backend.music.musicless
-from backend.playlist import Broadcast
-from consts.config import BOT
+from backend import Broadcast
 from consts import texts
+from consts.config import BOT
 from frontend import core
 from frontend.frontend_utils import bot_filters, keyboards, communication
 
@@ -157,7 +157,7 @@ async def callback_query_handler(query: types.CallbackQuery):
 
 @DP.inline_handler()
 async def query_text_handler(inline_query: types.InlineQuery):
-    await backend.music.musicless.search.inline_search(inline_query)
+    await core.search.inline_search(inline_query)
 
 
 async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):

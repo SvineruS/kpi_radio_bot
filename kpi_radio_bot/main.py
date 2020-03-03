@@ -6,10 +6,9 @@ from aiohttp import web
 
 import backend.music.text
 from consts import config
-from frontend.handlers import DP
 from frontend.core import events
+from frontend.handlers import DP
 from utils import scheduler
-
 
 APP = web.Application()
 ROUTES = web.RouteTableDef()

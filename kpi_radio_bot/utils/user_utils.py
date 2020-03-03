@@ -26,3 +26,17 @@ async def get_admin_by_username(username: str) -> Optional[User]:
 async def is_admin(user_id: int) -> bool:
     member = await BOT.get_chat_member(ADMINS_CHAT_ID, user_id)
     return member and member.status in ('creator', 'administrator', 'member')
+
+
+async def get_moders() -> Dict[int, User]:
+    return {
+        moder_id: moder.user
+        for moder_id, moder in (await get_admins()).items()
+        if _is_moder(moder)
+    }
+
+#
+
+
+def _is_moder(moder: ChatMember) -> bool:
+    return moder.custom_title and 'Модер' in moder.custom_title

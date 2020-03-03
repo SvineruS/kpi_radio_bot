@@ -4,11 +4,10 @@ from typing import Tuple, Optional
 from aiogram.types import Message
 
 from consts.config import BOT, ADMINS_CHAT_ID
-from utils import get_by
-from utils.lru import LRU
+from utils import get_by, lru
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
-MESSAGES_CACHE = LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
+MESSAGES_CACHE = lru.LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
 
 
 def cache_add(to_message: Message, from_message: Message):
@@ -56,6 +55,7 @@ def get_from_message(message: Message) -> Optional[Tuple[int, Optional[int]]]:
     if user := get_by.get_user_from_entity(message):
         return user.id, None
     return None
+
 
 #
 

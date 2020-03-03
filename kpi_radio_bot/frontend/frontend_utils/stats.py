@@ -9,16 +9,15 @@
 """
 
 import csv
+import functools
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
-import matplotlib
-matplotlib.use('agg')
 from matplotlib import pyplot as plt
 
 from consts.config import PATH_STUFF
-from utils.user_utils import get_admins
+from utils.user_utils import get_moders
 
 PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
@@ -40,7 +39,7 @@ def change_username_to_id(changes):  # todo remove
         file.write(content)
 
 
-async def line_plot(moder_id: int) -> Optional[float]:
+async def moder_stats(moder_id: int) -> Optional[float]:
     stats = _parse_stats(60)
     moder_id = str(moder_id)  # todo remove
 
@@ -48,47 +47,30 @@ async def line_plot(moder_id: int) -> Optional[float]:
         return None
     moder = stats[moder_id]
 
-    moderation_all, moderation_own = moder['all'], moder['own']
+    dates = list(moder['all'].keys())
+    moderation_all = list(moder['all'].values())
+    moderation_own = list(moder['own'].values())
 
-    plt.figure(figsize=(12, 10))
+    _draw_line_plot(dates, moderation_all, moderation_own)
 
-    plt.plot(list(moderation_all.values()), list(moderation_all.keys()), label="Все заказы")
-    plt.plot(list(moderation_own.values()), list(moderation_own.keys()), 'r', label="Свои заказы")
-
-    plt.legend(loc="upper right")
-    plt.savefig(PATH_STATS_PNG)
-
-    moderation_per_day = sum(moderation_all.values()) / len(moderation_all)
+    moderation_per_day = sum(moderation_all) / len(moderation_all)
     return moderation_per_day
 
 
-async def bars_plot(days: int):
+async def all_moders_stats(days: int):
     stats = _parse_stats(days)
-    moders = await get_admins()
+    moders = await get_moders()
 
     stats = {int(moder_id): moder for moder_id, moder in stats.items() if moder_id.isdigit()}  # todo remove
 
     stats = [
-        (
-            moders[moder_id].user.first_name,
-            sum(moder['all'].values()),
-            sum(moder['own'].values())
-        )
-        for moder_id, moder in stats.items()
-        if moder_id in moders and
-        moders[moder_id].custom_title and
-        'Модер' in moders[moder_id].custom_title
+        (moders[moder_id], sum(stat['all'].values()), sum(stat['own'].values()))
+        for moder_id, stat in stats.items() if moder_id in moders
     ]
+
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
-    names, alls, owns = zip(*stats)
-
-    plt.figure(figsize=(12, 10))
-
-    plt.barh(names, alls, height=0.8, label="Не свои заказы")
-    plt.barh(names, owns, height=0.8, color='orange', label="Свои заказы")
-
-    plt.legend(loc="lower right")
-    plt.savefig(PATH_STATS_PNG)
+    names, moderations_all, moderations_own = zip(*stats)
+    _draw_bars_plot(names, moderations_all, moderations_own)
 
 
 #
@@ -133,3 +115,26 @@ def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
             stats[moder_id]['own'][date.strftime("%d.%m")] += 1
 
     return stats
+
+
+def _draw(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        plt.figure(figsize=(12, 10))
+        func(*args, **kwargs)
+        plt.legend(loc="lower right")
+        plt.savefig(PATH_STATS_PNG)
+    return wrapper
+
+
+@_draw
+def _draw_line_plot(dates: List[str], moderation_all: List[int], moderation_own: List[int]):
+    plt.plot(moderation_all, dates, label="Все заказы")
+    plt.plot(moderation_own, dates, 'r', label="Свои заказы")
+
+
+@_draw
+def _draw_bars_plot(names: List[str], moderations_all: List[int], moderations_own: List[int]):
+    plt.barh(names, moderations_all, height=0.8, label="Не свои заказы")
+    plt.barh(names, moderations_own, height=0.8, color='orange', label="Свои заказы")
+

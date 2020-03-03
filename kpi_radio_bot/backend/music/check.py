@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 import consts
 from consts.config import AIOHTTP_SESSION
 from utils.lru import lru
-from . text import search_text
+from .text import search_text
 
 
 @lru(maxsize=100, ttl=60 * 60 * 12)

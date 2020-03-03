@@ -1,11 +1,9 @@
 import json
 from datetime import datetime
-from typing import List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from backend.playlist import Broadcast
-from backend import playlist
+from backend import playlist, Broadcast
 from consts import btns_text
 from consts.btns_text import MENU, CALLBACKS as CB, STATUS
 from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
@@ -21,6 +19,7 @@ def unparse(data: str) -> dict:
 
 def _ikb(text: str, *cb_data) -> InlineKeyboardButton:  # shortcut
     return InlineKeyboardButton(text, callback_data=_parse(*cb_data))
+
 
 #
 
@@ -58,7 +57,7 @@ async def order_choose_day() -> InlineKeyboardMarkup:
 
     btns = []
 
-    if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир + влазит
+    if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
         btns.append(_ikb(NEXT_DAYS[-1], CB.ORDER, CB.TIME, today, broadcast_now.num))
 
     if datetime.now().hour < 22:  # кнопка сегодня
@@ -135,13 +134,13 @@ def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
 _EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
 
 
-async def playlist_move(playback: List[playlist.PlaylistItem] = None):
+async def playlist_move(playback: playlist.PlayList = None):
     if playback is None:
-        playback = await playlist.get_next()
+        playback = await playlist.get_playlist_next()
     btns = [
         _ikb(
             f"{_EMOJI_NUMBERS[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
-            CB.PLAYLIST, CB.MOVE, track.index, track.time_start.timestamp()
+            CB.PLAYLIST, CB.MOVE, track.index_, track.time_start.timestamp()
         )
         for i, track in enumerate(playback[:10])
     ]

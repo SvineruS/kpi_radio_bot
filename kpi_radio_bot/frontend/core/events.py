@@ -3,10 +3,8 @@
 import asyncio
 import logging
 
-from backend.playlist import Broadcast
-from backend import radioboss, files
-from consts.config import HISTORY_CHAT_ID, BOT, ADMINS_CHAT_ID
-from consts import texts, others
+from backend import radioboss, files, Broadcast
+from consts import texts, others, config, BOT
 from frontend.frontend_utils import keyboards
 from utils import get_by, db
 
@@ -23,16 +21,17 @@ async def send_history(fields):
         sender_name = texts.HISTORY_TITLE.format(get_by.get_user_name_(tag['id'], tag['name']))
         if not await db.notification_get(tag['id']):
             await BOT.send_message(tag['id'], texts.ORDER_PLAYING.format(fields['casttitle']))
-        await BOT.edit_message_reply_markup(ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
+        await BOT.edit_message_reply_markup(config.ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
     await radioboss.clear_track_additional_info(fields['path'])  # Очистить тег, что бы уведомление не пришло еще раз
 
     with open(fields['path'], 'rb') as file:
-        await BOT.send_audio(HISTORY_CHAT_ID, file, sender_name, performer=fields['artist'], title=fields['title'])
+        await BOT.send_audio(config.HISTORY_CHAT_ID, file, sender_name,
+                             performer=fields['artist'], title=fields['title'])
 
 
 async def broadcast_begin(time):
-    await BOT.send_message(HISTORY_CHAT_ID, others.TIMES[time])
+    await BOT.send_message(config.HISTORY_CHAT_ID, others.TIMES[time])
     await radioboss.setvol(100)  # включить музло на перерыве
 
 
@@ -42,7 +41,7 @@ async def broadcast_end(day, time):
 
 
 async def start_up():
-    await BOT.send_message(ADMINS_CHAT_ID, "Ребутнулся!")
+    await BOT.send_message(config.ADMINS_CHAT_ID, "Ребутнулся!")
 
 
 def shut_down():

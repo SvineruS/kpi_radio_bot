@@ -41,6 +41,7 @@ def lru(maxsize: int = None, ttl: int = None):
         on_call.cache_del = cache_del
 
         return on_call
+
     return decorator
 
 
