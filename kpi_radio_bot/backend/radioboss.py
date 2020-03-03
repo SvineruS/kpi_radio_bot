@@ -27,6 +27,10 @@ async def inserttrack(filename: Path, pos: int) -> bool:
     return await _radioboss_api(action='inserttrack', filename=filename, pos=pos)
 
 
+async def setnexttrack(pos: int) -> bool:
+    return await _radioboss_api(action='setnexttrack', pos=pos)
+
+
 async def delete(pos: int) -> bool:
     return await _radioboss_api(action='delete', pos=pos)
 
@@ -37,8 +41,8 @@ async def playbackinfo() -> Optional[dict]:
     return playback['Info']
 
 
-async def getplaylist2() -> Optional[dict]:
-    if not (playlist := await _radioboss_api(action='getplaylist2')):
+async def getplaylist2(cnt: int = 100) -> Optional[dict]:
+    if not (playlist := await _radioboss_api(action='getplaylist2', cnt=cnt)):
         return None
     return playlist['Playlist']
 

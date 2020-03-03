@@ -29,7 +29,7 @@ async def get_playlist() -> PlayList:
         return []
 
     result = []
-    for track in playlist['TRACK'][:100]:  # оптимизация: максимум 100 треков, = самый длинный эфир, ~ 7 часов
+    for track in playlist['TRACK']:
         if not track['@STARTTIME']:  # если STARTTIME == "" - это не песня (либо она стартанет через >=сутки)
             continue
 

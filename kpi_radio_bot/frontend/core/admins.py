@@ -79,7 +79,7 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
     elif _in_playback[0] == playback[1].index_:
         await query.answer("Она сейчас играет -_-")
     else:
-        if await radioboss.move(track_index, playback[1].index_):
+        if await radioboss.setnexttrack(track_index):
             playback.insert(1, playback.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
