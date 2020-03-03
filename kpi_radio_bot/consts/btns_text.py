@@ -1,13 +1,13 @@
 from enum import IntEnum
 
-CALLBACKS = IntEnum("CALLBACKS", (
+CALLBACKS = IntEnum.__call__("CALLBACKS", (
     'ORDER', 'PLAYLIST', 'OTHER',
     'DAY', 'TIME', 'BACK', 'CANCEL', 'NOTIME', 'MODERATE', 'UNMODERATE',
     'NEXT', 'MOVE', 'HELP',
 
 ))
 
-STATUS = IntEnum("STATUS", ('QUEUE', 'NOW', 'REJECT'))
+STATUS = IntEnum.__call__("STATUS", ('QUEUE', 'NOW', 'REJECT'))
 
 
 class MENU:

@@ -3,10 +3,13 @@ from os import getenv
 from pathlib import Path
 
 import aiohttp
+import matplotlib
 from aiogram import Bot
 from dotenv import load_dotenv
 
-PATH_ROOT = Path(__file__).parent.parent
+matplotlib.use('agg')  # что бы не устанавливать tkinter
+
+PATH_ROOT = Path(__file__).parent.parent.parent
 PATH_STUFF = PATH_ROOT / 'stuff'
 PATH_LOG = PATH_STUFF / 'debug.log'
 
@@ -17,6 +20,7 @@ logging.basicConfig(
     datefmt='%d.%m %H:%M:%S',
     handlers=[logging.FileHandler(PATH_LOG), logging.StreamHandler()]
 )
+
 
 IS_TEST_ENV = getenv("ENV_TYPE") == 'TEST'
 

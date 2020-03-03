@@ -10,7 +10,6 @@ from typing import List
 from aiogram.types import Audio
 
 import consts
-from broadcast.broadcast import get_broadcast_path
 
 
 def delete_file(path: Path) -> None:
@@ -26,8 +25,8 @@ def delete_file(path: Path) -> None:
 def move_to_archive(day: int = None) -> None:
     if not day:
         day = datetime.now().weekday()
-    src = str(get_broadcast_path(day))  # заказы
-    dst = str(consts.PATHS['archive'])  # архив
+    src = str(consts.others.PATHS['orders'] / f"D0{day + 1}")  # заказы
+    dst = str(consts.others.PATHS['archive'])  # архив
 
     if not os.path.exists(dst):
         os.makedirs(dst)
@@ -48,8 +47,7 @@ async def download_audio(audio: Audio, path: Path) -> None:
     await audio.download(path, timeout=60)
 
 
-def get_downloaded_tracks(day: int, time: int) -> List[Path]:
-    path = get_broadcast_path(day, time)
+def get_downloaded_tracks(path: Path) -> List[Path]:
     try:
         return [file for file in path.iterdir() if file.is_file()]
     except FileNotFoundError as ex:
