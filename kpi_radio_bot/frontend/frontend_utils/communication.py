@@ -62,8 +62,7 @@ def get_from_message(message: Message) -> Optional[Tuple[int, Optional[int]]]:
 
 async def _resend_message(message: Message, chat: int, additional_text: str = '', reply_to: int = None):
     if additional_text and (message.audio or message.sticker):
-        mes = await BOT.send_message(chat, additional_text)
-        cache_add(mes, message)
+        cache_add(await BOT.send_message(chat, additional_text), message)
 
     if message.audio:
         mes = await BOT.send_audio(chat, message.audio.file_id, reply_to_message_id=reply_to)

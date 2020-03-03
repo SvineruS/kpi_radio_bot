@@ -84,8 +84,8 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
-        mes = await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime))
-        return communication.cache_add(mes, query.message)
+        return communication.cache_add(
+            await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime)), query.message)
 
     path = _get_audio_path(broadcast, audio_name)
     await query.message.chat.do('record_audio')
@@ -103,16 +103,16 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
         # если прямо сейчас не тот эфир, на который заказ
         if not broadcast.is_now():
             when_playing = 'Заиграет когда надо'
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
-            communication.cache_add(mes, query.message)
+            communication.cache_add(
+                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime)), query.message)
 
         # тут и ниже - трек заказан на эфир, который сейчас играет
 
         # если такой трек уже есть в плейлисте
         elif await playlist.find_in_playlist_by_path(path):
             when_playing = 'Такой же трек уже принят на этот эфир'
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime))
-            communication.cache_add(mes, query.message)
+            communication.cache_add(
+                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime)), query.message)
 
         # в плейлисте есть место для заказа
         elif last_track := await broadcast.get_new_order_pos():
@@ -120,17 +120,17 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
             when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
 
             await radioboss.inserttrack(path, last_track.index_)
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
-            communication.cache_add(mes, query.message)
+            communication.cache_add(
+                await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)),
+                query.message)
 
         # в плейлисте нету места
         else:
             when_playing = 'не успел :('
-            mes = await BOT.send_audio(
-                user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
-                caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, text_datetime)
-            )
-            communication.cache_add(mes, query.message)
+            communication.cache_add(
+                await BOT.send_audio(user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
+                                     caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, text_datetime)),
+                query.message)
 
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
