@@ -21,7 +21,6 @@ logging.basicConfig(
     handlers=[logging.FileHandler(PATH_LOG), logging.StreamHandler()]
 )
 
-
 IS_TEST_ENV = getenv("ENV_TYPE") == 'TEST'
 
 TOKEN = getenv("TOKEN")

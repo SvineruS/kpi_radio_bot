@@ -124,6 +124,7 @@ def _draw(func):
         func(*args, **kwargs)
         plt.legend(loc="lower right")
         plt.savefig(PATH_STATS_PNG)
+
     return wrapper
 
 
@@ -137,4 +138,3 @@ def _draw_line_plot(dates: List[str], moderation_all: List[int], moderation_own:
 def _draw_bars_plot(names: List[str], moderations_all: List[int], moderations_own: List[int]):
     plt.barh(names, moderations_all, height=0.8, label="Не свои заказы")
     plt.barh(names, moderations_own, height=0.8, color='orange', label="Свои заказы")
-
