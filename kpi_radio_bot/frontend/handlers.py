@@ -50,7 +50,7 @@ async def user_reply_message_handler(message: types.Message):
 @DP.message_handler(content_types=['audio'], pm=True)
 async def user_audio_handler(message: types.Message):
     # Пользователь скинул аудио
-    return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
+    return await core.users.send_audio(message.chat.id, message.audio)
 
 
 @DP.message_handler(pm=True)

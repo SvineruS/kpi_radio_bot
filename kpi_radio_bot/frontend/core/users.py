@@ -1,5 +1,6 @@
 """Обработка действий обычных пользователей"""
 from contextlib import suppress
+from typing import Union
 
 from aiogram import types, exceptions
 
@@ -75,15 +76,15 @@ async def notify_switch(message: types.Message):
     await message.answer(text)
 
 
-async def send_audio(chat: int, tg_audio: types.Audio = None, api_audio: music.Audio = None):
-    if tg_audio:
-        file = tg_audio.file_id
-        name = get_by.get_audio_name(tg_audio)
-        duration = tg_audio.duration
-    elif api_audio:
-        file = api_audio.download_url
-        name = get_by.get_audio_name_(api_audio.artist, api_audio.title)
-        duration = api_audio.duration
+async def send_audio(chat: int, audio: Union[types.Audio, music.Audio]):
+    if isinstance(audio, types.Audio):
+        file = audio.file_id
+        name = get_by.get_audio_name(audio)
+        duration = audio.duration
+    elif isinstance(audio, music.Audio):
+        file = audio.download_url
+        name = get_by.get_audio_name_(audio.artist, audio.title)
+        duration = audio.duration
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
 

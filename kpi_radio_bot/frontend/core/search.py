@@ -17,7 +17,7 @@ async def search_audio(message: types.Message):
 
     audio = audio[0]
     try:
-        await core.users.send_audio(message.chat.id, api_audio=audio)
+        await core.users.send_audio(message.chat.id, audio)
     except Exception as ex:
         logging.error(f'send audio: {ex} {audio.url}')
         logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
