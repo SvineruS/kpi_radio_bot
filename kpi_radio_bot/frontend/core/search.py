@@ -4,8 +4,8 @@ import logging
 
 from aiogram import types, exceptions
 
-from backend.music import search
 import consts
+from backend.music import search
 from frontend import core
 from frontend.frontend_utils import keyboards
 
