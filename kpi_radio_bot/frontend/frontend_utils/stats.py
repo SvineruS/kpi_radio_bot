@@ -12,7 +12,7 @@ import csv
 import functools
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Iterator
 
 from matplotlib import pyplot as plt
 
@@ -41,13 +41,11 @@ def change_username_to_id(changes):  # todo remove
 
 async def moder_stats(moder_id: int) -> Optional[float]:
     stats = _parse_stats(60)
-    moder_id = str(moder_id)  # todo remove
-
     if moder_id not in stats:
         return None
     moder = stats[moder_id]
 
-    dates = list(moder['all'].keys())
+    dates = list(map(lambda date: date.strftime("%d.%m"), moder['all'].keys()))
     moderation_all = list(moder['all'].values())
     moderation_own = list(moder['own'].values())
 
@@ -61,10 +59,8 @@ async def all_moders_stats(days: int):
     stats = _parse_stats(days)
     moders = await get_moders()
 
-    stats = {int(moder_id): moder for moder_id, moder in stats.items() if moder_id.isdigit()}  # todo remove
-
     stats = [
-        (moders[moder_id], sum(stat['all'].values()), sum(stat['own'].values()))
+        (moders[moder_id].first_name, sum(stat['all'].values()), sum(stat['own'].values()))
         for moder_id, stat in stats.items() if moder_id in moders
     ]
 
@@ -77,16 +73,6 @@ async def all_moders_stats(days: int):
 
 
 def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
-    def set_all_days(date_how_old_):  # добавить все даты от начала модерации до сегодня
-        counter = Counter()
-        for days in range(date_how_old_):
-            date_iter = date_now - timedelta(days=days)
-            counter[date_iter.strftime("%d.%m")] = 0
-        return {
-            'all': counter,
-            'own': counter.copy(),
-        }
-
     with open(PATH_STATS_CSV, encoding='utf-8-sig') as file:
         records = list(csv.reader(file, delimiter=','))
     # song_name, moder_id, user_id, status, date, msg_id
@@ -98,22 +84,20 @@ def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
     for rec in records:
         _song_name, moder_id, user_id, _status, date, msg_id = rec
         date = datetime.strptime(date[:10], "%Y-%m-%d")
-        date_how_old = (date_now - date).days
 
-        if date_how_old >= n_days:
+        if (date_now - date).days >= n_days:
             continue
         if msg_id in moderated_msgs:
             continue
+        if moder_id not in stats:
+            stats[moder_id] = _get_counters(date)
 
         moderated_msgs.add(msg_id)
-
-        if moder_id not in stats:
-            stats[moder_id] = set_all_days(date_how_old)
-
-        stats[moder_id]['all'][date.strftime("%d.%m")] += 1
+        stats[moder_id]['all'][date] += 1
         if moder_id == user_id:
-            stats[moder_id]['own'][date.strftime("%d.%m")] += 1
+            stats[moder_id]['own'][date] += 1
 
+    stats = {int(moder_id): moder for moder_id, moder in stats.items() if moder_id.isdigit()}  # todo remove
     return stats
 
 
@@ -131,10 +115,25 @@ def _draw(func):
 @_draw
 def _draw_line_plot(dates: List[str], moderation_all: List[int], moderation_own: List[int]):
     plt.plot(moderation_all, dates, label="Все заказы")
-    plt.plot(moderation_own, dates, 'r', label="Свои заказы")
+    plt.plot(moderation_own, dates, label="Свои заказы", color='red')
 
 
 @_draw
 def _draw_bars_plot(names: List[str], moderations_all: List[int], moderations_own: List[int]):
     plt.barh(names, moderations_all, height=0.8, label="Не свои заказы")
-    plt.barh(names, moderations_own, height=0.8, color='orange', label="Свои заказы")
+    plt.barh(names, moderations_own, height=0.8, label="Свои заказы", color='orange')
+
+
+def _get_counters(start_date):
+    counter = Counter()
+    for day in _get_all_days_to_today(start_date):
+        counter[day] = 0
+    return {'all': counter, 'own': counter.copy()}
+
+
+def _get_all_days_to_today(date_from: datetime) -> Iterator[datetime]:
+    date_to = datetime.today()
+    day_delta = timedelta(days=1)
+    while date_from < date_to:
+        yield date_from
+        date_from += day_delta
