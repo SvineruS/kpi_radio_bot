@@ -133,12 +133,10 @@ async def admins_reply_message_handler(message: types.Message):
 
 @DP.callback_query_handler()
 async def callback_query_handler(query: types.CallbackQuery):
-    try:
-        category, cmd, *params = keyboards.unparse(query.data)
-    except:  # todo remove
+    if not (kb_data := keyboards.unparse(query.data)):
         with suppress(exceptions.InvalidQueryID):
-            await query.answer("Кнопка устарела")
-        return
+            return await query.answer("Кнопка устарела")
+    category, cmd, *params = kb_data
 
     if category == keyboards.CB.ORDER:
         await order_callback_handler(query, cmd, params)

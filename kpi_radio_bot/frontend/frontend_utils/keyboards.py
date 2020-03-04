@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Optional
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
@@ -13,8 +14,11 @@ def _parse(*args) -> str:
     return json.dumps(args)
 
 
-def unparse(data: str) -> dict:
-    return json.loads(data)
+def unparse(data: str) -> Optional[dict]:
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError:
+        return None
 
 
 def _ikb(text: str, *cb_data) -> InlineKeyboardButton:  # shortcut
