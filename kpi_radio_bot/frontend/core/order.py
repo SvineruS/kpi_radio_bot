@@ -183,10 +183,14 @@ async def _get_bad_words_text(audio_name: str) -> str:
         return ''
 
     title, b_w = res
-    title = f'<a href="https://{config.HOST}/gettext/{quote(audio_name[:100])}">{title}</a>'
+    title = f'<a href="{_get_gettext_link(audio_name)}">{title}</a>'
     if not b_w:
         return "🆗" + title
     return f"⚠ {title}: " + ', '.join(b_w)
+
+
+def _get_gettext_link(audio_name):
+    return f"https://{config.HOST}/gettext/{quote(audio_name[:100])}"
 
 
 def _get_audio_path(broadcast: Broadcast, audio_name: str) -> Path:
