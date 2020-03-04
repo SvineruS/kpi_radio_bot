@@ -31,8 +31,7 @@ async def ban(message: types.Message):
 
     ban_time_text = f'{ban_time} ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
     await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
-    mes = await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason))
-    communication.cache_add(mes, message)
+    communication.cache_add(await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason)), message)
 
 
 async def set_volume(message: types.Message):
@@ -80,7 +79,7 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
     elif _in_playback[0] == playback[1].index_:
         await query.answer("Она сейчас играет -_-")
     else:
-        if await radioboss.move(track_index, playback[1].index_):
+        if await radioboss.setnexttrack(track_index):
             playback.insert(1, playback.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
