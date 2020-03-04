@@ -33,7 +33,7 @@ async def search(name: str) -> List[Audio]:
 
 def _to_object(audio: dict) -> Audio:
     return Audio(
-        id=audio['id'],
+        id=f"{audio['owner_id']}_{audio['id']}",
         artist=audio['artist'],
         title=audio['title'],
         duration=audio['duration'],
