@@ -4,7 +4,7 @@ import logging
 
 from aiogram import types, exceptions
 
-import backend.music.musicless
+from backend.music import search
 import consts
 from frontend import core
 from frontend.frontend_utils import keyboards
@@ -12,7 +12,7 @@ from frontend.frontend_utils import keyboards
 
 async def search_audio(message: types.Message):
     await message.chat.do('upload_audio')
-    if not (audio := await backend.music.musicless.search(message.text)):
+    if not (audio := await search(message.text)):
         return await message.answer(consts.texts.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]
@@ -26,13 +26,13 @@ async def search_audio(message: types.Message):
 
 async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
-    if not (audios := await backend.music.musicless.search(name)):
-        return await inline_query.answer([])  # todo что то писать
+    if not (audios := await search(name)):
+        return await inline_query.answer([])
 
     articles = [
         types.InlineQueryResultAudio(
             id=str(audio.id),
-            audio_url=backend.music.musicless.get_download_url(audio.url, audio.artist, audio.title),
+            audio_url=audio.download_url,
             performer=audio.artist,
             title=audio.title
         )

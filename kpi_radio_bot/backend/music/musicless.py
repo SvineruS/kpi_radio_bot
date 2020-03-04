@@ -9,7 +9,7 @@ from aiohttp import ClientResponseError
 from consts.config import AIOHTTP_SESSION
 from utils.lru import lru
 
-Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'url'))
+Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'download_url'))
 
 
 @lru(maxsize=200, ttl=60 * 60 * 12)
@@ -19,14 +19,27 @@ async def search(name: str) -> List[Audio]:
         try:
             res.raise_for_status()
             audio = await res.json(content_type=None)
-            audio = [Audio(**{k: v for k, v in audio_.items() if k in Audio._fields}) for audio_ in audio]
+            audio = [_to_object(i) for i in audio]
             return audio
         except (JSONDecodeError, ClientResponseError) as ex:
             logging.error(f'search song: {ex} {name}')
             return []
 
 
-def get_download_url(url: str, artist: str = None, title: str = None) -> str:
+#
+
+
+def _to_object(audio: dict) -> Audio:
+    return Audio(
+        id=audio['id'],
+        artist=audio['artist'],
+        title=audio['title'],
+        duration=audio['duration'],
+        download_url=_get_download_url(audio['id'], audio['artist'], audio['title'])
+    )
+
+
+def _get_download_url(url: str, artist: str = None, title: str = None) -> str:
     url = f'http://svinua.cf/api/music/?download={url}'
     if artist:
         url += '&artist=' + quote_plus(artist)

@@ -1,2 +1,3 @@
 from . import check
-from .musicless import Audio, search, get_download_url
+from .musicless import Audio, search
+from .text import search_text
