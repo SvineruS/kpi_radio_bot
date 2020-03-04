@@ -8,12 +8,10 @@ from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-import backend.music.check
-import frontend.frontend_utils.id_to_hashtag
-from backend import playlist, radioboss, files, Broadcast
+from backend import playlist, radioboss, files, Broadcast, music
 from consts import texts, others, config, BOT
 from frontend.core import users
-from frontend.frontend_utils import communication, keyboards as kb, stats
+from frontend.frontend_utils import communication, keyboards as kb, stats, id_to_hashtag
 from utils import user_utils, db, get_by
 
 
@@ -158,13 +156,13 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
 async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_now()
-    user_name = get_by.get_user_name(user) + ' #' + frontend.frontend_utils.id_to_hashtag(user.id)
+    user_name = get_by.get_user_name(user) + ' #' + id_to_hashtag(user.id)
     text_datetime = broadcast.name + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await _get_bad_words_text(audio_name)
-        is_anime = '🅰️' if await backend.music.check.is_anime(audio_name) else ''
+        is_anime = '🅰️' if await music.check.is_anime(audio_name) else ''
 
         return f'{is_now_mark} Новый заказ: \n' \
                f'{text_datetime} \n' \
@@ -181,7 +179,7 @@ async def _gen_order_caption(broadcast: Broadcast, user: types.User,
 
 
 async def _get_bad_words_text(audio_name: str) -> str:
-    if not (res := await backend.music.check.get_bad_words(audio_name)):
+    if not (res := await music.check.get_bad_words(audio_name)):
         return ''
 
     title, b_w = res
