@@ -41,7 +41,7 @@ class Broadcast:
         return self.day == datetime.now().weekday()
 
     def is_now(self) -> bool:
-        return self.start_time() < datetime.now() < self.stop_time()
+        return self.is_today() and self.start_time() < datetime.now() < self.stop_time()
 
     def is_will_be_play_today(self) -> bool:
         return self.is_today() and self.start_time() > datetime.now()
