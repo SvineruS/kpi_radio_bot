@@ -1,13 +1,13 @@
 import asyncio
 from unittest import TestCase
 
-from other import my_lru
+from kpi_radio_bot.utils.lru import lru
 
 
 class MyLruDecoratorTest(TestCase):
 
     def setUp(self):
-        @my_lru()
+        @lru()
         async def my_function(*args, **kwargs):
             self.func_completed += 1
 

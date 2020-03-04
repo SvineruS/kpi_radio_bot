@@ -54,7 +54,6 @@ BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
 
 async def order_choose_day() -> InlineKeyboardMarkup:
     today = datetime.today().weekday()
-
     btns = []
 
     if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
