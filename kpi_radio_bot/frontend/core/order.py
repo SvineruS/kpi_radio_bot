@@ -24,7 +24,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
 
     try:
         await query.message.edit_caption(
-            caption=texts.ORDER_ON_MODERATION.format(broadcast.name()),
+            caption=texts.ORDER_ON_MODERATION.format(broadcast.name),
             reply_markup=types.InlineKeyboardMarkup(),
         )
     except exceptions.MessageNotModified:
@@ -72,7 +72,6 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     user = get_by.get_user_from_entity(query.message)
     moder = query.from_user
     audio_name = get_by.get_audio_name(query.message.audio)
-    text_datetime = broadcast.name()
     admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
 
     try:
@@ -85,7 +84,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
         return communication.cache_add(
-            await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, text_datetime)), query.message)
+            await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, broadcast.name)), query.message)
 
     path = _get_audio_path(broadcast, audio_name)
     await query.message.chat.do('record_audio')
@@ -104,7 +103,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
         if not broadcast.is_now():
             when_playing = 'Заиграет когда надо'
             communication.cache_add(
-                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime)), query.message)
+                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)), query.message)
 
         # тут и ниже - трек заказан на эфир, который сейчас играет
 
@@ -112,7 +111,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
         elif await playlist.find_in_playlist_by_path(path):
             when_playing = 'Такой же трек уже принят на этот эфир'
             communication.cache_add(
-                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, text_datetime)), query.message)
+                await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)), query.message)
 
         # в плейлисте есть место для заказа
         elif last_track := await broadcast.get_new_order_pos():
@@ -129,7 +128,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
             when_playing = 'не успел :('
             communication.cache_add(
                 await BOT.send_audio(user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
-                                     caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, text_datetime)),
+                                     caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, broadcast.name)),
                 query.message)
 
     with suppress(exceptions.MessageNotModified):
@@ -160,7 +159,7 @@ async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_now()
     user_name = get_by.get_user_name(user) + ' #' + frontend.frontend_utils.id_to_hashtag(user.id)
-    text_datetime = broadcast.name() + (' (сейчас!)' if is_now else '')
+    text_datetime = broadcast.name + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
         is_now_mark = '‼️' if is_now else '❗️'
@@ -193,4 +192,4 @@ async def _get_bad_words_text(audio_name: str) -> str:
 
 
 def _get_audio_path(broadcast: Broadcast, audio_name: str) -> Path:
-    return broadcast.path() / (audio_name + '.mp3')
+    return broadcast.path / (audio_name + '.mp3')

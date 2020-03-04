@@ -49,7 +49,7 @@ def shut_down():
 
 
 async def perezaklad(day, time):
-    tracks = files.get_downloaded_tracks(Broadcast(day, time).path())
+    tracks = files.get_downloaded_tracks(Broadcast(day, time).path)
     for track_path in tracks:
         if not (tag := await radioboss.read_track_additional_info(track_path)):
             continue

@@ -121,8 +121,8 @@ async def _get_playlist_text(broadcast: Broadcast) -> str:
             for track in playback[:10]
         ])
     else:
-        name = f"<b>{broadcast.name()}</b>\n"
-        if not (playback := files.get_downloaded_tracks(broadcast.path())):
+        name = f"<b>{broadcast.name}</b>\n"
+        if not (playback := files.get_downloaded_tracks(broadcast.path)):
             return name + "❗️Еще ничего не заказали"
 
         text = name + '\n'.join([
