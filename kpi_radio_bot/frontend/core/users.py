@@ -114,7 +114,7 @@ async def add_in_db(message: types.Message):
 
 async def _get_playlist_text(broadcast: Broadcast) -> str:
     if broadcast.is_now():
-        playback = await playlist.get_playlist_next()
+        playback = await broadcast.get_playlist_next()
         return '\n'.join([
             f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
             for track in playback[:10]
