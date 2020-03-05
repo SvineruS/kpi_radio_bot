@@ -17,7 +17,7 @@ from utils import user_utils, db, get_by
 
 async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     user = query.from_user
-    if is_ban := await db.ban_get(user.id):
+    if is_ban := await db.users.ban_get(user.id):
         return await query.message.answer(texts.BAN_TRY_ORDER.format(is_ban.strftime("%d.%m %H:%M")))
 
     try:

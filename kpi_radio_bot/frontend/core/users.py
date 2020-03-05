@@ -69,8 +69,8 @@ async def help_change(query: types.CallbackQuery, key: str):
 
 
 async def notify_switch(message: types.Message):
-    status = await db.notification_get(message.from_user.id)
-    await db.notification_set(message.from_user.id, not status)
+    status = await db.users.notification_get(message.from_user.id)
+    await db.users.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
     await message.answer(text)
@@ -106,7 +106,7 @@ async def send_audio(chat: int, audio: Union[types.Audio, music.Audio]):
 
 
 async def add_in_db(message: types.Message):
-    await db.add(message.chat.id)
+    await db.users.add(message.chat.id)
 
 
 #
