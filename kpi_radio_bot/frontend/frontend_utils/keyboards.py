@@ -83,7 +83,7 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
         free_minutes = await broadcast.get_free_time()
 
         if free_minutes == 0 and attempts > 0:
-            btn = _ikb(TIMES[num], CB.ORDER, CB.NOTIME, day, attempts)
+            btn = _ikb('❌' + TIMES[num], CB.ORDER, CB.NOTIME, day, attempts)
         else:
             btn = _ikb(('⚠' if free_minutes < 5 else '') + TIMES[num], CB.ORDER, CB.TIME, day, num)
 
