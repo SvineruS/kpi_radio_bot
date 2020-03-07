@@ -2,7 +2,7 @@
 БД с лайками в канале истории
 """
 
-from db import _connector
+from utils.db import _connector
 
 
 _LIKES = _connector.DB["likes"]

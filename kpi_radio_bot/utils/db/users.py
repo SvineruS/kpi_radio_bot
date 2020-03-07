@@ -11,7 +11,7 @@ from datetime import datetime
 from time import time
 from typing import Optional
 
-from db import _connector
+from utils.db import _connector
 from utils.lru import lru
 
 

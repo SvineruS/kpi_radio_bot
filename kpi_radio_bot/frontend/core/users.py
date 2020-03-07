@@ -1,13 +1,12 @@
 """Обработка действий обычных пользователей"""
 from contextlib import suppress
-from typing import Union
 
 from aiogram import types, exceptions
 
-from backend import music, files, playlist, Broadcast
-from consts import texts, others, BOT
+from backend import files, Broadcast
+from consts import texts, others
 from frontend.frontend_utils import keyboards as kb
-from utils import get_by, db
+from utils import db
 
 
 async def menu(message: types.Message):
@@ -74,35 +73,6 @@ async def notify_switch(message: types.Message):
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
     await message.answer(text)
-
-
-async def send_audio(chat: int, audio: Union[types.Audio, music.Audio]):
-    if isinstance(audio, types.Audio):
-        file = audio.file_id
-        name = get_by.get_audio_name(audio)
-        duration = audio.duration
-    elif isinstance(audio, music.Audio):
-        file = audio.download_url
-        name = get_by.get_audio_name_(audio.artist, audio.title)
-        duration = audio.duration
-    else:
-        raise Exception("шо ты мне передал блядь ебаный рот")
-
-    bad_list = (
-        (texts.BAD_ORDER_SHORT, duration < 60),
-        (texts.BAD_ORDER_LONG, duration > 60 * 6),
-        (texts.BAD_ORDER_BADWORDS, await music.check.is_contain_bad_words(name)),
-        (texts.BAD_ORDER_ANIME, await music.check.is_anime(name)),
-        (texts.BAD_ORDER_PERFORMER, music.check.is_bad_name(name)),
-    )
-
-    warnings = [text for text, b in bad_list if b]
-
-    if warnings:
-        text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        await BOT.send_audio(chat, file, text, reply_markup=kb.BAD_ORDER_BUT_OK)
-    else:
-        await BOT.send_audio(chat, file, texts.CHOOSE_DAY, reply_markup=await kb.order_choose_day())
 
 
 async def add_in_db(message: types.Message):
