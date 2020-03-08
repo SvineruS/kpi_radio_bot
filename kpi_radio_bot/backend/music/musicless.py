@@ -10,7 +10,7 @@ from consts.config import AIOHTTP_SESSION
 from utils.lru import lru
 
 Audio = namedtuple('Audio', ('artist', 'id', 'title', 'duration', 'download_url'))
-_BASE_URL = "http://svinua.cf/api/music/?"
+_BASE_URL = "http://api.svinua.cf/musicless/?"
 
 
 @lru(maxsize=200, ttl=60 * 60 * 12)
