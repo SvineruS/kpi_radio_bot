@@ -28,6 +28,10 @@ async def search(name: str) -> List[Audio]:
             return []
 
 
+def get_download_url_by_id(id_: str):
+    return _BASE_URL + urlencode(dict(download_by_id=id_))
+
+
 #
 
 

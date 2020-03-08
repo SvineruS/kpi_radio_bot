@@ -5,8 +5,8 @@ from typing import List, Union
 
 from aiogram import types, exceptions
 
-from consts import texts
-from backend.music import search, check, Audio
+from backend.music import search, check, get_download_url_by_id, Audio
+from consts import texts, config, BOT
 from frontend.frontend_utils import keyboards
 from utils import db, get_by
 
@@ -71,6 +71,17 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
 
     if isinstance(audio, Audio) and file == audio.download_url:
         await db.audio_cache.update(audio.id, msg.audio.file_id)
+
+
+async def inline_chosen(chosen_inline: types.ChosenInlineResult):
+    if config.IS_TEST_ENV:
+        return
+    api_id = chosen_inline.result_id
+    if await db.audio_cache.get_one(api_id):
+        return
+    msg = await BOT.send_audio(config.CACHE_CHAT_ID, get_download_url_by_id(api_id))
+    tg_id = msg.audio.file_id
+    await db.audio_cache.update(api_id, tg_id)
 
 
 #
