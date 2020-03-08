@@ -19,7 +19,7 @@ async def send_history(fields):
     sender_name = ''
     if tag := await radioboss.read_track_additional_info(fields['path']):
         sender_name = texts.HISTORY_TITLE.format(get_by.get_user_name_(tag['id'], tag['name']))
-        if not await db.notification_get(tag['id']):
+        if not await db.users.notification_get(tag['id']):
             await BOT.send_message(tag['id'], texts.ORDER_PLAYING.format(fields['casttitle']))
         await BOT.edit_message_reply_markup(config.ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
@@ -49,7 +49,7 @@ def shut_down():
 
 
 async def perezaklad(day, time):
-    tracks = files.get_downloaded_tracks(Broadcast(day, time).path())
+    tracks = files.get_downloaded_tracks(Broadcast(day, time).path)
     for track_path in tracks:
         if not (tag := await radioboss.read_track_additional_info(track_path)):
             continue

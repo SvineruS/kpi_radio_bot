@@ -15,7 +15,9 @@ def lru(maxsize: int = None, ttl: int = None):
             cache.clear()
 
         def cache_del(*args, **kwargs):
-            del cache[get_key(args, kwargs)]
+            k = get_key(args, kwargs)
+            if k in cache:
+                del cache[k]
 
         if asyncio.iscoroutinefunction(function):
             @functools.wraps(function)

@@ -21,14 +21,15 @@ logging.basicConfig(
     handlers=[logging.FileHandler(PATH_LOG), logging.StreamHandler()]
 )
 
-
 IS_TEST_ENV = getenv("ENV_TYPE") == 'TEST'
 
 TOKEN = getenv("TOKEN")
 TOKEN_TEST = getenv("TOKEN_TEST")
 
 ADMINS_CHAT_ID = int(getenv("ADMINS_CHAT_ID"))  # Чат с модерами
-HISTORY_CHAT_ID = int(getenv("HISTORY_CHAT_ID"))  # Чат истории
+HISTORY_CHAT_ID = int(getenv("HISTORY_CHAT_ID"))  # Канал истории
+CACHE_CHAT_ID = int(getenv("CACHE_CHAT_ID"))  # Канал кеша
+
 
 # ip, port, password.   Узнать в радиобоссе->настройки->api
 RADIOBOSS_DATA = (

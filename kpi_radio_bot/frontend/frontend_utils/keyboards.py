@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Optional
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
@@ -13,8 +14,11 @@ def _parse(*args) -> str:
     return json.dumps(args)
 
 
-def unparse(data: str) -> dict:
-    return json.loads(data)
+def unparse(data: str) -> Optional[dict]:
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError:
+        return None
 
 
 def _ikb(text: str, *cb_data) -> InlineKeyboardButton:  # shortcut
@@ -54,7 +58,6 @@ BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
 
 async def order_choose_day() -> InlineKeyboardMarkup:
     today = datetime.today().weekday()
-
     btns = []
 
     if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
@@ -80,7 +83,7 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
         free_minutes = await broadcast.get_free_time()
 
         if free_minutes == 0 and attempts > 0:
-            btn = _ikb(TIMES[num], CB.ORDER, CB.NOTIME, day, attempts)
+            btn = _ikb('❌' + TIMES[num], CB.ORDER, CB.NOTIME, day, attempts)
         else:
             btn = _ikb(('⚠' if free_minutes < 5 else '') + TIMES[num], CB.ORDER, CB.TIME, day, num)
 

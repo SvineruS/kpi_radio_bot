@@ -42,7 +42,7 @@ async def user_reply_message_handler(message: types.Message):
 
     # Ввод названия песни
     if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-        return await core.search.search_audio(message)
+        return await core.searching.search_audio(message)
 
     raise SkipHandler
 
@@ -50,7 +50,7 @@ async def user_reply_message_handler(message: types.Message):
 @DP.message_handler(content_types=['audio'], pm=True)
 async def user_audio_handler(message: types.Message):
     # Пользователь скинул аудио
-    return await core.users.send_audio(message.chat.id, tg_audio=message.audio)
+    return await core.searching.sent_audio(message, message.audio)
 
 
 @DP.message_handler(pm=True)
@@ -133,12 +133,10 @@ async def admins_reply_message_handler(message: types.Message):
 
 @DP.callback_query_handler()
 async def callback_query_handler(query: types.CallbackQuery):
-    try:
-        category, cmd, *params = keyboards.unparse(query.data)
-    except:  # todo remove
+    if not (kb_data := keyboards.unparse(query.data)):
         with suppress(exceptions.InvalidQueryID):
-            await query.answer("Кнопка устарела")
-        return
+            return await query.answer("Кнопка устарела")
+    category, cmd, *params = kb_data
 
     if category == keyboards.CB.ORDER:
         await order_callback_handler(query, cmd, params)
@@ -154,8 +152,13 @@ async def callback_query_handler(query: types.CallbackQuery):
 
 
 @DP.inline_handler()
-async def query_text_handler(inline_query: types.InlineQuery):
-    await core.search.inline_search(inline_query)
+async def inline_query_handler(inline_query: types.InlineQuery):
+    await core.searching.inline_search(inline_query)
+
+
+@DP.chosen_inline_handler()
+async def chosen_inline_handler(chosen_inline: types.ChosenInlineResult):
+    await core.searching.inline_chosen(chosen_inline)
 
 
 async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):

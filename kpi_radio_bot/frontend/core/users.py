@@ -3,12 +3,10 @@ from contextlib import suppress
 
 from aiogram import types, exceptions
 
-import backend.music.check
-import backend.music.musicless
-from backend import music, files, playlist, Broadcast
-from consts import texts, others, BOT
+from backend import files, Broadcast
+from consts import texts, others
 from frontend.frontend_utils import keyboards as kb
-from utils import get_by, db
+from utils import db
 
 
 async def menu(message: types.Message):
@@ -70,44 +68,15 @@ async def help_change(query: types.CallbackQuery, key: str):
 
 
 async def notify_switch(message: types.Message):
-    status = await db.notification_get(message.from_user.id)
-    await db.notification_set(message.from_user.id, not status)
+    status = await db.users.notification_get(message.from_user.id)
+    await db.users.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
     await message.answer(text)
 
 
-async def send_audio(chat: int, tg_audio: types.Audio = None, api_audio: music.Audio = None):
-    if tg_audio:
-        file = tg_audio.file_id
-        name = get_by.get_audio_name(tg_audio)
-        duration = tg_audio.duration
-    elif api_audio:
-        file = backend.music.musicless.get_download_url(api_audio.url, api_audio.artist, api_audio.title)
-        name = get_by.get_audio_name_(api_audio.artist, api_audio.title)
-        duration = api_audio.duration
-    else:
-        raise Exception("шо ты мне передал блядь ебаный рот")
-
-    bad_list = (
-        (texts.BAD_ORDER_SHORT, duration < 60),
-        (texts.BAD_ORDER_LONG, duration > 60 * 6),
-        (texts.BAD_ORDER_BADWORDS, await backend.music.check.is_contain_bad_words(name)),
-        (texts.BAD_ORDER_ANIME, await backend.music.check.is_anime(name)),
-        (texts.BAD_ORDER_PERFORMER, backend.music.check.is_bad_name(name)),
-    )
-
-    warnings = [text for text, b in bad_list if b]
-
-    if warnings:
-        text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        await BOT.send_audio(chat, file, text, reply_markup=kb.BAD_ORDER_BUT_OK)
-    else:
-        await BOT.send_audio(chat, file, texts.CHOOSE_DAY, reply_markup=await kb.order_choose_day())
-
-
 async def add_in_db(message: types.Message):
-    await db.add(message.chat.id)
+    await db.users.add(message.chat.id)
 
 
 #
@@ -115,14 +84,14 @@ async def add_in_db(message: types.Message):
 
 async def _get_playlist_text(broadcast: Broadcast) -> str:
     if broadcast.is_now():
-        playback = await playlist.get_playlist_next()
+        playback = await broadcast.get_playlist_next()
         return '\n'.join([
             f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
             for track in playback[:10]
         ])
     else:
-        name = f"<b>{broadcast.name()}</b>\n"
-        if not (playback := files.get_downloaded_tracks(broadcast.path())):
+        name = f"<b>{broadcast.name}</b>\n"
+        if not (playback := files.get_downloaded_tracks(broadcast.path)):
             return name + "❗️Еще ничего не заказали"
 
         text = name + '\n'.join([
