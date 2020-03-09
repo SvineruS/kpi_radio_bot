@@ -40,7 +40,7 @@ async def admin_message(message: Message):
     user, reply_to = res
 
     if reply_to:
-        text = None
+        text = ''
     elif message.reply_to_message.audio:
         text = "На ваш заказ <i>(" + get_by.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
     else:
