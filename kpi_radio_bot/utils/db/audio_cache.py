@@ -36,3 +36,7 @@ async def get(api_ids: List[str]) -> Dict[str, str]:
 
 async def delete(api_id: str):
     await _CACHE.delete_one({'api_id': api_id})
+
+
+async def delete_many(api_ids: List[str]):
+    await _CACHE.delete_many({'api_id': {"$in": api_ids}})
