@@ -51,10 +51,11 @@ async def playlist_show(query: types.CallbackQuery, broadcast: Broadcast):
 
 async def timetable(message: types.Message):
     text = ''
-    for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
-        text += f"{day_name} \n"
-        for break_num, (start, stop) in others.BROADCAST_TIMES[day_num].items():
-            text += f"   {start} - {stop}   {others.TIMES[break_num]} \n"
+    # for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
+    #     text += f"{day_name} \n"
+    day_num = 0
+    for break_num, (start, stop) in others.BROADCAST_TIMES[day_num].items():
+        text += f"   {start} - {stop}   {others.TIMES[break_num]} \n"
 
     # todo
     # text += "До ближайшего эфира ..."
