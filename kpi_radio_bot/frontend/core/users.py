@@ -50,7 +50,7 @@ async def playlist_show(query: types.CallbackQuery, broadcast: Broadcast):
 # endregion
 
 async def timetable(message: types.Message):
-    text = ''
+    text = 'Карантиновый режим \n'
     # for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
     #     text += f"{day_name} \n"
     day_num = 0
