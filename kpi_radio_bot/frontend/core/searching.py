@@ -38,6 +38,9 @@ async def inline_search(inline_query: types.InlineQuery):
     except exceptions.NetworkError as ex:
         logging.warning(f"inline_search file too large {ex}")
         return await inline_query.answer([])
+    except exceptions.BadRequest as ex:
+        logging.warning(f"inline_search error {ex}")
+        await _delete_broken_cache(articles)
 
 
 async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
@@ -109,3 +112,12 @@ def _get_inline_result(audio: Audio, tg_id: str = None) -> types.InlineQueryResu
         performer=audio.artist,
         title=audio.title,
     )
+
+
+async def _delete_broken_cache(articles: List[types.InlineQueryResult]):
+    ids = [
+        res.id
+        for res in articles
+        if isinstance(res, types.InlineQueryResultCachedAudio)
+    ]
+    await db.audio_cache.delete_many(ids)
