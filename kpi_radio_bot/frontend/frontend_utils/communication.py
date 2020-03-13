@@ -5,7 +5,7 @@ from aiogram.types import Message
 
 from consts.config import BOT, ADMINS_CHAT_ID
 from utils import get_by, lru
-from . import id_to_hashtag
+from .id_to_hashtag import id_to_hashtag
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
 MESSAGES_CACHE = lru.LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
