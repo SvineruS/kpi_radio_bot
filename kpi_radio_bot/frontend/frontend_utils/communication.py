@@ -5,6 +5,7 @@ from aiogram.types import Message
 
 from consts.config import BOT, ADMINS_CHAT_ID
 from utils import get_by, lru
+from . import id_to_hashtag
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
 MESSAGES_CACHE = lru.LRU(maxsize=1_000, ttl=60 * 60 * 24 * 3)
@@ -27,7 +28,7 @@ async def user_message(message: Message):
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
 
-    text = f"От {get_by.get_user_name(message.from_user)}: \n"
+    text = f"От {get_by.get_user_name(message.from_user)} #{id_to_hashtag(message.from_user.id)}: \n"
     await _resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
