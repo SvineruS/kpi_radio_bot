@@ -35,8 +35,8 @@ async def ban(message: types.Message):
 
 
 async def set_volume(message: types.Message):
-    if not (volume := _get_volume_from_message(message)):
-        await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{volume}</code>')
+    if (volume := _get_volume_from_message(message)) is None:
+        return await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{volume}</code>')
     await radioboss.setvol(volume)
     await message.reply(f'Громкость выставлена в {volume}!')
 
