@@ -37,10 +37,11 @@ async def inline_search(inline_query: types.InlineQuery):
         return await inline_query.answer(articles)
     except exceptions.NetworkError as ex:
         logging.warning(f"inline_search file too large {ex}")
-        return await inline_query.answer([])
+        return await inline_query.answer([], cache_time=0)
     except exceptions.BadRequest as ex:
         logging.warning(f"inline_search error {ex}")
         await _delete_broken_cache(articles)
+        return await inline_query.answer([], cache_time=0)
 
 
 async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
