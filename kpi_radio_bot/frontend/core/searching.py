@@ -28,7 +28,7 @@ async def search_audio(message: types.Message):
 
 async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
-    if not (audios := await search(name)):
+    if not name or not (audios := await search(name)):
         return await inline_query.answer([])
 
     articles = await _get_inline_results(audios[:50])
