@@ -21,7 +21,7 @@ BAD_WORDS = [
 ANIME_WORDS = ['anime', 'аниме']
 
 BAD_NAMES = [
-    'корж', 'тима', 'стрыкало', 'нервы', 'гречка',
+    'корж', 'тима', 'стрыкало', 'нервы', 'гречка', 'morgenstern', 'face', 'gspd',
     'gachi', '♂', 'slave', 'ass', 'butt', 'right version',
     'remix', 'radio tapok',
 ]
