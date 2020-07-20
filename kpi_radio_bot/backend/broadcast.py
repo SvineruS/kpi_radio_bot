@@ -26,7 +26,7 @@ class Broadcast:
     def path(self) -> Path:
         path = others.PATHS['orders']
         path /= f"D0{self.day + 1}"
-        path /= ["0", "10", "12", "14", "16", "5"][self.num]
+        path /= ["0", "10", "12", "13", "15", "5"][self.num]
         return path
 
     @property
