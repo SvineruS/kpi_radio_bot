@@ -58,13 +58,13 @@ BROADCAST_TIMES_VACATION = {
     **dict.fromkeys(
         [0, 1, 2, 3, 4, 5, 6],
         {
-            0: ('12:00', '18:00'),
-            5: ('18:00', '22:00')
+            0: ('9:00', '13:00'),
+            5: ('13:00', '18:00')
         }
     ),
 }
 
-BROADCAST_TIMES = BROADCAST_TIMES_NORMAL
+BROADCAST_TIMES = BROADCAST_TIMES_VACATION
 
 
 BROADCAST_TIMES_ = {
