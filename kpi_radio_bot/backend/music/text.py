@@ -72,11 +72,15 @@ def _delete_translit_from_title(title: str) -> str:
 
 
 async def _get_lyrics(url: str) -> Optional[str]:
-    async with AIOHTTP_SESSION.get(url) as res:
+    async with AIOHTTP_SESSION.get(url, headers={'user-agent': 'my custom agent'}) as res:
         if res.status != 200:
             return None
         lyrics = await res.text()
 
-    lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
-    lyrics = _PARSER.parse(lyrics).strip()
-    return lyrics
+    try:
+        lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
+        lyrics = _PARSER.parse(lyrics).strip()
+        return lyrics
+    except Exception as ex:
+        logging.warning(f"lyrics search error. url: {url}, exception: {ex}")
+        return None
