@@ -45,12 +45,12 @@ async def inline_search(inline_query: types.InlineQuery):
 
 
 async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
-    if isinstance(audio, types.Audio):
+    if isinstance(audio, types.Audio):  # скинутое юзером аудио (через инлайн или от другого бота)
         file = audio.file_id
         name = get_by.get_audio_name(audio)
         duration = audio.duration
-    elif isinstance(audio, Audio):
-        if not (file := db.audio_cache.get_one(audio.id)):
+    elif isinstance(audio, Audio):  # аудио найденное ботом по названию
+        if not (file := await db.audio_cache.get_one(audio.id)):
             file = audio.download_url
         name = get_by.get_audio_name_(audio.artist, audio.title)
         duration = audio.duration
