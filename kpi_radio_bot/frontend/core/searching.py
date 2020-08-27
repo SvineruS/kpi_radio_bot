@@ -1,14 +1,14 @@
 """Поиск песен"""
 
 import logging
-from typing import List, Union
+from typing import Union
 
 from aiogram import types, exceptions
 
-from backend.music import search, check, get_download_url_by_id, Audio
-from consts import texts, config, BOT
+from backend.music import search, check, Audio
+from consts import texts
 from frontend.frontend_utils import keyboards
-from utils import db, get_by
+from utils import get_by
 
 
 async def search_audio(message: types.Message):
@@ -31,7 +31,15 @@ async def inline_search(inline_query: types.InlineQuery):
     if not name or not (audios := await search(name)):
         return await inline_query.answer([])
 
-    articles = await _get_inline_results(audios[:50])
+    articles = [
+        types.InlineQueryResultAudio(
+            id=audio.id,
+            audio_url=audio.download_url,
+            performer=audio.artist,
+            title=audio.title,
+        )
+        for audio in audios[:50]
+    ]
 
     try:
         return await inline_query.answer(articles)
@@ -40,7 +48,6 @@ async def inline_search(inline_query: types.InlineQuery):
         return await inline_query.answer([], cache_time=0)
     except exceptions.BadRequest as ex:
         logging.warning(f"inline_search error {ex}")
-        await _delete_broken_cache(articles)
         return await inline_query.answer([], cache_time=0)
 
 
@@ -50,8 +57,7 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
         name = get_by.get_audio_name(audio)
         duration = audio.duration
     elif isinstance(audio, Audio):  # аудио найденное ботом по названию
-        if not (file := await db.audio_cache.get_one(audio.id)):
-            file = audio.download_url
+        file = audio.download_url
         name = get_by.get_audio_name_(audio.artist, audio.title)
         duration = audio.duration
     else:
@@ -69,56 +75,6 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
 
     if warnings:
         text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        msg = await message.answer_audio(file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
+        await message.answer_audio(file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
-        msg = await message.answer_audio(file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
-
-    if isinstance(audio, Audio) and file == audio.download_url:
-        await db.audio_cache.update(audio.id, msg.audio.file_id)
-
-
-async def inline_chosen(chosen_inline: types.ChosenInlineResult):
-    if config.IS_TEST_ENV:
-        return
-    api_id = chosen_inline.result_id
-    if await db.audio_cache.get_one(api_id):
-        return
-    msg = await BOT.send_audio(config.CACHE_CHAT_ID, get_download_url_by_id(api_id))
-    tg_id = msg.audio.file_id
-    await db.audio_cache.update(api_id, tg_id)
-
-
-#
-
-
-async def _get_inline_results(audios: List[Audio]) -> List[types.InlineQueryResult]:
-    ids = [audio.id for audio in audios]
-    cache = await db.audio_cache.get(ids)
-    audios = sorted(audios, key=lambda audio: audio.id in cache, reverse=True)  # cached first
-    return [
-        _get_inline_result(audio, cache.get(audio.id, None))
-        for audio in audios
-    ]
-
-
-def _get_inline_result(audio: Audio, tg_id: str = None) -> types.InlineQueryResult:
-    if tg_id:
-        return types.InlineQueryResultCachedAudio(
-            id=audio.id,
-            audio_file_id=tg_id,
-        )
-    return types.InlineQueryResultAudio(
-        id=audio.id,
-        audio_url=audio.download_url,
-        performer=audio.artist,
-        title=audio.title,
-    )
-
-
-async def _delete_broken_cache(articles: List[types.InlineQueryResult]):
-    ids = [
-        res.id
-        for res in articles
-        if isinstance(res, types.InlineQueryResultCachedAudio)
-    ]
-    await db.audio_cache.delete_many(ids)
+        await message.answer_audio(file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())

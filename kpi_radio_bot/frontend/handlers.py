@@ -156,11 +156,6 @@ async def inline_query_handler(inline_query: types.InlineQuery):
     await core.searching.inline_search(inline_query)
 
 
-@DP.chosen_inline_handler()
-async def chosen_inline_handler(chosen_inline: types.ChosenInlineResult):
-    await core.searching.inline_chosen(chosen_inline)
-
-
 async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
     # Выбрали день
     if cmd == keyboards.CB.DAY:

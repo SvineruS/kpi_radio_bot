@@ -2,7 +2,7 @@ import logging
 from collections import namedtuple
 from json import JSONDecodeError
 from typing import List
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import quote_plus
 
 from aiohttp import ClientResponseError
 
@@ -28,23 +28,15 @@ async def search(name: str) -> List[Audio]:
             return []
 
 
-def get_download_url_by_id(id_: str):
-    return _BASE_URL + "download_by_id/" + quote_plus(id_)
-
-
 #
 
 
 def _to_object(audio: dict) -> Audio:
+    id_ = f"{audio['owner_id']}_{audio['id']}"
     return Audio(
-        id=f"{audio['owner_id']}_{audio['id']}",
+        id=id_,
         artist=audio['artist'],
         title=audio['title'],
         duration=audio['duration'],
-        download_url=_get_download_url(audio)
+        download_url=_BASE_URL + "download_by_id/" + quote_plus(id_)
     )
-
-
-def _get_download_url(audio: dict) -> str:
-    return _BASE_URL + "download/" + quote_plus(audio['url']) + "?" + \
-           urlencode(dict(artist=audio['artist'], title=audio['title']))
