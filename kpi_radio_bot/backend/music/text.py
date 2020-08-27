@@ -89,7 +89,3 @@ async def _get_lyrics(url: str) -> Optional[str]:
     except Exception as ex:
         logging.warning(f"lyrics search error. url: {url}, exception: {ex}")
         return None
-
-
-import asyncio
-print(asyncio.get_event_loop().run_until_complete(_get_lyrics("https://genius.com/Death-grips-hacker-lyrics")))
