@@ -38,5 +38,5 @@ def _to_object(audio: dict) -> Audio:
         artist=audio['artist'],
         title=audio['title'],
         duration=audio['duration'],
-        download_url=_BASE_URL + "download_by_id/" + quote_plus(id_)
+        download_url=_BASE_URL + "download_by_id/" + quote_plus(id_) + "?lol"
     )
