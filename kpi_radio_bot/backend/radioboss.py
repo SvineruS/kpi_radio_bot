@@ -77,7 +77,7 @@ async def read_track_additional_info(path: Path) -> Optional[dict]:
     try:
         return json.loads(tag)
     except json.JSONDecodeError:
-        logging.warning(f"can't read track comment")
+        logging.warning(f"can't read track comment {tag}")
         return None
 
 

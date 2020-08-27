@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Tuple
@@ -78,7 +79,7 @@ class Broadcast:
             return None
         return await playlist.get_bounded_playlist(datetime.now(), self.stop_time)
 
-    async def get_new_order_pos(self) -> Optional[playlist.PlayList]:
+    async def get_new_order_pos(self) -> Optional[playlist.PlaylistItem]:
         if not self.is_now():
             return None
         playlist_ = await self.get_playlist_next()
@@ -103,7 +104,7 @@ class Broadcast:
 #
 
 
-def _get_new_order_pos(playlist_: playlist.PlayList):
+def _get_new_order_pos(playlist_: playlist.PlayList) -> Optional[playlist.PlaylistItem]:
     if not playlist_ or playlist_[-1].is_order:  # если последний трек, что успеет проиграть, это заказ - вернем None
         return None
 
@@ -114,7 +115,10 @@ def _get_new_order_pos(playlist_: playlist.PlayList):
 
 
 async def _calculate_tracks_duration(broadcast: Broadcast) -> float:
-    return await _calculate_tracks_duration_(tuple(files.get_downloaded_tracks(broadcast.path)))
+    duration = await _calculate_tracks_duration_(tuple(files.get_downloaded_tracks(broadcast.path)))
+    if duration is None:
+        logging.warning("duration is None    ????")
+    return duration or 0
 
 
 @lru(maxsize=7 * 7, ttl=60 * 60 * 12)
