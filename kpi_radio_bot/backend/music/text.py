@@ -72,15 +72,24 @@ def _delete_translit_from_title(title: str) -> str:
 
 
 async def _get_lyrics(url: str) -> Optional[str]:
-    async with AIOHTTP_SESSION.get(url, headers={'user-agent': 'my custom agent'}) as res:
+    async with AIOHTTP_SESSION.get(url) as res:
         if res.status != 200:
             return None
         lyrics = await res.text()
 
     try:
-        lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
+        if '<div class="lyrics">' in lyrics:
+            lyrics = lyrics.split('<div class="lyrics">')[1].split('</div>')[0]
+        elif '<div class="Lyrics__Container' in lyrics:
+            lyrics = lyrics.split('<div class="Lyrics__Container')[1].split('">', 1)[1].split('</div>')[0]
+        else:
+            logging.warning(f"lyrics search error. url: {url}, хз короче")
         lyrics = _PARSER.parse(lyrics).strip()
         return lyrics
     except Exception as ex:
         logging.warning(f"lyrics search error. url: {url}, exception: {ex}")
         return None
+
+
+import asyncio
+print(asyncio.get_event_loop().run_until_complete(_get_lyrics("https://genius.com/Death-grips-hacker-lyrics")))
