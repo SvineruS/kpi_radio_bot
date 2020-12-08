@@ -19,7 +19,7 @@ async def playlist_now(message: types.Message):
     if not (broadcast := Broadcast.now()):
         return await message.answer(texts.SONG_NO_NOW, reply_markup=kb.WHAT_PLAYING)
 
-    playback = [i if i else r'¯\_(ツ)_/¯' for i in await broadcast.get_now()]
+    playback = [i if i else r'¯\_(ツ)_/¯' for i in await broadcast.get_prev_now_next()]
     await message.answer(texts.WHAT_PLAYING.format(*playback), reply_markup=kb.WHAT_PLAYING)
 
 
