@@ -9,8 +9,9 @@ https://aiogram.readthedocs.io/en/latest/dispatcher/filters.html#boundfilter
 """
 
 from aiogram.dispatcher.filters.filters import BoundFilter
-from aiogram.types import Message, ChatType
+from aiogram.types import Message, ChatType, CallbackQuery
 
+from bot.bot_utils.keyboards import unparse
 from consts.config import ADMINS_CHAT_ID, BOT
 
 
@@ -26,18 +27,6 @@ class AdminChatFilter(BoundFilter):
         return message.chat.id == ADMINS_CHAT_ID
 
 
-class PrivateChatFilter(BoundFilter):
-    key = 'pm'
-
-    def __init__(self, pm):
-        self.pm = pm
-
-    async def check(self, message: Message):
-        if not self.pm:
-            return True
-        return ChatType.is_private(message)
-
-
 class ReplyToBotFilter(BoundFilter):
     key = 'reply_to_bot'
 
@@ -48,6 +37,18 @@ class ReplyToBotFilter(BoundFilter):
         if not self.reply_to_bot:
             return True
         return message.reply_to_message and message.reply_to_message.from_user.id == (await BOT.me).id
+
+
+class JsonCallbackDataFilter(BoundFilter):
+    key = 'cb'
+
+    def __init__(self, cb: tuple):
+        self.cb = cb
+
+    async def check(self, query: CallbackQuery):
+        data = unparse(query.data)
+        if all((data[i] == cbi for i, cbi in enumerate(self.cb))):
+            return {'json_data': data[len(self.cb):]}
 
 
 # class OnlyAdminFilter(BoundFilter):
@@ -67,4 +68,4 @@ class ReplyToBotFilter(BoundFilter):
 def bind_filters(dp_):
     dp_.filters_factory.bind(AdminChatFilter)
     dp_.filters_factory.bind(ReplyToBotFilter)
-    dp_.filters_factory.bind(PrivateChatFilter)
+    dp_.filters_factory.bind(JsonCallbackDataFilter)
