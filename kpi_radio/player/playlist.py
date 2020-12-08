@@ -67,7 +67,7 @@ class PlaylistM3U(PlaylistBase):
     async def load(self):
         self[:] = []
         duration_sum = timedelta()
-        async for i in _m3u_parser.load(self._get_path()):
+        for i in _m3u_parser.load(self._get_path()):
             self.append(
                 PlaylistItem(title=i.title, path=i.path, duration=i.duration,
                              time_start=self.broadcast.start_time + duration_sum)
@@ -102,7 +102,7 @@ class PlaylistRadioboss(PlaylistBase):
                path=track['@FILENAME'],
                duration=(datetime.strptime(track['@STARTTIME'], '%H:%M:%S') - datetime(1900, 1, 1)).total_seconds()
             )
-            for track in await radioboss.getplaylist2()
+            for track in (await radioboss.getplaylist2())['TRACK']
             if track['@STARTTIME']  # если STARTTIME == "" - это не песня (либо она стартанет через >=сутки)
         ]
         return self
