@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Union, Iterable
 
-from consts import others
+from consts import others, config
 from utils.get_by import time_to_datetime
 
 from . import radioboss, _m3u_parser
@@ -62,7 +62,7 @@ class PlaylistBase(list):
 
 
 class PlaylistM3U(PlaylistBase):
-    PATH_BASE = Path(__file__).parent / 'playlists'
+    PATH_BASE = config.PATH_STUFF / 'playlists'
 
     async def load(self):
         self[:] = []
