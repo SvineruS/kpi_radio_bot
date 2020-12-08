@@ -2,4 +2,4 @@ component_depth: 4
 languages:
 - python
 exclude:
-- /kpi_radio_bot/consts/.*
+- /kpi_radio/consts/.*

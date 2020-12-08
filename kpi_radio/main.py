@@ -4,10 +4,10 @@ import ssl
 from aiogram import types, Dispatcher, Bot
 from aiohttp import web
 
-import backend.music.text
+import music.text
 from consts import config
-from frontend.core import events
-from frontend.handlers import DP
+from bot.handlers_ import events
+from bot.handlers import DP
 from utils import scheduler
 
 APP = web.Application()
@@ -18,7 +18,7 @@ ROUTES = web.RouteTableDef()
 async def gettext(request):
     if not (name := request.match_info.get('name')):
         return web.Response(text="Использование: /gettext/имя_песни")
-    if not (res := await backend.music.text.search_text(name)):
+    if not (res := await music.text.search_text(name)):
         return web.Response(text="Ошибка поиска")
     title, text = res
     return web.Response(text=f"{title} \n\n{text}")

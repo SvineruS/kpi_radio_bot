@@ -5,10 +5,10 @@ from typing import List
 from aiogram import Dispatcher, types, executor, exceptions
 from aiogram.dispatcher.handler import SkipHandler
 
-from backend import Broadcast
 from consts import texts, BOT
-from frontend import core
-from frontend.frontend_utils import keyboards, communication, bind_filters
+from bot import handlers_
+from bot.bot_utils import keyboards, communication, bind_filters
+from player import Broadcast
 
 DP = Dispatcher(BOT)
 bind_filters(DP)
@@ -16,19 +16,19 @@ bind_filters(DP)
 
 @DP.message_handler(commands=['start'], pm=True)
 async def start_handler(message: types.Message):
-    await core.users.add_in_db(message)
+    await handlers_.users.add_in_db(message)
     await message.answer(texts.START)
-    await core.users.menu(message)
+    await handlers_.users.menu(message)
 
 
 @DP.message_handler(commands=['cancel'], pm=True)
 async def cancel(message: types.Message):
-    await core.users.menu(message)
+    await handlers_.users.menu(message)
 
 
 @DP.message_handler(commands=['notify'], pm=True)
 async def notify_handler(message: types.Message):
-    await core.users.notify_switch(message)
+    await handlers_.users.notify_switch(message)
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, pm=True)
@@ -42,7 +42,7 @@ async def user_reply_message_handler(message: types.Message):
 
     # Ввод названия песни
     if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-        return await core.searching.search_audio(message)
+        return await handlers_.searching.search_audio(message)
 
     raise SkipHandler
 
@@ -50,14 +50,14 @@ async def user_reply_message_handler(message: types.Message):
 @DP.message_handler(content_types=['audio'], pm=True)
 async def user_audio_handler(message: types.Message):
     # Пользователь скинул аудио
-    return await core.searching.sent_audio(message, message.audio)
+    return await handlers_.searching.sent_audio(message, message.audio)
 
 
 @DP.message_handler(pm=True)
 async def user_buttons_handler(message: types.Message):
     # Кнопка 'Что играет?'
     if message.text == keyboards.MENU.WHAT_PLAYING:
-        await core.users.playlist_now(message)
+        await handlers_.users.playlist_now(message)
 
     # Кнопка 'Заказать песню'
     elif message.text == keyboards.MENU.ORDER:
@@ -74,7 +74,7 @@ async def user_buttons_handler(message: types.Message):
 
     # Кнопка 'Расписание'
     elif message.text == keyboards.MENU.TIMETABLE:
-        await core.users.timetable(message)
+        await handlers_.users.timetable(message)
 
     else:
         raise SkipHandler
@@ -90,37 +90,37 @@ async def user_other_handler(message: types.Message):
 
 @DP.message_handler(commands=['next'], admins_chat=True)
 async def next_handler(message: types.Message):
-    await core.admins.next_track(message)
+    await handlers_.admins.next_track(message)
 
 
 @DP.message_handler(commands=['update'], admins_chat=True)
 async def update_handler(message: types.Message):
-    await core.admins.update(message)
+    await handlers_.admins.update(message)
 
 
 @DP.message_handler(commands=['ban'], admins_chat=True)
 async def ban_handler(message: types.Message):
-    await core.admins.ban(message)
+    await handlers_.admins.ban(message)
 
 
 @DP.message_handler(commands=['vol', 'volume'], admins_chat=True)
 async def volume_handler(message: types.Message):
-    await core.admins.set_volume(message)
+    await handlers_.admins.set_volume(message)
 
 
 @DP.message_handler(commands=['stats'], admins_chat=True)
 async def stats_handler(message: types.Message):
-    await core.admins.get_stats(message)
+    await handlers_.admins.get_stats(message)
 
 
 @DP.message_handler(commands=['log'], admins_chat=True)
 async def log_handler(message: types.Message):
-    await core.admins.get_log(message)
+    await handlers_.admins.get_log(message)
 
 
 @DP.message_handler(commands=['playlist'], admins_chat=True)
 async def playlist_handler(message: types.Message):
-    await core.admins.show_playlist_control(message)
+    await handlers_.admins.show_playlist_control(message)
 
 
 @DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, admins_chat=True)
@@ -153,78 +153,78 @@ async def callback_query_handler(query: types.CallbackQuery):
 
 @DP.inline_handler()
 async def inline_query_handler(inline_query: types.InlineQuery):
-    await core.searching.inline_search(inline_query)
+    await handlers_.searching.inline_search(inline_query)
 
 
 async def order_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
     # Выбрали день
     if cmd == keyboards.CB.DAY:
         *_, day = params
-        await core.order.order_choose_time(query, day)
+        await handlers_.order.order_choose_time(query, day)
 
     # Выбрали время
     elif cmd == keyboards.CB.TIME:
         *_, day, time = params
         broadcast = Broadcast(day, time)
-        await core.order.order_make(query, broadcast)
+        await handlers_.order.order_make(query, broadcast)
 
     # Кнопка назад при выборе времени
     elif cmd == keyboards.CB.BACK:
-        await core.order.order_choose_day(query)
+        await handlers_.order.order_choose_day(query)
 
     # Кнопка отмены при выборе дня
     elif cmd == keyboards.CB.CANCEL:
-        await core.order.order_cancel(query)
+        await handlers_.order.order_cancel(query)
 
     # Выбрал время но туда не влезет
     elif cmd == keyboards.CB.NOTIME:
         *_, day, attempts = params
-        await core.order.order_no_time(query, day, attempts)
+        await handlers_.order.order_no_time(query, day, attempts)
 
     # Принять / отклонить
     elif cmd == keyboards.CB.MODERATE:
         *_, day, time, status = params
         broadcast = Broadcast(day, time)
-        await core.order.admin_moderate(query, broadcast, keyboards.STATUS(status))
+        await handlers_.order.admin_moderate(query, broadcast, keyboards.STATUS(status))
 
     # Отменить выбор
     elif cmd == keyboards.CB.UNMODERATE:
         *_, day, time, status = params
         broadcast = Broadcast(day, time)
-        await core.order.admin_unmoderate(query, broadcast, keyboards.STATUS(status))
+        await handlers_.order.admin_unmoderate(query, broadcast, keyboards.STATUS(status))
 
 
 async def playlist_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
     # Кнопка "что будет играть" в сообщении "что играет"
     if cmd == keyboards.CB.NEXT:
-        await core.users.playlist_next(query)
+        await handlers_.users.playlist_next(query)
 
     # Выбор дня
     elif cmd == keyboards.CB.DAY:
         *_, day = params
-        await core.users.playlist_choose_time(query, day)
+        await handlers_.users.playlist_choose_time(query, day)
 
     # Выбор времени
     elif cmd == keyboards.CB.TIME:
         *_, day, time = params
         broadcast = Broadcast(day, time)
-        await core.users.playlist_show(query, broadcast)
+        await handlers_.users.playlist_show(query, broadcast)
 
     # Кнопка назад при выборе времени
     elif cmd == keyboards.CB.BACK:
-        await core.users.playlist_choose_day(query)
+        await handlers_.users.playlist_choose_day(query)
 
     # Админская кнопка перемещения трека в плейлисте
     elif cmd == keyboards.CB.MOVE:
         *_, track_index, track_start_time = params
-        await core.admins.playlist_move(query, track_index, track_start_time)
+        await handlers_.admins.playlist_move(query, track_index, track_start_time)
 
 
 async def other_callback_handler(query: types.CallbackQuery, cmd: keyboards.CB, params: List[str]):
     # Кнопка в сообщении с инструкцией
     if cmd == keyboards.CB.HELP:
         *_, key = params
-        await core.users.help_change(query, key)
+        await handlers_.users.help_change(query, key)
 
 
 if __name__ == '__main__':

@@ -3,9 +3,9 @@ from contextlib import suppress
 
 from aiogram import types, exceptions
 
-from backend import files, Broadcast
+from player import Broadcast
 from consts import texts, others
-from frontend.frontend_utils import keyboards as kb
+from bot.bot_utils import keyboards as kb
 from utils import db
 
 
@@ -83,21 +83,11 @@ async def add_in_db(message: types.Message):
 
 
 async def _get_playlist_text(broadcast: Broadcast) -> str:
-    if broadcast.is_now():
-        playback = await broadcast.get_playlist_next()
-        return '\n'.join([
-            f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
-            for track in playback[:10]
-        ])
-    else:
-        name = f"<b>{broadcast.name}</b>\n"
-        if not (playback := files.get_downloaded_tracks(broadcast.path)):
-            return name + "❗️Еще ничего не заказали"
+    name = f"<b>{broadcast.name}</b>\n"
+    if not (pl := await broadcast.get_playlist_next()):
+        return name + "❗️Еще ничего не заказали"
 
-        text = name + '\n'.join([
-            f"🕖<b>{i + 1}</b> {track.stem}"
-            for i, track in enumerate(playback[:10])
-        ])
-        if len(playback) > 10:
-            text += '\n<pre>   ...</pre>'
-        return text
+    return '\n'.join([
+        f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
+        for track in pl[:10]
+    ]) + ('\n<pre>   ...</pre>' if len(pl) > 10 else '')

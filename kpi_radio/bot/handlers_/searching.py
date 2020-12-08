@@ -5,9 +5,10 @@ from typing import Union
 
 from aiogram import types, exceptions
 
-from backend.music import search, check, Audio
+from music import search, Audio
+from music import check
 from consts import texts
-from frontend.frontend_utils import keyboards
+from bot.bot_utils import keyboards
 from utils import get_by
 
 

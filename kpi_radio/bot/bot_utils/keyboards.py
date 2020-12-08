@@ -4,7 +4,7 @@ from typing import Optional
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-from backend import playlist, Broadcast
+from player import Broadcast
 from consts import btns_text
 from consts.btns_text import MENU, CALLBACKS as CB, STATUS
 from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
@@ -137,15 +137,15 @@ def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
 _EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
 
 
-async def playlist_move(playback: playlist.PlayList = None):
-    if playback is None:
-        playback = await playlist.get_playlist_next()
+async def playlist_move(pl=None):
+    if pl is None:
+        pl = await Broadcast.now().get_playlist_next()
     btns = [
         _ikb(
             f"{_EMOJI_NUMBERS[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
             CB.PLAYLIST, CB.MOVE, track.index_, track.time_start.timestamp()
         )
-        for i, track in enumerate(playback[:10])
+        for i, track in enumerate(pl[:10])
     ]
     btns.append(_ikb(f"🔄Обновить", CB.PLAYLIST, CB.MOVE, -1, 0, 0))
     return InlineKeyboardMarkup(row_width=1).add(*btns)

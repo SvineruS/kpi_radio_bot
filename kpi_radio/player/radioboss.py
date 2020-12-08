@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union, Optional, Iterable
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -31,7 +31,9 @@ async def setnexttrack(pos: int) -> bool:
     return await _radioboss_api(action='setnexttrack', pos=pos)
 
 
-async def delete(pos: int) -> bool:
+async def delete(pos: Union[int, str, Iterable[int]]) -> bool:
+    if isinstance(pos, list):
+        pos = ','.join(map(str, pos))
     return await _radioboss_api(action='delete', pos=pos)
 
 
