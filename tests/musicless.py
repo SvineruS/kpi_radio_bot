@@ -2,7 +2,7 @@ import asyncio
 from unittest import TestCase
 
 from consts.config import AIOHTTP_SESSION
-from kpi_radio_bot.backend.music import search
+from music import search
 
 
 class TestBroadcast(TestCase):

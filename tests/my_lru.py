@@ -1,7 +1,7 @@
 import asyncio
 from unittest import TestCase
 
-from kpi_radio_bot.utils.lru import lru
+from utils.lru import lru
 
 
 class MyLruDecoratorTest(TestCase):
