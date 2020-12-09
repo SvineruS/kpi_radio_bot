@@ -147,5 +147,5 @@ async def playlist_move(pl=None):
         )
         for i, track in enumerate(pl[:10])
     ]
-    btns.append(_ikb(f"🔄Обновить", CB.PLAYLIST, CB.MOVE, -1, 0, 0))
+    btns.append(_ikb("🔄Обновить", CB.PLAYLIST, CB.MOVE, -1, 0, 0))
     return InlineKeyboardMarkup(row_width=1).add(*btns)

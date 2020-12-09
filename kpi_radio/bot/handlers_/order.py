@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-from player import Broadcast, files, exceptions
+from player import Broadcast, files, exceptions as player_exceptions
 import music
 from consts import texts, others, config, BOT
 from bot.handlers_ import users
@@ -92,11 +92,11 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
             (user, query.message.message_id),
             position=0 if status == kb.STATUS.NOW else -1
         )
-    except exceptions.DuplicateException:
+    except player_exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
         communication.cache_add(
             await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)), query.message)
-    except exceptions.NotEnoughSpace:
+    except player_exceptions.NotEnoughSpace:
         when_playing = 'не успел :('
         communication.cache_add(
             await BOT.send_audio(user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),

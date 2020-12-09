@@ -9,7 +9,7 @@ https://aiogram.readthedocs.io/en/latest/dispatcher/filters.html#boundfilter
 """
 
 from aiogram.dispatcher.filters.filters import BoundFilter
-from aiogram.types import Message, ChatType, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 
 from bot.bot_utils.keyboards import unparse
 from consts.config import ADMINS_CHAT_ID, BOT

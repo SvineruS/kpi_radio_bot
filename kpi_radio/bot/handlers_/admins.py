@@ -50,9 +50,9 @@ async def get_stats(message: types.Message):
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
         if not (moderator := await _get_moderator_from_mention(message)):
-            return await message.reply(f"Хз кто это")
+            return await message.reply("Хз кто это")
         if not (res := await stats.moder_stats(moderator.id)):
-            return await message.reply(f"Он шото модерил ваще?")
+            return await message.reply("Он шото модерил ваще?")
         caption = f"Стата модератора {moderator.first_name} ({res:.2f} модераций/дн.)"
 
     else:

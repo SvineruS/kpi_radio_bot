@@ -135,8 +135,3 @@ class Playlist(PlaylistM3U, PlaylistRadioboss):
             return PlaylistRadioboss(broadcast, seq)
         else:
             return PlaylistM3U(broadcast, seq)
-
-    # def __new__(cls, seq=(), playlist_id=None) -> PlaylistBase:
-    #     if playlist_id == "now":
-    #         return PlaylistRadioboss(seq, playlist_id)
-    #     return PlaylistM3U(seq, playlist_id)
