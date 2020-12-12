@@ -5,8 +5,7 @@ from typing import Union
 
 from aiogram import types, exceptions
 
-from music import search, Audio
-from music import check
+import music
 from consts import texts
 from bot.bot_utils import keyboards
 from utils import get_by
@@ -14,7 +13,7 @@ from utils import get_by
 
 async def search_audio(message: types.Message):
     await message.chat.do('upload_audio')
-    if not (audio := await search(message.text)):
+    if not (audio := await music.search(message.text)):
         return await message.answer(texts.SEARCH_FAILED, reply_markup=keyboards.START)
 
     audio = audio[0]
@@ -22,22 +21,24 @@ async def search_audio(message: types.Message):
     try:
         await sent_audio(message, audio)
     except Exception as ex:
-        logging.error(f'send audio: {ex} {audio.download_url}')
+        logging.error(f'send audio: {ex} {audio.url}')
         logging.warning(f"pls add exception {type(ex)}{ex} in except")
         await message.answer(texts.ERROR, reply_markup=keyboards.START)
 
 
 async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
-    if not name or not (audios := await search(name)):
+    if not name or not (audios := await music.search(name)):
         return await inline_query.answer([])
 
+    # noinspection PyUnboundLocalVariable
     articles = [
         types.InlineQueryResultAudio(
             id=audio.id,
-            audio_url=audio.download_url,
+            audio_url=audio.url,
             performer=audio.artist,
             title=audio.title,
+            audio_duration=audio.duration
         )
         for audio in audios[:50]
     ]
@@ -52,13 +53,13 @@ async def inline_search(inline_query: types.InlineQuery):
         return await inline_query.answer([], cache_time=0)
 
 
-async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
+async def sent_audio(message: types.Message, audio: Union[types.Audio, music.AudioResult]):
     if isinstance(audio, types.Audio):  # скинутое юзером аудио (через инлайн или от другого бота)
         file = audio.file_id
         name = get_by.get_audio_name(audio)
         duration = audio.duration
-    elif isinstance(audio, Audio):  # аудио найденное ботом по названию
-        file = audio.download_url
+    elif isinstance(audio, music.AudioResult):  # аудио найденное ботом по названию
+        file = audio.url
         name = get_by.get_audio_name_(audio.artist, audio.title)
         duration = audio.duration
     else:
@@ -67,9 +68,9 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, Audio]):
     bad_list = (
         (texts.BAD_ORDER_SHORT, duration < 60),
         (texts.BAD_ORDER_LONG, duration > 60 * 6),
-        (texts.BAD_ORDER_BADWORDS, await check.is_contain_bad_words(name)),
-        (texts.BAD_ORDER_ANIME, await check.is_anime(name)),
-        (texts.BAD_ORDER_PERFORMER, check.is_bad_name(name)),
+        (texts.BAD_ORDER_BADWORDS, await music.check.is_contain_bad_words(name)),
+        (texts.BAD_ORDER_ANIME, await music.check.is_anime(name)),
+        (texts.BAD_ORDER_PERFORMER, music.check.is_bad_name(name)),
     )
 
     warnings = [text for text, b in bad_list if b]
