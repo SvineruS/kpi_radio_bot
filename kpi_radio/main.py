@@ -6,9 +6,8 @@ from aiohttp import web
 
 import music.text
 from consts import config
-from bot.handlers_ import events
 from bot.handlers import DP
-from utils import scheduler
+from utils import scheduler, events
 
 APP = web.Application()
 ROUTES = web.RouteTableDef()

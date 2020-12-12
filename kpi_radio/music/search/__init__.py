@@ -16,4 +16,4 @@ async def search(query: str) -> List[AudioResult]:
             return res
     return []
 
-__all__ = [search, AudioResult]
+__all__ = ['search', 'AudioResult']

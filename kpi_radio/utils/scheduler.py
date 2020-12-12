@@ -10,7 +10,7 @@ import aioschedule
 
 from player.files import move_to_archive
 from consts.others import BROADCAST_TIMES
-from bot.handlers_.events import broadcast_begin, broadcast_end
+from utils.events import broadcast_begin, broadcast_end
 
 
 async def start():

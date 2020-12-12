@@ -3,5 +3,5 @@ from .stats import Stats
 from ._connector import DB
 
 __all__ = [
-    Users, Stats, DB
+    'Users', 'Stats', 'DB'
 ]

@@ -79,12 +79,6 @@ class Broadcast:
             return None
         return await Playlist.get_prev_now_next()
 
-    async def get_new_order_pos(self) -> Optional[PlaylistItem]:
-        if not self.is_now():
-            return None
-        pl = await self.get_playlist_next()
-        return _get_new_order_pos(pl)
-
     async def get_free_time(self) -> int:  # seconds
         pl = await self.playlist()
         pl = pl.trim(datetime.now(), self.stop_time)
@@ -94,20 +88,34 @@ class Broadcast:
     async def add_track(self, tg_track, metadata=None, position=-1):
         pl = await self.playlist()
         n_ = utils.get_by.get_audio_name(tg_track)
-        track = PlaylistItem(n_, self.path / (n_ + '.mp3'), tg_track.duration)
+        track = PlaylistItem(n_, self._get_audio_path(n_), tg_track.duration)
         if list(pl.find_by_path(track.path)):
             raise exceptions.DuplicateException()
         if await self.get_free_time() < track.duration:
             raise exceptions.NotEnoughSpace
         await files.download_audio(tg_track, track.path)
         await radioboss.write_track_additional_info(track.path, *metadata)
+        if self.is_now():
+            position = self._get_new_order_pos()
         await pl.add_track(track, position)
         return track
 
-    async def remove_track(self, path):
+    async def remove_track(self, tg_track):
+        path = self._get_audio_path(utils.get_by.get_audio_name(tg_track))
+        files.delete_file(path)
         pl = await self.playlist()
         await pl.remove_track(path)
-        files.delete_file(path)
+
+    #
+
+    async def _get_new_order_pos(self) -> Optional[PlaylistItem]:
+        if not self.is_now():
+            return None
+        pl = await self.get_playlist_next()
+        return _get_new_order_pos(pl)
+
+    def _get_audio_path(self, audio_name: str) -> Path:
+        return self.path / (audio_name + '.mp3')
 
     def __str__(self):
         return self.name
@@ -120,11 +128,11 @@ class Broadcast:
 #
 
 
-def _get_new_order_pos(playlist_: PlaylistBase) -> Optional[PlaylistItem]:
+def _get_new_order_pos(playlist_: PlaylistBase) -> Optional[int]:
     if not playlist_ or playlist_[-1].is_order:  # если последний трек, что успеет проиграть, это заказ - вернем None
         return None
 
     for i, track in reversed(list(enumerate(playlist_))):
         if track.is_order:  # т.к. заказы всегда в начале плейлиста, то нужен трек, следующий после последнего заказа
-            return playlist_[i + 1]
-    return playlist_[0]  # если нету заказов - вернуть самый первый трек в очереди
+            return i + 1
+    return 0  # если нету заказов - будет первым

@@ -45,7 +45,7 @@ async def start_up():
 
 
 def shut_down():
-    pass  # todo dump playlist
+    pass
 
 
 async def perezaklad(day, time):

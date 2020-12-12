@@ -1,14 +1,12 @@
 """Обработка заказов"""
 
-# todo refactor this
 from contextlib import suppress
 from datetime import datetime
-from pathlib import Path
 from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-from player import Broadcast, files, exceptions as player_exceptions
+from player import Broadcast, exceptions as player_exceptions
 import music
 from consts import texts, others, config, BOT
 from bot.handlers_ import users
@@ -87,42 +85,36 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
     await query.message.chat.do('record_audio')
     try:
-        new_track = await broadcast.add_track(
-            query.message.audio,
-            (user, query.message.message_id),
-            position=0 if status == kb.STATUS.NOW else -1
-        )
+        new_track = await broadcast.add_track(query.message.audio, (user, query.message.message_id),
+                                              position=0 if status == kb.STATUS.NOW else -1)
     except player_exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
-        communication.cache_add(
-            await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)), query.message)
+        msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
     except player_exceptions.NotEnoughSpace:
         when_playing = 'не успел :('
-        communication.cache_add(
-            await BOT.send_audio(user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
-                                 caption=texts.ORDER_ERR_ACCEPTED_TOOLATE.format(audio_name, broadcast.name)),
-            query.message)
+        msg_to_user = None
+        communication.cache_add(await BOT.send_audio(
+            user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
+            caption=texts.ORDER_ACCEPTED_TOOLATE.format(audio_name, broadcast.name)), query.message
+        )
     else:
         if status == kb.STATUS.NOW:  # кнопка сейчас
             when_playing = 'прямо сейчас!'
-            mes = await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing))
-            communication.cache_add(mes, query.message)
+            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
 
         else:  # кнопка принять
             # если прямо сейчас не тот эфир, на который заказ
             if not broadcast.is_now():
                 when_playing = 'Заиграет когда надо'
-                communication.cache_add(
-                    await BOT.send_message(user.id, texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)),
-                    query.message)
+                msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
 
             else:
                 minutes_left = round((new_track.time_start - datetime.now()).seconds / 60)
                 when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-                communication.cache_add(
-                    await BOT.send_message(user.id, texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)),
-                    query.message)
+                msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
 
+    if msg_to_user:
+        communication.cache_add(await BOT.send_message(user.id, msg_to_user), query.message)
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
                                          reply_markup=kb.admin_unmoderate(broadcast, status))
@@ -130,7 +122,6 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
 async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
     user = get_by.get_user_from_entity(query.message)
-    audio_name = get_by.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
 
     try:
@@ -139,9 +130,7 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
         return  # если не отредачилось значит кнопка уже отработалась
 
     if status != kb.STATUS.REJECT:  # если заказ был принят а щас отменяют
-        path = _get_audio_path(broadcast, audio_name)
-        files.delete_file(path)  # удалить с диска
-        await broadcast.remove_track(path)
+        await broadcast.remove_track(query.message.audio)
 
 
 #
@@ -184,7 +173,3 @@ async def _get_bad_words_text(audio_name: str) -> str:
 
 def _get_gettext_link(audio_name):
     return f"https://{config.HOST}/gettext/{quote(audio_name[:100])}"
-
-
-def _get_audio_path(broadcast: Broadcast, audio_name: str) -> Path:
-    return broadcast.path / (audio_name + '.mp3')
