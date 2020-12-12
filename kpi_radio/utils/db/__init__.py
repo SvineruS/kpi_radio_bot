@@ -1,5 +1,7 @@
-from . import users
+from .users import Users
+from .stats import Stats
+from ._connector import DB
 
 __all__ = [
-    users
+    Users, Stats, DB
 ]

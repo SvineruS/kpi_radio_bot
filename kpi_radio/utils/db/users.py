@@ -1,58 +1,39 @@
-"""
-БД Юзеров
-Текущая структура таблицы
-{
-    'usr': id пользователя,
-    'ban: timestamp, раньше которого юзер не сможет отправлять заказы
-    'notification_mute': если True - не уведомлять юзера о том, что заиграл его трек
-}
-"""
-from datetime import datetime
-from time import time
-from typing import Optional
+from __future__ import annotations
 
-from utils.db import _connector
-from utils.lru import lru
+from datetime import datetime, timedelta
+
+from peewee import Model, BooleanField, BigIntegerField, DateTimeField
+
+from utils.db._connector import DB
 
 
-_USERS = _connector.DB["kpiradio"]  # todo change to users
+class Users(Model):
+    user_id = BigIntegerField(primary_key=True)
+    ban: datetime = DateTimeField(null=True)
+    notifications = BooleanField(default=True)
 
+    @classmethod
+    def add(cls, id_):
+        cls.insert(user_id=id_).on_conflict_ignore().execute()
 
-async def add(id_: int):
-    if not await _get_user(id_):
-        await _USERS.insert_one({'usr': id_})
-        _clear_user_cache(id_)
+    def is_banned(self) -> bool:
+        return self.ban and self.ban > datetime.now()
 
+    def banned_to(self):
+        return self.ban.strftime("%d.%m %H:%M")
 
-async def ban_get(id_: int) -> Optional[datetime]:
-    if not (user := await _get_user(id_)) or 'ban' not in user or user['ban'] < time():
-        return None
-    return datetime.fromtimestamp(user['ban'])
+    @classmethod
+    def ban_set(cls, id_: int, time_: int):
+        ban_time = datetime.now() + timedelta(minutes=time_)
+        cls.update(ban=ban_time).where(cls.user_id == id_)
 
+    @classmethod
+    def notification_get(cls, id_: int) -> bool:
+        return (user := cls.get_by_id(id_)) and user.notifications
 
-async def ban_set(id_: int, time_: int):
-    ban_time = time() + time_ * 60
-    await _USERS.update_one({'usr': id_}, {'$set': {'ban': ban_time}}, upsert=True)
-    _clear_user_cache(id_)
+    @classmethod
+    def notification_set(cls, id_: int, status_: bool):
+        cls.update(notifications=status_).where(cls.user_id == id_)
 
-
-async def notification_get(id_: int) -> bool:
-    if not (user := await _get_user(id_)) or 'notification_mute' not in user:
-        return False
-    return user['notification_mute']
-
-
-async def notification_set(id_: int, status_: bool):
-    await _USERS.update_one({'usr': id_}, {'$set': {'notification_mute': status_}}, upsert=True)
-    _clear_user_cache(id_)
-
-
-#
-
-@lru(maxsize=1_000, ttl=60 * 60 * 12)
-async def _get_user(id_: int):
-    return await _USERS.find_one({'usr': id_})
-
-
-def _clear_user_cache(id_: int):
-    _get_user.cache_del(id_)
+    class Meta:
+        database = DB

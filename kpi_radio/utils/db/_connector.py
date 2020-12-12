@@ -1,6 +1,6 @@
-from motor import motor_asyncio
+from peewee import SqliteDatabase
 
-from consts.config import DB_URL
+from consts.config import PATH_STUFF
 
-CLIENT = motor_asyncio.AsyncIOMotorClient(DB_URL, retryWrites=False)
-DB = CLIENT.get_database()
+PATH_DB = PATH_STUFF / 'db.sqlite'
+DB = SqliteDatabase(PATH_DB)

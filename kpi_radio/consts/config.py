@@ -14,6 +14,8 @@ PATH_STUFF = PATH_ROOT / 'stuff'
 PATH_LOG = PATH_STUFF / 'debug.log'
 
 load_dotenv(dotenv_path=PATH_STUFF / '.env')
+
+# noinspection PyArgumentList
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] %(levelname)-8s [%(filename)s:%(lineno)d > %(funcName)s] \t  %(name)-8s %(message)s',
@@ -28,7 +30,6 @@ TOKEN_TEST = getenv("TOKEN_TEST")
 
 ADMINS_CHAT_ID = int(getenv("ADMINS_CHAT_ID"))  # Чат с модерами
 HISTORY_CHAT_ID = int(getenv("HISTORY_CHAT_ID"))  # Канал истории
-CACHE_CHAT_ID = int(getenv("CACHE_CHAT_ID"))  # Канал кеша
 
 
 # ip, port, password.   Узнать в радиобоссе->настройки->api
@@ -37,8 +38,6 @@ RADIOBOSS_DATA = (
     int(getenv("RADIOBOSS_PORT")),
     getenv("RADIOBOSS_PASSWORD")
 )
-
-DB_URL = getenv("DB_URL")
 
 HOST = getenv("HOST")
 PORT = int(getenv("PORT"))  # 443, 80, 88 or 8443 (port need to be 'open')

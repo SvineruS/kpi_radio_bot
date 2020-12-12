@@ -6,7 +6,7 @@ from aiogram import types, exceptions
 from player import Broadcast
 from consts import texts, others
 from bot.bot_utils import keyboards as kb
-from utils import db
+from utils.db import Users
 
 
 async def menu(message: types.Message):
@@ -68,15 +68,15 @@ async def help_change(query: types.CallbackQuery, key: str):
 
 
 async def notify_switch(message: types.Message):
-    status = await db.users.notification_get(message.from_user.id)
-    await db.users.notification_set(message.from_user.id, not status)
+    status = Users.notification_get(message.from_user.id)
+    Users.notification_set(message.from_user.id, not status)
     text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
         "Уведомления <b>выключены</b> \n /notify - включить"
     await message.answer(text)
 
 
-async def add_in_db(message: types.Message):
-    await db.users.add(message.chat.id)
+def add_in_db(message: types.Message):
+    Users.add(message.chat.id)
 
 
 #

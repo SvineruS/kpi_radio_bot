@@ -1,7 +1,8 @@
 xmltodict
-aiogram>=2.6.1
+aiogram
 aiohttp
-aioschedule>=0.5.2
+aioschedule
 matplotlib
-motor
 python-dotenv
+youtubeless
+peewee

@@ -13,13 +13,14 @@ import music
 from consts import texts, others, config, BOT
 from bot.handlers_ import users
 from bot.bot_utils import communication, keyboards as kb, stats, id_to_hashtag
-from utils import user_utils, db, get_by
+from utils import user_utils, get_by, db
 
 
 async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     user = query.from_user
-    if is_ban := await db.users.ban_get(user.id):
-        return await query.message.answer(texts.BAN_TRY_ORDER.format(is_ban.strftime("%d.%m %H:%M")))
+    user_db = db.Users.get_by_id(user.id)
+    if user_db.is_banned:
+        return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to))
 
     try:
         await query.message.edit_caption(
@@ -78,8 +79,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
-    stats.add(audio_name, moder.id, user.id, status, str(datetime.now()), query.message.message_id)
-    stats.change_username_to_id({user.username: user.id, moder.username: moder.id})
+    stats.add(query.message.message_id, moder.id, user.id, audio_name, status, datetime.now())
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
         return communication.cache_add(

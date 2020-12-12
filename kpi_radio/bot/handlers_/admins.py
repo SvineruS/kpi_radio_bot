@@ -12,7 +12,7 @@ from aiogram import types, exceptions
 from player import Broadcast, Player
 from consts import texts, config, BOT
 from bot.bot_utils import communication, keyboards as kb, stats
-from utils import user_utils, db, get_by
+from utils import user_utils, get_by, db
 
 
 async def ban(message: types.Message):
@@ -24,7 +24,7 @@ async def ban(message: types.Message):
     user, _ = res
 
     ban_time, reason = _get_ban_time_and_reason_from_message(message)
-    await db.users.ban_set(user, ban_time)
+    await db.Users.ban_set(user, ban_time)
 
     if ban_time == 0:
         return await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
@@ -42,9 +42,9 @@ async def set_volume(message: types.Message):
 
 
 async def get_stats(message: types.Message):
-    if 'csv' in message.get_args():
-        await message.chat.do('upload_document')
-        return await message.answer_document(stats.PATH_STATS_CSV.open('rb'))
+    # if 'csv' in message.get_args():
+    #     await message.chat.do('upload_document')
+    #     return await message.answer_document(stats.PATH_STATS_CSV.open('rb'))
 
     await message.chat.do('upload_photo')
 

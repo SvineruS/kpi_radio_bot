@@ -8,7 +8,6 @@
 - id сообщение модерации
 """
 
-import csv
 import functools
 from collections import Counter
 from datetime import datetime, timedelta
@@ -17,26 +16,13 @@ from typing import Dict, Optional, List, Iterator
 from matplotlib import pyplot as plt
 
 from consts.config import PATH_STUFF
+from utils.db import Stats
 from utils.user_utils import get_moders
 
-PATH_STATS_CSV = PATH_STUFF / 'stats.csv'
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
 
 
-def add(*data):
-    with open(PATH_STATS_CSV, "a", newline='', encoding='utf-8-sig') as csv_file:
-        writer = csv.writer(csv_file, delimiter=',')
-        writer.writerow(data)
-
-
-def change_username_to_id(changes):  # todo remove
-    with open(PATH_STATS_CSV, "r", encoding='utf-8-sig') as file:
-        content = file.read()
-    for username, id_ in changes.items():
-        if username:
-            content = content.replace(username, str(id_))
-    with open(PATH_STATS_CSV, "w", encoding='utf-8-sig') as file:
-        file.write(content)
+add = Stats.add
 
 
 async def moder_stats(moder_id: int) -> Optional[float]:
@@ -73,31 +59,14 @@ async def all_moders_stats(days: int):
 
 
 def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
-    with open(PATH_STATS_CSV, encoding='utf-8-sig') as file:
-        records = list(csv.reader(file, delimiter=','))
-    # song_name, moder_id, user_id, status, date, msg_id
-
-    date_now = datetime.today()
     stats = {}
-    moderated_msgs = set()
 
-    for rec in records:
-        _song_name, moder_id, user_id, _status, date, msg_id = rec
-        date = datetime.strptime(date[:10], "%Y-%m-%d")
+    for rec in Stats.get_last_n_days(n_days):
+        if rec.moderator_id not in stats:
+            stats[rec.moderator_id] = _get_counters(rec.date)
 
-        if (date_now - date).days >= n_days:
-            continue
-        if msg_id in moderated_msgs:
-            continue
-        if moder_id not in stats:
-            stats[moder_id] = _get_counters(date)
+        stats[rec.moderator_id]['all' if rec.is_own() else 'own'][rec.date] += 1
 
-        moderated_msgs.add(msg_id)
-        stats[moder_id]['all'][date] += 1
-        if moder_id == user_id:
-            stats[moder_id]['own'][date] += 1
-
-    stats = {int(moder_id): moder for moder_id, moder in stats.items() if moder_id.isdigit()}  # todo remove
     return stats
 
 
