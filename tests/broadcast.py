@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from kpi_radio_bot.backend import Broadcast
+from player import Broadcast
 
 
 class TestBroadcast(TestCase):
