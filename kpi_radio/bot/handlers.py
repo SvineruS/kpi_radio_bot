@@ -2,7 +2,6 @@
 from contextlib import suppress
 
 from aiogram import Dispatcher, types, executor, exceptions
-from aiogram.dispatcher.handler import SkipHandler
 
 from consts import texts, BOT
 from bot import handlers_
@@ -12,10 +11,13 @@ from player import Broadcast
 DP = Dispatcher(BOT)
 bind_filters(DP)
 
+ALLOWED_FEEDBACK_TYPES = ['text', 'audio', 'photo', 'sticker']
 
+
+# region commands
 @DP.message_handler(commands=['start'], chat_type=types.ChatType.PRIVATE)
 async def start_handler(message: types.Message):
-    await handlers_.users.add_in_db(message)
+    handlers_.users.add_in_db(message)
     await message.answer(texts.START)
     await handlers_.users.menu(message)
 
@@ -30,63 +32,67 @@ async def notify_handler(message: types.Message):
     await handlers_.users.notify_switch(message)
 
 
-@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'],
-                    reply_to_bot=True, chat_type=types.ChatType.PRIVATE)
-async def user_reply_message_handler(message: types.Message):
-    reply_to = message.reply_to_message
+# endregion commands
+# region replies
+@DP.message_handler(lambda m: m.reply_to_message and communication.cache_is_set(m.reply_to_message.id),
+                    content_types=ALLOWED_FEEDBACK_TYPES, chat_type=types.ChatType.PRIVATE)
+@DP.message_handler(reply_to_bot_text=texts.FEEDBACK,
+                    content_types=ALLOWED_FEEDBACK_TYPES, chat_type=types.ChatType.PRIVATE)
+async def user_reply_to_feedback_or_moder_handler(message: types.Message):
+    await communication.user_message(message)
+    await message.answer(texts.FEEDBACK_THANKS, reply_markup=kb.START)
 
-    # Реплай на сообщение обратной связи или сообщение от модера
-    if reply_to.text == texts.FEEDBACK or communication.cache_is_set(reply_to.message_id):
-        await communication.user_message(message)
-        return await message.answer(texts.FEEDBACK_THANKS, reply_markup=kb.START)
 
-    # Ввод названия песни
-    if reply_to.text == texts.ORDER_CHOOSE_SONG and not message.audio:
-        return await handlers_.searching.search_audio(message)
+@DP.message_handler(reply_to_bot_text=texts.ORDER_CHOOSE_SONG, chat_type=types.ChatType.PRIVATE)
+async def user_search_song_handler(message: types.Message):
+    await handlers_.searching.search_audio(message)
 
-    raise SkipHandler
+
+# endregion replies
 
 
 @DP.message_handler(content_types=['audio'], chat_type=types.ChatType.PRIVATE)
 async def user_audio_handler(message: types.Message):
-    # Пользователь скинул аудио
     return await handlers_.searching.sent_audio(message, message.audio)
 
 
+# region buttons
+
+@DP.message_handler(text=kb.MENU.WHAT_PLAYING, chat_type=types.ChatType.PRIVATE)
+async def user_btn_what_playing_handler(message: types.Message):  # Кнопка 'Что играет?'
+    await handlers_.users.playlist_now(message)
+
+
+@DP.message_handler(text=kb.MENU.ORDER, chat_type=types.ChatType.PRIVATE)
+async def user_btn_order_handler(message: types.Message):  # Кнопка 'Заказать песню'
+    await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
+    await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=kb.ORDER_INLINE)
+
+
+@DP.message_handler(text=kb.MENU.FEEDBACK, chat_type=types.ChatType.PRIVATE)
+async def user_btn_feedback_handler(message: types.Message):  # Кнопка 'Обратная связь'
+    await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
+
+
+@DP.message_handler(commands=['help'], chat_type=types.ChatType.PRIVATE)
+@DP.message_handler(text=kb.MENU.HELP, chat_type=types.ChatType.PRIVATE)
+async def user_btn_help_handler(message: types.Message):  # Кнопка 'Помощь'
+    await message.answer(texts.HELP['start'], reply_markup=kb.CHOICE_HELP)
+
+
+@DP.message_handler(text=kb.MENU.TIMETABLE, chat_type=types.ChatType.PRIVATE)
+async def user_btn_timetable_handler(message: types.Message):  # Кнопка 'Расписание'
+    await handlers_.users.timetable(message)
+
+
 @DP.message_handler(chat_type=types.ChatType.PRIVATE)
-async def user_buttons_handler(message: types.Message):
-    # Кнопка 'Что играет?'
-    if message.text == kb.MENU.WHAT_PLAYING:
-        await handlers_.users.playlist_now(message)
-
-    # Кнопка 'Заказать песню'
-    elif message.text == kb.MENU.ORDER:
-        await message.answer(texts.ORDER_CHOOSE_SONG, reply_markup=types.ForceReply())
-        await message.answer(texts.ORDER_INLINE_SEARCH, reply_markup=kb.ORDER_INLINE)
-
-    # Кнопка 'Обратная связь'
-    elif message.text == kb.MENU.FEEDBACK:
-        await message.answer(texts.FEEDBACK, reply_markup=types.ForceReply())
-
-    # Кнопка 'Помощь'
-    elif message.text == kb.MENU.HELP or message.text == '/help':
-        await message.answer(texts.HELP['start'], reply_markup=kb.CHOICE_HELP)
-
-    # Кнопка 'Расписание'
-    elif message.text == kb.MENU.TIMETABLE:
-        await handlers_.users.timetable(message)
-
-    else:
-        raise SkipHandler
-
-
-@DP.message_handler(chat_type=types.ChatType.PRIVATE)
-async def user_other_handler(message: types.Message):
-    # Говорим пользователю что он дурак
+async def user_other_handler(message: types.Message):  # Говорим пользователю что он дурак
     await message.answer_document("BQADAgADlgQAAsedmEuFDrds0XauthYE", texts.UNKNOWN_CMD, reply_markup=kb.START)
 
 
+# endregion buttons
 # region admins
+
 
 @DP.message_handler(commands=['next'], admins_chat=True)
 async def next_handler(message: types.Message):
@@ -123,9 +129,9 @@ async def playlist_handler(message: types.Message):
     await handlers_.admins.show_playlist_control(message)
 
 
-@DP.message_handler(content_types=['text', 'audio', 'photo', 'sticker'], reply_to_bot=True, admins_chat=True)
+@DP.message_handler(content_types=ALLOWED_FEEDBACK_TYPES, reply_to_bot_text=None, admins_chat=True)
 async def admins_reply_message_handler(message: types.Message):
-    return await communication.admin_message(message)
+    await communication.admin_message(message)
 
 
 # endregion
@@ -134,15 +140,13 @@ async def admins_reply_message_handler(message: types.Message):
 # region callback
 # region order
 
-@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.DAY))  # Выбрали день
-async def query_handler_order_day(query, json_data):
-    day, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.DAY), cb_map=('day',))  # Выбрали день
+async def query_handler_order_day(query, day):
     await handlers_.order.order_choose_time(query, day)
 
 
-@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.TIME))  # Выбрали время
-async def query_handler_order_time(query, json_data):
-    day, time, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.TIME), cb_map=('day', 'time'))  # Выбрали время
+async def query_handler_order_time(query, day, time):
     await handlers_.order.order_make(query, Broadcast(day, time))
 
 
@@ -156,22 +160,20 @@ async def query_handler_order_cancel(query):
     await handlers_.order.order_cancel(query)
 
 
-@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.NOTIME))  # Выбрал время но туда не влезет
-async def query_handler_order_notime(query, json_data):
-    day, attempts, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.NOTIME), cb_map=('day', 'attempts'))  # Выбрал время но туда не влезет
+async def query_handler_order_notime(query, day, attempts):
     await handlers_.order.order_no_time(query, day, attempts)
 
 
-@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.NOTIME))  # Принять / отклонить
-async def query_handler_order_moderate(query, json_data):
-    day, time, status, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.NOTIME), cb_map=('day', 'time', 'status'))  # Принять / отклонить
+async def query_handler_order_moderate(query, day, time, status):
     await handlers_.order.admin_moderate(query, Broadcast(day, time), kb.STATUS(status))
 
 
-@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.UNMODERATE))  # Отменить выбор
-async def query_handler_order_unmoderate(query, json_data):
-    day, time, status, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.ORDER, kb.CB.UNMODERATE), cb_map=('day', 'time', 'status'))  # Отменить выбор
+async def query_handler_order_unmoderate(query, day, time, status):
     await handlers_.order.admin_unmoderate(query, Broadcast(day, time), kb.STATUS(status))
+
 
 # endregion order
 # region playlist
@@ -182,15 +184,13 @@ async def query_handler_playlist_next(query):
     await handlers_.users.playlist_next(query)
 
 
-@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.DAY))  # Выбор дня
-async def query_handler_playlist_day(query, json_data):
-    day, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.DAY), cb_map=('day', ))  # Выбор дня
+async def query_handler_playlist_day(query, day):
     await handlers_.users.playlist_choose_time(query, day)
 
 
-@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.DAY))  # Выбор времени
-async def query_handler_playlist_time(query, json_data):
-    day, time, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.DAY), cb_map=('day', 'time'))  # Выбор времени
+async def query_handler_playlist_time(query, day, time):
     await handlers_.users.playlist_show(query, Broadcast(day, time))
 
 
@@ -199,18 +199,17 @@ async def query_handler_playlist_back(query):
     await handlers_.users.playlist_choose_day(query)
 
 
-@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.MOVE))  # Админская кнопка перемещения трека в плейлисте
-async def query_handler_playlist_move(query, json_data):
-    track_index, track_start_time, *_ = json_data
-    await handlers_.admins.playlist_move(query, track_index, track_start_time)
+@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.MOVE), cb_map=('index', 'start_time'))  # Перемещения трека
+async def query_handler_playlist_move(query, index, start_time):
+    await handlers_.admins.playlist_move(query, index, start_time)
+
 
 # endregion playlist
 # region other
 
 
-@DP.callback_query_handler(cb=(kb.CB.OTHER, kb.CB.HELP))  # Кнопка в сообщении с инструкцией
-async def query_handler_other_help(query, json_data):
-    key, *_ = json_data
+@DP.callback_query_handler(cb=(kb.CB.OTHER, kb.CB.HELP), cb_map=('key', ))  # Кнопка в сообщении с инструкцией
+async def query_handler_other_help(query, key):
     await handlers_.users.help_change(query, key)
 
 
@@ -218,6 +217,7 @@ async def query_handler_other_help(query, json_data):
 async def query_handler_other(query):
     with suppress(exceptions.InvalidQueryID):
         await query.answer()
+
 
 # endregion other
 # endregion callback
