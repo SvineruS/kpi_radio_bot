@@ -64,7 +64,7 @@ class JsonCallbackDataFilter(Filter):
         return {
             m: data[i]
             for i, m in enumerate(self.mapping)
-        }
+        } or True  # aiogram сначала проверяет на not а потом на dict :\
 
 
 # class OnlyAdminFilter(BoundFilter):
