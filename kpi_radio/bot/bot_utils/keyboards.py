@@ -164,8 +164,7 @@ def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
     btns = [
         _ikb(TIMES[time], CBPlaylistTime(day, time))
         for time in BROADCAST_TIMES_[day]
-    ]
-    btns.append(_ikb(btns_text.BACK, CBPlaylistBack()))
+    ] + [_ikb(btns_text.BACK, CBPlaylistBack())]
     return InlineKeyboardMarkup(row_width=3).add(*btns)
 
 
@@ -183,6 +182,5 @@ async def playlist_move(pl=None):
             CBPlaylistMove(track.index_, track.time_start.timestamp())
         )
         for i, track in enumerate(pl[:10])
-    ]
-    btns.append(_ikb("🔄Обновить", CBPlaylistMove(-1, 0)))
+    ] + [_ikb("🔄Обновить", CBPlaylistMove(-1, 0))]
     return InlineKeyboardMarkup(row_width=1).add(*btns)
