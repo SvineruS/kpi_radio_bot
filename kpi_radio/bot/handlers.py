@@ -34,7 +34,7 @@ async def notify_handler(message: types.Message):
 
 # endregion commands
 # region replies
-@DP.message_handler(lambda m: m.reply_to_message and communication.cache_is_set(m.reply_to_message.id),
+@DP.message_handler(lambda m: m.reply_to_message and communication.cache_is_set(m.reply_to_message.message_id),
                     content_types=ALLOWED_FEEDBACK_TYPES, chat_type=types.ChatType.PRIVATE)
 @DP.message_handler(reply_to_bot_text=texts.FEEDBACK,
                     content_types=ALLOWED_FEEDBACK_TYPES, chat_type=types.ChatType.PRIVATE)
