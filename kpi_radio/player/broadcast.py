@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import utils.get_by
 from consts import others
@@ -10,6 +12,8 @@ from . import files, radioboss, exceptions
 
 
 class Broadcast:
+    ALL: List[Broadcast] = []
+
     @lru()
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
@@ -25,10 +29,22 @@ class Broadcast:
 
     @classmethod
     def now(cls):
-        for day, _num in others.BROADCAST_TIMES_.items():
-            for num in _num:
-                if (broadcast := Broadcast(day, num)).is_now():
-                    return broadcast
+        for b in cls.ALL:
+            if b.is_now():
+                return b
+
+    @classmethod
+    def get_closest(cls):
+        if br := Broadcast.now():
+            return br
+
+        today = datetime.today().weekday()
+        today_brs = [Broadcast(today, time) for time in others.BROADCAST_TIMES_[today]]
+        for br in today_brs:
+            if not br.is_already_play_today():
+                return br
+        tomorrow = (today + 1) % 7
+        return Broadcast(tomorrow, 0)
 
     @classmethod
     def is_broadcast_right_now(cls) -> bool:
@@ -124,6 +140,8 @@ class Broadcast:
         yield self.day
         yield self.num
 
+
+Broadcast.ALL = [Broadcast(day, num) for day, _num in others.BROADCAST_TIMES_.items() for num in _num]
 
 #
 
