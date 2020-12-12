@@ -189,7 +189,7 @@ async def query_handler_playlist_day(query, day):
     await handlers_.users.playlist_choose_time(query, day)
 
 
-@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.DAY), cb_map=('day', 'time'))  # Выбор времени
+@DP.callback_query_handler(cb=(kb.CB.PLAYLIST, kb.CB.TIME), cb_map=('day', 'time'))  # Выбор времени
 async def query_handler_playlist_time(query, day, time):
     await handlers_.users.playlist_show(query, Broadcast(day, time))
 
