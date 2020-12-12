@@ -30,7 +30,7 @@ class Stats(Model):
 
     @classmethod
     def get_last_n_days(cls, days):
-        return cls.select().where(cls.date_timestamp <= datetime.today() - timedelta(days=days))
+        return cls.select().where(cls.date >= (datetime.today() - timedelta(days=days)))
 
     def is_own(self):
         return self.user_id == self.moderator_id

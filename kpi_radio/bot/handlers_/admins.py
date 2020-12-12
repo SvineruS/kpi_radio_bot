@@ -24,7 +24,7 @@ async def ban(message: types.Message):
     user, _ = res
 
     ban_time, reason = _get_ban_time_and_reason_from_message(message)
-    await db.Users.ban_set(user, ban_time)
+    db.Users.ban_set(user, ban_time)
 
     if ban_time == 0:
         return await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
