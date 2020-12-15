@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Union, Iterable
+from typing import Union, Iterable, Iterator
 
 from consts import others, config
 from utils.get_by import time_to_datetime
@@ -39,7 +39,7 @@ class PlaylistBase(list):
             del self[i]
         return pos
 
-    def find_by_path(self, path: Union[str, Path]) -> Iterable[int]:
+    def find_by_path(self, path: Union[str, Path]) -> Iterator[int, None]:
         path = str(path)
         return (i for i, t in enumerate(self) if t.path == path)
 

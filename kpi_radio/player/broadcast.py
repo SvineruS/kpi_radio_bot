@@ -115,7 +115,7 @@ class Broadcast:
             position = await self._get_new_order_pos()
         await pl.add_track(track, position)
         # ебать костыли
-        track = (await self.playlist()).find_by_path(track.path)
+        track = next((await self.playlist()).find_by_path(track.path))
         return track
 
     async def remove_track(self, tg_track):
