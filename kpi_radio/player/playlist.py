@@ -46,6 +46,9 @@ class PlaylistBase(list):
     def only_next(self) -> Iterable[PlaylistItem]:
         return self.trim(datetime.now())
 
+    def only_orders(self):
+        return Playlist(self.broadcast, [i for i in self if i.is_order])
+
     def trim(self, time_min: datetime = None, time_max: datetime = None):
         def trim_():
             for track in self:

@@ -97,7 +97,7 @@ class Broadcast:
 
     async def get_free_time(self) -> int:  # seconds
         pl = await self.playlist()
-        pl = pl.trim(datetime.now(), self.stop_time)
+        pl = pl.trim(datetime.now(), self.stop_time).only_orders()
         duration = pl.duration()
         return max(0, (self.stop_time - self.start_time).total_seconds() - duration)
 
