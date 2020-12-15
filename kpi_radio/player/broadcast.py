@@ -112,7 +112,7 @@ class Broadcast:
         await files.download_audio(tg_track, track.path)
         await radioboss.write_track_additional_info(track.path, *metadata)
         if self.is_now():
-            position = self._get_new_order_pos()
+            position = await self._get_new_order_pos()
         await pl.add_track(track, position)
         return track
 
