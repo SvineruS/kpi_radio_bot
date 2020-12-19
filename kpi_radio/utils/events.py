@@ -40,6 +40,10 @@ async def broadcast_end(day, time):
     await perezaklad(day, time)
 
 
+async def day_end():
+    files.move_to_archive()
+
+
 async def start_up():
     await BOT.send_message(config.ADMINS_CHAT_ID, "Ребутнулся!")
 
