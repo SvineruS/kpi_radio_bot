@@ -10,8 +10,8 @@ _BASE_URL = "http://api.svinua.cf/musicless/"
 class Musicless(Searcher):
 
     @classmethod
-    def is_for_me(cls, query):
-        return True
+    def is_for_me(cls, query, inline):
+        return True  # musicless is fallback
 
     @classmethod
     @lru(maxsize=200, ttl=60 * 60 * 12)

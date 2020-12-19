@@ -4,5 +4,5 @@ aiohttp
 aioschedule
 matplotlib
 python-dotenv
-youtubeless
+youtube-dl
 peewee

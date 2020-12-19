@@ -2,33 +2,36 @@ from typing import List
 
 from music.search.searcher import Searcher, AudioResult
 
-import youtubeless
+import youtube_dl
 
 
 class YouTube(Searcher):
-    @classmethod
-    def is_for_me(cls, query: str) -> bool:
-        return any((
-            'youtube.com' in query,
-            'youtu.be' in query
-        ))
+
+    # telegram doesn't want download from youtube url, so inline doesn't support
+    SUPPORT_INLINE = False
+    URL_MATCHING = ('youtube.com', 'youtu.be')
 
     @classmethod
     async def search(cls, url: str) -> List[AudioResult]:
+
         try:
-            res = await youtubeless.search_async(url)
-        except youtubeless.exceptions.MusiclessException:
+            with youtube_dl.YoutubeDL({"noplaylist": True, "quiet": True, 'format': 'bestaudio'}) as ydl:
+                res = ydl.extract_info(url, download=False)
+        except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError):
             return []
 
-        only_audio = (
+        audio = next((f for f in res['formats']
+                      if 'audio only' in f['format'] and f['ext'] in ('mp3', 'm4a')))
+
+        return [
             AudioResult(
-                id=res.video_id,
-                artist=res.author,
-                title=res.title,
-                url=format_.url,
-                duration=res.length,
+                id=res['id'],
+                url=audio['url'],
+                artist=res['uploader'],
+                title=res['title'],
+                duration=res['duration'],
+
+                is_url_downloadable=False,
+                paste_id3_tags=True
             )
-            for format_ in res.formats
-            if format_.audio is not None and format_.video is None
-        )
-        return [next(only_audio)]  # типа lazy только первое, лучшее аудио
+        ]

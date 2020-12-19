@@ -20,15 +20,17 @@ async def search_audio(message: types.Message):
 
     try:
         await sent_audio(message, audio)
-    except Exception as ex:
+    except (exceptions.InvalidHTTPUrlContent, exceptions.WrongFileIdentifier) as ex:
         logging.error(f'send audio: {ex} {audio.url}')
+        await message.answer(texts.ERROR, reply_markup=keyboards.START)
+    except Exception as ex:
         logging.warning(f"pls add exception {type(ex)}{ex} in except")
         await message.answer(texts.ERROR, reply_markup=keyboards.START)
 
 
 async def inline_search(inline_query: types.InlineQuery):
     name = inline_query.query
-    if not name or not (audios := await music.search(name)):
+    if not name or not (audios := await music.search(name, inline=True)):
         return await inline_query.answer([])
 
     # noinspection PyUnboundLocalVariable
@@ -57,17 +59,15 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
     if isinstance(audio, types.Audio):  # скинутое юзером аудио (через инлайн или от другого бота)
         file = audio.file_id
         name = get_by.get_audio_name(audio)
-        duration = audio.duration
     elif isinstance(audio, music.AudioResult):  # аудио найденное ботом по названию
-        file = audio.url
+        file = await audio.download()
         name = get_by.get_audio_name_(audio.artist, audio.title)
-        duration = audio.duration
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
 
     bad_list = (
-        (texts.BAD_ORDER_SHORT, duration < 60),
-        (texts.BAD_ORDER_LONG, duration > 60 * 6),
+        (texts.BAD_ORDER_SHORT, audio.duration < 60),
+        (texts.BAD_ORDER_LONG, audio.duration > 60 * 6),
         (texts.BAD_ORDER_BADWORDS, await music.check.is_contain_bad_words(name)),
         (texts.BAD_ORDER_ANIME, await music.check.is_anime(name)),
         (texts.BAD_ORDER_PERFORMER, music.check.is_bad_name(name)),
@@ -77,6 +77,8 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
 
     if warnings:
         text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        await message.answer_audio(file, text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
+        _args = dict(caption=text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
     else:
-        await message.answer_audio(file, texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
+        _args = dict(caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
+
+    await message.answer_audio(file, performer=audio.artist, title=audio.title, duration=audio.duration, **_args)
