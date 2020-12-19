@@ -218,7 +218,7 @@ async def user_audio_handler(message: types.Message):
     return await handlers_.searching.sent_audio(message, message.audio)
 
 
-@DP.message_handler(chat_type=types.ChatType.PRIVATE)
+@DP.message_handler(content_types=types.ContentType.ANY, chat_type=types.ChatType.PRIVATE)
 async def user_other_handler(message: types.Message):  # Говорим пользователю что он дурак
     await message.answer_document("BQADAgADlgQAAsedmEuFDrds0XauthYE", texts.UNKNOWN_CMD, reply_markup=kb.START)
 
