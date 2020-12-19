@@ -129,38 +129,38 @@ async def user_btn_timetable_handler(message: types.Message):  # Кнопка '�
 # region callback
 # region order
 
-@DP.callback_query_handler(cb=kb.CBOrderDay)  # Выбрали день
-async def query_handler_order_day(query: types.CallbackQuery, cb: kb.CBOrderDay):
+@DP.callback_query_handler(cb=kb.cb.CBOrderDay)  # Выбрали день
+async def query_handler_order_day(query: types.CallbackQuery, cb: kb.cb.CBOrderDay):
     await handlers_.order.order_choose_time(query, cb.day)
 
 
-@DP.callback_query_handler(cb=kb.CBOrderTime)  # Выбрали время
-async def query_handler_order_time(query: types.CallbackQuery, cb: kb.CBOrderTime):
+@DP.callback_query_handler(cb=kb.cb.CBOrderTime)  # Выбрали время
+async def query_handler_order_time(query: types.CallbackQuery, cb: kb.cb.CBOrderTime):
     await handlers_.order.order_make(query, Broadcast(cb.day, cb.time))
 
 
-@DP.callback_query_handler(cb=kb.CBOrderBack)  # Кнопка назад при выборе времени
+@DP.callback_query_handler(cb=kb.cb.CBOrderBack)  # Кнопка назад при выборе времени
 async def query_handler_order_back(query):
     await handlers_.order.order_choose_day(query)
 
 
-@DP.callback_query_handler(cb=kb.CBOrderCancel)  # Кнопка отмены при выборе дня
+@DP.callback_query_handler(cb=kb.cb.CBOrderCancel)  # Кнопка отмены при выборе дня
 async def query_handler_order_cancel(query):
     await handlers_.order.order_cancel(query)
 
 
-@DP.callback_query_handler(cb=kb.CBOrderNoTime)  # Выбрал время но туда не влезет
-async def query_handler_order_notime(query: types.CallbackQuery, cb: kb.CBOrderNoTime):
+@DP.callback_query_handler(cb=kb.cb.CBOrderNoTime)  # Выбрал время но туда не влезет
+async def query_handler_order_notime(query: types.CallbackQuery, cb: kb.cb.CBOrderNoTime):
     await handlers_.order.order_no_time(query, cb.day, cb.attempts)
 
 
-@DP.callback_query_handler(cb=kb.CBOrderModerate)  # Принять / отклонить
-async def query_handler_order_moderate(query: types.CallbackQuery, cb: kb.CBOrderModerate):
+@DP.callback_query_handler(cb=kb.cb.CBOrderModerate)  # Принять / отклонить
+async def query_handler_order_moderate(query: types.CallbackQuery, cb: kb.cb.CBOrderModerate):
     await handlers_.order.admin_moderate(query, Broadcast(cb.day, cb.time), kb.STATUS(cb.status))
 
 
-@DP.callback_query_handler(cb=kb.CBOrderUnModerate)  # Отменить выбор
-async def query_handler_order_unmoderate(query: types.CallbackQuery, cb: kb.CBOrderUnModerate):
+@DP.callback_query_handler(cb=kb.cb.CBOrderUnModerate)  # Отменить выбор
+async def query_handler_order_unmoderate(query: types.CallbackQuery, cb: kb.cb.CBOrderUnModerate):
     await handlers_.order.admin_unmoderate(query, Broadcast(cb.day, cb.time), kb.STATUS(cb.status))
 
 
@@ -168,29 +168,29 @@ async def query_handler_order_unmoderate(query: types.CallbackQuery, cb: kb.CBOr
 # region playlist
 
 
-@DP.callback_query_handler(cb=kb.CBPlaylistNext)  # Кнопка "что будет играть" в сообщении "что играет"
+@DP.callback_query_handler(cb=kb.cb.CBPlaylistNext)  # Кнопка "что будет играть" в сообщении "что играет"
 async def query_handler_playlist_next(query):
     await handlers_.users.playlist_next(query)
     await query.answer()
 
 
-@DP.callback_query_handler(cb=kb.CBPlaylistDay)  # Выбор дня
-async def query_handler_playlist_day(query: types.CallbackQuery, cb: kb.CBPlaylistDay):
+@DP.callback_query_handler(cb=kb.cb.CBPlaylistDay)  # Выбор дня
+async def query_handler_playlist_day(query: types.CallbackQuery, cb: kb.cb.CBPlaylistDay):
     await handlers_.users.playlist_choose_time(query, cb.day)
 
 
-@DP.callback_query_handler(cb=kb.CBPlaylistTime)  # Выбор времени
-async def query_handler_playlist_time(query: types.CallbackQuery, cb: kb.CBPlaylistTime):
+@DP.callback_query_handler(cb=kb.cb.CBPlaylistTime)  # Выбор времени
+async def query_handler_playlist_time(query: types.CallbackQuery, cb: kb.cb.CBPlaylistTime):
     await handlers_.users.playlist_show(query, Broadcast(cb.day, cb.time))
 
 
-@DP.callback_query_handler(cb=kb.CBPlaylistBack)  # Кнопка назад при выборе времени
+@DP.callback_query_handler(cb=kb.cb.CBPlaylistBack)  # Кнопка назад при выборе времени
 async def query_handler_playlist_back(query):
     await handlers_.users.playlist_choose_day(query)
 
 
-@DP.callback_query_handler(cb=kb.CBPlaylistMove)  # Перемещения трека
-async def query_handler_playlist_move(query: types.CallbackQuery, cb: kb.CBPlaylistMove):
+@DP.callback_query_handler(cb=kb.cb.CBPlaylistMove)  # Перемещения трека
+async def query_handler_playlist_move(query: types.CallbackQuery, cb: kb.cb.CBPlaylistMove):
     await handlers_.admins.playlist_move(query, cb.index, cb.start_time)
 
 
@@ -198,8 +198,8 @@ async def query_handler_playlist_move(query: types.CallbackQuery, cb: kb.CBPlayl
 # region other
 
 
-@DP.callback_query_handler(cb=kb.CBOtherHelp)  # Кнопка в сообщении с инструкцией
-async def query_handler_other_help(query: types.CallbackQuery, cb: kb.CBOtherHelp):
+@DP.callback_query_handler(cb=kb.cb.CBOtherHelp)  # Кнопка в сообщении с инструкцией
+async def query_handler_other_help(query: types.CallbackQuery, cb: kb.cb.CBOtherHelp):
     await handlers_.users.help_change(query, cb.key)
 
 
