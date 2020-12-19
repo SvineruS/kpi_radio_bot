@@ -83,7 +83,7 @@ async def user_reply_to_feedback_or_moder_handler(message: types.Message):
     await message.answer(texts.FEEDBACK_THANKS, reply_markup=kb.START)
 
 
-@DP.message_handler(content_types=ALLOWED_FEEDBACK_TYPES, reply_to_bot_text=None, admins_chat=True)
+@DP.message_handler(content_types=ALLOWED_FEEDBACK_TYPES, reply_to_bot_text=True, admins_chat=True)
 async def admins_reply_message_handler(message: types.Message):
     await communication.admin_message(message)
 
