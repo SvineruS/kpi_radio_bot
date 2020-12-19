@@ -3,7 +3,7 @@
 import asyncio
 import logging
 
-from player import radioboss, files, Broadcast
+from player import radioboss, files, Broadcast, Player
 from consts import texts, others, config, BOT
 from bot.bot_utils import keyboards
 from utils import get_by, db
@@ -32,11 +32,11 @@ async def send_history(fields):
 
 async def broadcast_begin(time):
     await BOT.send_message(config.HISTORY_CHAT_ID, others.TIMES[time])
-    await radioboss.setvol(100)  # включить музло на перерыве
+    await Player.set_volume(100)  # включить музло на перерыве
 
 
 async def broadcast_end(day, time):
-    await radioboss.setvol(0)  # выключить музло на паре
+    await Player.set_volume(0)  # выключить музло на паре
     await perezaklad(day, time)
 
 
