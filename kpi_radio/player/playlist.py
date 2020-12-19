@@ -79,7 +79,7 @@ class PlaylistM3U(PlaylistBase):
         return self
 
     async def _save(self):
-        await _m3u_parser.dump(self._get_path(), self)
+        _m3u_parser.dump(self._get_path(), self)
 
     async def add_track(self, track, position=-1):
         await super().add_track(track, position)
