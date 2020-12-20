@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from os import getenv
 from pathlib import Path
@@ -52,4 +53,12 @@ if IS_TEST_ENV:
     TOKEN = TOKEN_TEST
 
 BOT = Bot(token=TOKEN, parse_mode='HTML')
-AIOHTTP_SESSION = aiohttp.ClientSession()
+LOOP = asyncio.get_event_loop()
+AIOHTTP_SESSION = None
+
+
+async def _make_aiohttp_session():
+    global AIOHTTP_SESSION
+    AIOHTTP_SESSION = aiohttp.ClientSession(loop=LOOP)
+
+LOOP.run_until_complete(_make_aiohttp_session())
