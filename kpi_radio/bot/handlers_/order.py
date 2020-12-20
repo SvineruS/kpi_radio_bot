@@ -6,11 +6,10 @@ from urllib.parse import quote
 
 from aiogram import types, exceptions
 
-from player import Broadcast, exceptions as player_exceptions
 import music
+from player import Broadcast, exceptions as player_exceptions
 from consts import texts, others, config, BOT
-from bot.handlers_ import users
-from bot.bot_utils import communication, keyboards as kb, stats, id_to_hashtag
+from bot import handlers_, communication, kb, stats, id_to_hashtag
 from utils import user_utils, get_by, db
 
 
@@ -28,7 +27,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кидать второе меню тоже не нужно
 
-    await users.menu(query.message)
+    await handlers_.users.menu(query.message)
 
     admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
     mes = await BOT.send_audio(config.ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
@@ -54,7 +53,7 @@ async def order_choose_day(query: types.CallbackQuery):
 async def order_cancel(query: types.CallbackQuery):
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(texts.ORDER_CANCELED, reply_markup=types.InlineKeyboardMarkup())
-        await users.menu(query.message)
+        await handlers_.users.menu(query.message)
 
 
 async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):

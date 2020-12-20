@@ -4,8 +4,7 @@ from contextlib import suppress
 from aiogram import Dispatcher, types, executor, exceptions
 
 from consts import texts, BOT
-from bot import handlers_
-from bot.bot_utils import communication, bind_filters, keyboards as kb
+from bot import handlers_, communication, bind_filters, kb
 from player import Broadcast
 
 DP = Dispatcher(BOT)

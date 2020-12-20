@@ -5,7 +5,7 @@ import logging
 
 from player import radioboss, files, Broadcast, Player
 from consts import texts, others, config, BOT
-from bot.bot_utils import keyboards
+from bot import kb
 from utils import get_by, db
 
 
@@ -61,7 +61,7 @@ async def perezaklad(day, time):
         with open(str(track_path), 'rb') as file:
             try:
                 await BOT.send_audio(tag['id'], file, caption=texts.ORDER_PEREZAKLAD,
-                                     reply_markup=await keyboards.order_choose_day())
+                                     reply_markup=await kb.order_choose_day())
             except Exception as ex:
                 logging.info(f"perezaklad send msg: {ex}")
                 logging.warning(f"pls pls add exception {type(ex)}{ex} in except")

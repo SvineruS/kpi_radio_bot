@@ -7,14 +7,14 @@ from aiogram import types, exceptions
 
 import music
 from consts import texts
-from bot.bot_utils import keyboards
+from bot import kb
 from utils import get_by
 
 
 async def search_audio(message: types.Message):
     await message.chat.do('upload_audio')
     if not (audio := await music.search(message.text)):
-        return await message.answer(texts.SEARCH_FAILED, reply_markup=keyboards.START)
+        return await message.answer(texts.SEARCH_FAILED, reply_markup=kb.START)
 
     audio = audio[0]
 
@@ -22,10 +22,10 @@ async def search_audio(message: types.Message):
         await sent_audio(message, audio)
     except (exceptions.InvalidHTTPUrlContent, exceptions.WrongFileIdentifier) as ex:
         logging.error(f'send audio: {ex} {audio.url}')
-        await message.answer(texts.ERROR, reply_markup=keyboards.START)
+        await message.answer(texts.ERROR, reply_markup=kb.START)
     except Exception as ex:
         logging.warning(f"pls add exception {type(ex)}{ex} in except")
-        await message.answer(texts.ERROR, reply_markup=keyboards.START)
+        await message.answer(texts.ERROR, reply_markup=kb.START)
 
 
 async def inline_search(inline_query: types.InlineQuery):
@@ -77,8 +77,8 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
 
     if warnings:
         text = texts.SOMETHING_BAD_IN_ORDER.format('\n'.join(warnings))
-        _args = dict(caption=text, reply_markup=keyboards.BAD_ORDER_BUT_OK)
+        _args = dict(caption=text, reply_markup=kb.BAD_ORDER_BUT_OK)
     else:
-        _args = dict(caption=texts.CHOOSE_DAY, reply_markup=await keyboards.order_choose_day())
+        _args = dict(caption=texts.CHOOSE_DAY, reply_markup=await kb.order_choose_day())
 
     await message.answer_audio(file, performer=audio.artist, title=audio.title, duration=audio.duration, **_args)

@@ -11,7 +11,7 @@ from aiogram import types, exceptions
 
 from player import Broadcast, Player
 from consts import texts, config, BOT
-from bot.bot_utils import communication, keyboards as kb, stats
+from bot import communication, kb, stats
 from utils import user_utils, get_by, db
 
 

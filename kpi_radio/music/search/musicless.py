@@ -1,5 +1,6 @@
 from typing import List
 from urllib.parse import quote_plus
+
 from music.search.searcher import Searcher, AudioResult
 from utils.lru import lru
 

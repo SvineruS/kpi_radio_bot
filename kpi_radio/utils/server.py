@@ -3,7 +3,7 @@ import asyncio
 from aiogram import types, Bot, Dispatcher
 from aiohttp import web
 
-from bot.handlers import DP
+from bot import DP
 from consts.config import WEBHOOK_PATH, RADIOBOSS_DATA
 from music import search_text
 from utils import events

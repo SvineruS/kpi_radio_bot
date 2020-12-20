@@ -5,7 +5,7 @@ from aiogram import types, exceptions
 
 from player import Broadcast
 from consts import texts, others
-from bot.bot_utils import keyboards as kb
+from bot import kb
 from utils.db import Users
 
 
