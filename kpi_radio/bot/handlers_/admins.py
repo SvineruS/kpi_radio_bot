@@ -9,9 +9,9 @@ from urllib.parse import unquote
 
 from aiogram import types, exceptions
 
-from player import Broadcast, Player
+from bot.bot_utils import communication, kb, stats
 from consts import texts, config, BOT
-from bot import communication, kb, stats
+from player import Broadcast, Player
 from utils import user_utils, get_by, db
 
 

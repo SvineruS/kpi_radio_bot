@@ -7,9 +7,10 @@ from urllib.parse import quote
 from aiogram import types, exceptions
 
 import music
-from player import Broadcast, exceptions as player_exceptions
+from bot import handlers_
+from bot.bot_utils import communication, kb, stats, id_to_hashtag
 from consts import texts, others, config, BOT
-from bot import handlers_, communication, kb, stats, id_to_hashtag
+from player import Broadcast, exceptions as player_exceptions
 from utils import user_utils, get_by, db
 
 

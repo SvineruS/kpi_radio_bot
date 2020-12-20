@@ -3,9 +3,9 @@ from contextlib import suppress
 
 from aiogram import types, exceptions
 
-from player import Broadcast
+from bot.bot_utils import kb
 from consts import texts, others
-from bot import kb
+from player import Broadcast
 from utils.db import Users
 
 

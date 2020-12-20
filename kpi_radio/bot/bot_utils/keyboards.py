@@ -2,10 +2,11 @@ from datetime import datetime
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-import _callbacks as cb
 from consts import btns_text
+from consts.btns_text import STATUS, MENU
 from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
 from player import Broadcast
+from . import _callbacks as cb
 
 
 #
@@ -20,10 +21,10 @@ ORDER_INLINE = InlineKeyboardMarkup().add(
 )
 
 START = ReplyKeyboardMarkup(resize_keyboard=True).add(
-    KeyboardButton(btns_text.MENU.WHAT_PLAYING), KeyboardButton(btns_text.MENU.ORDER)
+    KeyboardButton(MENU.WHAT_PLAYING), KeyboardButton(MENU.ORDER)
 ).add(
-    KeyboardButton(btns_text.MENU.FEEDBACK), KeyboardButton(btns_text.MENU.HELP),
-    KeyboardButton(btns_text.MENU.TIMETABLE)
+    KeyboardButton(MENU.FEEDBACK), KeyboardButton(MENU.HELP),
+    KeyboardButton(MENU.TIMETABLE)
 )
 
 WHAT_PLAYING = InlineKeyboardMarkup(row_width=2).add(
@@ -88,9 +89,9 @@ def admin_moderate(broadcast: Broadcast) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup().add(*[
         _ikb(text, cb.CBOrderModerate(*broadcast, status))
         for status, text in {
-            btns_text.STATUS.QUEUE: btns_text.QUEUE,
-            btns_text.STATUS.NOW: btns_text.NOW,
-            btns_text.STATUS.REJECT: btns_text.REJECT
+            STATUS.QUEUE: btns_text.QUEUE,
+            STATUS.NOW: btns_text.NOW,
+            STATUS.REJECT: btns_text.REJECT
         }.items()
     ])
 

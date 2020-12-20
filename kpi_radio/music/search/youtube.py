@@ -1,8 +1,8 @@
 from typing import List
 
-from music.search.searcher import Searcher, AudioResult
-
 import youtube_dl
+
+from music.search.searcher import Searcher, AudioResult
 
 
 class YouTube(Searcher):

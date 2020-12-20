@@ -1,5 +1,5 @@
-from .search import search, AudioResult
 from . import check
+from .search import search, AudioResult
 from .text import search_text
 
 __all__ = [

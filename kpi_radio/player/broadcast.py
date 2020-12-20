@@ -7,8 +7,8 @@ from typing import Optional, List
 import utils.get_by
 from consts import others
 from utils.lru import lru
-from .playlist import Playlist, PlaylistItem, PlaylistBase
 from . import files, radioboss, exceptions
+from .playlist import Playlist, PlaylistItem, PlaylistBase
 
 
 class Broadcast:

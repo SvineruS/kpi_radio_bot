@@ -1,8 +1,8 @@
 from typing import List
 
 from .musicless import Musicless
-from .youtube import YouTube
 from .searcher import AudioResult
+from .youtube import YouTube
 
 _SEARCHERS = [YouTube, Musicless]  # order is important
 

@@ -6,8 +6,8 @@ from typing import Union
 from aiogram import types, exceptions
 
 import music
+from bot.bot_utils import kb
 from consts import texts
-from bot import kb
 from utils import get_by
 
 
