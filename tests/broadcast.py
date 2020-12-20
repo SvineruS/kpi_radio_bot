@@ -4,7 +4,7 @@ from player import Broadcast
 
 
 class TestBroadcast(TestCase):
-    def test_singletone(self):
+    def test_singleton(self):
         b11 = Broadcast(1, 1)
         b22 = Broadcast(2, 2)
         b11_ = Broadcast(1, 1)
