@@ -3,7 +3,7 @@
 import asyncio
 import logging
 
-from bot import kb
+from bot.bot_utils import kb
 from consts import texts, others, config, BOT
 from player import radioboss, files, Broadcast, Player
 from utils import get_by, db
