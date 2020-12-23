@@ -31,7 +31,7 @@ class Searcher(abc.ABC):
 class AudioResult:
     id: str = None
     url: str = None
-    artist: str = None
+    performer: str = None
     title: str = None
     duration: Optional[int] = None
 
@@ -47,7 +47,7 @@ class AudioResult:
             # скорее всего часто не будет работать из-за наличия других приоритетных тегов
             # todo проверить
             bytes_ += id3({
-                'TPE1': self.artist,
+                'TPE1': self.performer,
                 'TIT2': self.title,
             }).encode('utf-8')
         async with AIOHTTP_SESSION.get(self.url) as resp:

@@ -27,7 +27,7 @@ class YouTube(Searcher):
             AudioResult(
                 id=res['id'],
                 url=audio['url'],
-                artist=res['uploader'],
+                performer=res['uploader'],
                 title=res['title'],
                 duration=res['duration'],
 

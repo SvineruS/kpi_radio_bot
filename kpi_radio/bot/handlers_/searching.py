@@ -38,7 +38,7 @@ async def inline_search(inline_query: types.InlineQuery):
         types.InlineQueryResultAudio(
             id=audio.id,
             audio_url=audio.url,
-            performer=audio.artist,
+            performer=audio.performer,
             title=audio.title,
             audio_duration=audio.duration
         )
@@ -58,12 +58,11 @@ async def inline_search(inline_query: types.InlineQuery):
 async def sent_audio(message: types.Message, audio: Union[types.Audio, music.AudioResult]):
     if isinstance(audio, types.Audio):  # скинутое юзером аудио (через инлайн или от другого бота)
         file = audio.file_id
-        name = get_by.get_audio_name(audio)
     elif isinstance(audio, music.AudioResult):  # аудио найденное ботом по названию
         file = await audio.download()
-        name = get_by.get_audio_name_(audio.artist, audio.title)
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
+    name = get_by.get_audio_name(audio)
 
     bad_list = (
         (texts.BAD_ORDER_SHORT, audio.duration < 60),
@@ -81,4 +80,4 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
     else:
         _args = dict(caption=texts.CHOOSE_DAY, reply_markup=await kb.order_choose_day())
 
-    await message.answer_audio(file, performer=audio.artist, title=audio.title, duration=audio.duration, **_args)
+    await message.answer_audio(file, performer=audio.performer, title=audio.title, duration=audio.duration, **_args)

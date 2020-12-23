@@ -30,7 +30,7 @@ def _to_object(audio: dict) -> AudioResult:
     return AudioResult(
         url=_BASE_URL + "download_by_id/" + quote_plus(id_) + "?lol",
         id=id_,
-        artist=audio['artist'],
+        performer=audio['artist'],
         title=audio['title'],
         duration=audio['duration'],
     )
