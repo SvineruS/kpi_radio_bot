@@ -7,7 +7,7 @@ from typing import Optional, List
 import utils.get_by
 from consts import others
 from utils.lru import lru
-from . import files, radioboss, exceptions
+from .player_utils import files, radioboss, exceptions
 from .playlist import Playlist, PlaylistItem, PlaylistBase
 
 
@@ -105,7 +105,7 @@ class Broadcast:
         pl = await self.playlist()
         n_ = utils.get_by.get_audio_name(tg_track)
         track = PlaylistItem(n_, self._get_audio_path(n_), tg_track.duration)
-        if list(pl.find_by_path(track.path)):
+        if pl.find_by_path(track.path):
             raise exceptions.DuplicateException()
         if await self.get_free_time() < track.duration:
             raise exceptions.NotEnoughSpace
@@ -115,7 +115,7 @@ class Broadcast:
             position = await self._get_new_order_pos()
         await pl.add_track(track, position)
         # ебать костыли
-        track = next((await self.playlist()).find_by_path(track.path))
+        track = (await self.playlist()).find_by_path(track.path)[0]
         return track
 
     async def remove_track(self, tg_track):

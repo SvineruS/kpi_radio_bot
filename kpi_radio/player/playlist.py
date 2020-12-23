@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Union, Iterable, Iterator
+from typing import Union, Iterable, List
 
 from consts import others, config
 from utils.get_by import time_to_datetime
-from . import radioboss, _m3u_parser
+
+from . import Player
+from .player_utils import m3u_parser
 
 
 class PlaylistItem:
@@ -38,9 +40,9 @@ class PlaylistBase(list):
             del self[i]
         return pos
 
-    def find_by_path(self, path: Union[str, Path]) -> Iterator[int, None]:
+    def find_by_path(self, path: Union[str, Path]) -> List[int]:
         path = str(path)
-        return (i for i, t in enumerate(self) if t.path == path)
+        return [i for i, t in enumerate(self) if t.path == path]
 
     def only_next(self) -> Iterable[PlaylistItem]:
         return self.trim(datetime.now())
@@ -69,7 +71,7 @@ class PlaylistM3U(PlaylistBase):
     async def load(self):
         self[:] = []
         duration_sum = timedelta()
-        for i in _m3u_parser.load(self._get_path()):
+        for i in m3u_parser.load(self._get_path()):
             self.append(
                 PlaylistItem(title=i.title, path=i.path, duration=i.duration,
                              time_start=self.broadcast.start_time + duration_sum)
@@ -78,7 +80,7 @@ class PlaylistM3U(PlaylistBase):
         return self
 
     async def _save(self):
-        _m3u_parser.dump(self._get_path(), self)
+        m3u_parser.dump(self._get_path(), self)
 
     async def add_track(self, track, position=-1):
         await super().add_track(track, position)
@@ -104,31 +106,22 @@ class PlaylistRadioboss(PlaylistBase):
                path=track['@FILENAME'],
                duration=(datetime.strptime(track['@STARTTIME'], '%H:%M:%S') - datetime(1900, 1, 1)).total_seconds()
             )
-            for track in (await radioboss.getplaylist2())['TRACK']
+            for track in await Player.get_playlist()
             if track['@STARTTIME']  # если STARTTIME == "" - это не песня (либо она стартанет через >=сутки)
         ]
         return self
 
     @staticmethod
     async def get_prev_now_next():
-        playback = await radioboss.playbackinfo()
-        if not playback or playback['Playback']['@state'] == 'stop':
-            return None
-
-        result = [''] * 3
-        for i, k in enumerate(('PrevTrack', 'CurrentTrack', 'NextTrack')):
-            title = playback[k]['TRACK']['@CASTTITLE']
-            if "setvol" not in title:
-                result[i] = title
-        return result
+        return await Player.get_prev_now_next()
 
     async def add_track(self, track, position=-1):
         await super().add_track(track, position)
-        await radioboss.inserttrack(track.path, -2 if position == 0 else position)
+        await Player.add_track(track.path, position)
 
     async def remove_track(self, file_path):
         pos = await super().remove_track(file_path)
-        await radioboss.delete(pos)
+        await Player.remove_track(pos)
 
 
 class Playlist(PlaylistM3U, PlaylistRadioboss):

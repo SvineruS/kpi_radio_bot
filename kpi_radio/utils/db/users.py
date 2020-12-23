@@ -16,6 +16,10 @@ class Users(Model):
     def add(cls, id_):
         cls.insert(user_id=id_).on_conflict_ignore().execute()
 
+    @classmethod
+    def get(cls, id_):
+        cls.get_or_create(user_id=id_)
+
     def is_banned(self) -> bool:
         return self.ban and self.ban > datetime.now()
 

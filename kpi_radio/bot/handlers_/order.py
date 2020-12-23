@@ -16,7 +16,7 @@ from utils import user_utils, get_by, db
 
 async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     user = query.from_user
-    user_db = db.Users.get_by_id(user.id)
+    user_db = db.Users.get(user.id)
     if user_db.is_banned():
         return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to()))
 
