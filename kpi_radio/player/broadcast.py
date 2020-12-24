@@ -7,7 +7,7 @@ from typing import Optional, List
 import utils.get_by
 from consts import others
 from utils.lru import lru
-from .player_utils import files, radioboss, exceptions
+from .player_utils import files, exceptions, track_info
 from .playlist import Playlist, PlaylistItem, PlaylistBase
 
 
@@ -110,7 +110,7 @@ class Broadcast:
         if await self.get_free_time() < track.duration:
             raise exceptions.NotEnoughSpace
         await files.download_audio(tg_track, track.path)
-        await radioboss.write_track_additional_info(track.path, *metadata)
+        await track_info.write(track.path, *metadata)
         if self.is_now():
             position = await self._get_new_order_pos()
         await pl.add_track(track, position)

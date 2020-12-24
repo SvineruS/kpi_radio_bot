@@ -6,7 +6,7 @@ import logging
 from bot.bot_utils import kb
 from consts import texts, others, config, BOT
 from player import Broadcast, Player
-from player.player_utils import files, radioboss
+from player.player_utils import files, track_info
 from utils import get_by, db
 
 
@@ -18,13 +18,13 @@ async def send_history(fields):
         fields['title'] = fields['casttitle']
 
     sender_name = ''
-    if tag := await radioboss.read_track_additional_info(fields['path']):
+    if tag := await track_info.read(fields['path']):
         sender_name = texts.HISTORY_TITLE.format(get_by.get_user_name_(tag['id'], tag['name']))
         if db.Users.notification_get(tag['id']):
             await BOT.send_message(tag['id'], texts.ORDER_PLAYING.format(fields['casttitle']))
         await BOT.edit_message_reply_markup(config.ADMINS_CHAT_ID, tag['moderation_id'], reply_markup=None)
 
-    await radioboss.clear_track_additional_info(fields['path'])  # Очистить тег, что бы уведомление не пришло еще раз
+    await track_info.clear(fields['path'])  # Очистить тег, что бы уведомление не пришло еще раз
 
     with open(fields['path'], 'rb') as file:
         await BOT.send_audio(config.HISTORY_CHAT_ID, file, sender_name,
@@ -56,7 +56,7 @@ def shut_down():
 async def perezaklad(day, time):
     tracks = files.get_downloaded_tracks(Broadcast(day, time).path)
     for track_path in tracks:
-        if not (tag := await radioboss.read_track_additional_info(track_path)):
+        if not (tag := await track_info.read(track_path)):
             continue
 
         with open(str(track_path), 'rb') as file:
