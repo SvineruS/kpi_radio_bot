@@ -3,8 +3,9 @@ import json
 from consts.btns_text import CALLBACKS as CB
 
 
+# callbackdata пробел base, не база данных
 class _CallbackDataBase:
-    DATA: tuple = None
+    DATA: tuple
 
     def __init__(self, *args):
         if len(args) != len(self.DATA):

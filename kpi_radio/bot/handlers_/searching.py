@@ -13,10 +13,10 @@ from utils import get_by
 
 async def search_audio(message: types.Message):
     await message.chat.do('upload_audio')
-    if not (audio := await music.search(message.text)):
+    if not (audios := await music.search(message.text)):
         return await message.answer(texts.SEARCH_FAILED, reply_markup=kb.START)
 
-    audio = audio[0]
+    audio = audios[0]
 
     try:
         await sent_audio(message, audio)

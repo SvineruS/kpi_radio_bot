@@ -21,7 +21,7 @@ class Users(Model):
         cls.get_or_create(user_id=id_)
 
     def is_banned(self) -> bool:
-        return self.ban and self.ban > datetime.now()
+        return bool(self.ban and self.ban > datetime.now())
 
     def banned_to(self):
         return self.ban.strftime("%d.%m %H:%M")

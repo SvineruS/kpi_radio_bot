@@ -58,7 +58,7 @@ async def all_moders_stats(days: int):
 #
 
 
-def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
+def _parse_stats(n_days: float = float('inf')) -> Dict[int, Dict[str, Counter]]:
     stats = {}
 
     for rec in Stats.get_last_n_days(n_days):

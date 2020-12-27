@@ -54,7 +54,7 @@ if IS_TEST_ENV:
 
 BOT = Bot(token=TOKEN, parse_mode='HTML')
 LOOP = asyncio.get_event_loop()
-AIOHTTP_SESSION = None
+AIOHTTP_SESSION: aiohttp.ClientSession
 
 
 async def _make_aiohttp_session():

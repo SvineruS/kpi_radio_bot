@@ -10,12 +10,12 @@ _BASE_URL = "http://api.svinua.cf/musicless/"
 class Musicless(Searcher):
 
     @classmethod
-    def is_for_me(cls, query, inline):
+    def is_for_me(cls, query: str, inline: bool):
         return True  # musicless is fallback
 
     @classmethod
     @lru(maxsize=200, ttl=60 * 60 * 12)
-    async def search(cls, query) -> List[AudioResult]:
+    async def search(cls, query: str) -> List[AudioResult]:
         url = _BASE_URL + "search/" + quote_plus(query)
         async with cls.SESSION.get(url) as res:
             res.raise_for_status()

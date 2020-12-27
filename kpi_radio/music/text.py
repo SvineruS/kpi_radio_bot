@@ -37,7 +37,7 @@ _PARSER = MyHTMLParser()
 @lru(maxsize=100, ttl=60 * 60 * 12)
 async def search_text(name: str) -> Optional[Tuple[str, str]]:
     if not (res_json := await _search(name)):
-        return
+        return None
     if not (song := _get_song_section(res_json['response']['sections'])):
         return None
     if not (lyrics := await _get_lyrics(song['url'])):

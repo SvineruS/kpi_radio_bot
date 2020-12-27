@@ -20,6 +20,7 @@ async def get_admin_by_username(username: str) -> Optional[User]:
     for admin in (await get_admins()).values():
         if admin.user.username == username:
             return admin.user
+    return None
 
 
 @lru(maxsize=10, ttl=60 * 60 * 12)

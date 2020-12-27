@@ -28,10 +28,9 @@ def get_user_name_(id_: int, name: str) -> str:
     return f'<a href="tg://user?id={id_}">{name}</a>'
 
 
-def get_user_from_entity(message: Message) -> Optional[User]:
-    if entities := message.caption_entities if message.audio or message.photo else message.entities:
-        return entities[0].user
-    return None
+def get_user_from_entity(message: Message) -> User:
+    entities = message.caption_entities if message.audio or message.photo else message.entities
+    return entities[0].user
 
 
 def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
@@ -44,5 +43,5 @@ def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
     return c_3
 
 
-def time_to_datetime(time: datetime.time) -> datetime:
+def time_to_datetime(time) -> datetime:
     return datetime.combine(datetime.today(), time)

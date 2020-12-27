@@ -12,11 +12,11 @@ class YouTube(Searcher):
     URL_MATCHING = ('youtube.com', 'youtu.be')
 
     @classmethod
-    async def search(cls, url: str) -> List[AudioResult]:
+    async def search(cls, query: str) -> List[AudioResult]:
 
         try:
             with youtube_dl.YoutubeDL({"noplaylist": True, "quiet": True, 'format': 'bestaudio'}) as ydl:
-                res = ydl.extract_info(url, download=False)
+                res = ydl.extract_info(query, download=False)
         except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError):
             return []
 
