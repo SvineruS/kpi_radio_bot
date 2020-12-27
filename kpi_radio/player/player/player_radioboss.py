@@ -5,24 +5,24 @@ from player.player_utils import radioboss
 class PlayerRadioboss(PlayerBase):
     @classmethod
     async def set_volume(cls, volume, fade=500):
-        await radioboss.setvol(volume, fade)
+        return await radioboss.setvol(volume, fade)
 
     @classmethod
     async def next_track(cls):
-        await radioboss.cmd_next()
+        return await radioboss.cmd_next()
 
     @classmethod
     async def set_next_track(cls, pos):
-        await radioboss.setnexttrack(pos)
+        return await radioboss.setnexttrack(pos)
 
     @classmethod
     async def add_track(cls, path, position):
         position = -2 if position == 0 else position
-        await radioboss.inserttrack(path, position)
+        return await radioboss.inserttrack(path, position)
 
     @classmethod
     async def remove_track(cls, position):
-        await radioboss.delete(position)
+        return await radioboss.delete(position)
 
     @classmethod
     async def get_playlist(cls):
