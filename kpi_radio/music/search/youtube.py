@@ -20,8 +20,7 @@ class YouTube(Searcher):
         except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError):
             return []
 
-        audio = next((f for f in res['formats']
-                      if 'audio only' in f['format'] and f['ext'] in ('mp3', 'm4a')))
+        audio = next((f for f in res['formats'] if 'audio only' in f['format']))
 
         return [
             AudioResult(
@@ -32,6 +31,6 @@ class YouTube(Searcher):
                 duration=res['duration'],
 
                 is_url_downloadable=False,
-                paste_id3_tags=True
+                paste_metadata=True
             )
         ]
