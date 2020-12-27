@@ -6,3 +6,5 @@ matplotlib
 python-dotenv
 youtube-dl
 peewee
+Mopidy
+mopidy_async_client

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Iterable
 
 import utils.get_by
 from consts import others
@@ -30,8 +30,8 @@ class Broadcast:
     @classmethod
     def now(cls):
         for b in cls.ALL:
-            if b.is_now():
-                return b
+            # if b.is_now():
+            return b
 
     @classmethod
     def get_closest(cls):
@@ -91,15 +91,16 @@ class Broadcast:
         return pl
 
     async def get_prev_now_next(self):
-        if not self.is_now():
-            return None
+        # if not self.is_now():
+        #     return None
         return await Playlist.get_prev_now_next()
 
     async def get_free_time(self) -> int:  # seconds
         pl = await self.playlist()
         pl = pl.trim(datetime.now(), self.stop_time).only_orders()
-        duration = pl.duration()
-        return max(0, (self.stop_time - self.start_time).total_seconds() - duration)
+        tracks_duration = pl.duration()
+        broadcast_duration = int((self.stop_time - self.start_time).total_seconds())
+        return max(0, broadcast_duration - tracks_duration)
 
     async def add_track(self, tg_track, metadata=None, position=-1):
         pl = await self.playlist()
@@ -126,7 +127,7 @@ class Broadcast:
 
     #
 
-    async def _get_new_order_pos(self) -> Optional[PlaylistItem]:
+    async def _get_new_order_pos(self) -> Optional[int]:
         if not self.is_now():
             return None
         pl = await self.get_playlist_next()
@@ -138,7 +139,7 @@ class Broadcast:
     def __str__(self):
         return self.name
 
-    def __iter__(self) -> int:
+    def __iter__(self) -> Iterable[int]:
         yield self.day
         yield self.num
 
