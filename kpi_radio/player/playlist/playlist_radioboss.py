@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 
 from utils.get_by import time_to_datetime
 from ._base import PlaylistBase, PlaylistItem
@@ -23,12 +24,14 @@ class PlaylistRadioboss(PlaylistBase):
 
     @staticmethod
     async def get_prev_now_next():
-        return await PlayerRadioboss.get_prev_now_next()
+        pl = await PlayerRadioboss.get_prev_now_next()
+        return [i["@CASTTITLE"] if i else None for i in pl]
 
-    async def add_track(self, track, position=-1):
-        await super().add_track(track, position)
+    async def add_track(self, track: PlaylistItem, position: int = -1) -> PlaylistItem:
+        track = await super().add_track(track, position)
         await PlayerRadioboss.add_track(track.path, position)
+        return track
 
-    async def remove_track(self, file_path):
-        pos = await super().remove_track(file_path)
+    async def remove_track(self, file_path: Path):
+        pos, _ = await super().remove_track(file_path)
         await PlayerRadioboss.remove_track(pos)

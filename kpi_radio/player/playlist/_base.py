@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Iterable, Union, List
 
+from aiogram import types
+
+from utils import get_by
 from consts import others
 
 
@@ -16,8 +19,19 @@ class PlaylistItem:
     time_start: Optional[datetime] = None
 
     @property
-    def is_order(self):
-        return str(others.PATHS['orders']) in self.path
+    def is_order(self) -> bool:
+        return others.PATHS['orders'] in self.path.parents
+
+    @property
+    def time_stop(self) -> datetime:
+        if self.time_start is None:
+            raise Exception("can't calculate time_stop without time_start")
+        return self.time_start + timedelta(seconds=self.duration)
+
+    @classmethod
+    def from_tg(cls, tg_track: types.Audio, path_base: Path) -> PlaylistItem:
+        name = get_by.get_audio_name(tg_track)
+        return PlaylistItem(name, path_base / (name + '.mp3'), tg_track.duration)
 
 
 class PlaylistBase(list):
@@ -28,17 +42,18 @@ class PlaylistBase(list):
     async def load(self) -> PlaylistBase:
         raise NotImplementedError
 
-    async def add_track(self, track, position=-1) -> None:
+    async def add_track(self, track: PlaylistItem, position: int = -1) -> PlaylistItem:
+        track.time_start = self._get_start_time(position-1)
         self.insert(position, track)
+        return self[position]
 
-    async def remove_track(self, file_path) -> Iterable[int]:
-        pos = self.find_by_path(file_path)
-        for i in pos:
-            del self[i]
-        return pos
+    async def remove_track(self, file_path: Path) -> Iterable[int]:
+        pos = self.find_by_path(file_path)[0]
+        track = self[pos]
+        self.pop(pos)
+        return pos, track
 
-    def find_by_path(self, path: Union[str, Path]) -> List[int]:
-        path = str(path)
+    def find_by_path(self, path: Path) -> List[int]:
         return [i for i, t in enumerate(self) if t.path == path]
 
     def only_next(self) -> Iterable[PlaylistItem]:
@@ -60,3 +75,9 @@ class PlaylistBase(list):
 
     def duration(self) -> int:
         return sum((i.duration for i in self))
+
+    def _get_start_time(self, index: int = -1):
+        try:
+            return self[index].stop_time
+        except KeyError:
+            return self.broadcast.start_time

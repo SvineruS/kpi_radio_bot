@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import functools
-from typing import Dict, Tuple
+from pathlib import Path
+from typing import Dict, Tuple, Union
 
 from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
 from mopidy import models
@@ -36,19 +36,34 @@ class PlayerMopidy(PlayerBase):
     @classmethod
     @connection
     async def set_next_track(cls, pos):
-        pass
+        new_pos = await cls._CLIENT.tracklist.get_next_tlid()
+        return await cls._CLIENT.tracklist.move(pos, pos, new_pos)
 
     @classmethod
     @connection
     async def add_track(cls, path, position):
-        return await cls._CLIENT.tracklist.add()
-        # todo
+        position = None if position == -1 else position
+        uri = cls._path_to_uri(path)
+        return await cls._CLIENT.tracklist.add(uris=[uri], at_position=position)
+
+    @classmethod
+    async def remove_track(cls, position_or_path: Union[Path, int]):
+        if isinstance(position_or_path, Path):
+            return await cls.remove_track_by_path(position_or_path)
+        if isinstance(position_or_path, int):
+            return await cls.remove_track_by_position(position_or_path)
+        raise TypeError()
 
     @classmethod
     @connection
-    async def remove_track(cls, position):
-        return await cls._CLIENT.tracklist.remove()
-            # todo
+    async def remove_track_by_path(cls, path: Path):
+        uri = cls._path_to_uri(path)
+        return await cls._CLIENT.tracklist.remove({'uri': [uri]})
+
+    @classmethod
+    @connection
+    async def remove_track_by_position(cls, position: int):
+        return await cls._CLIENT.tracklist.remove({'tlid': [position]})
 
     @classmethod
     @connection
@@ -68,3 +83,7 @@ class PlayerMopidy(PlayerBase):
             pl.get(cur, None),
             pl.get(cur+1, None),
         )
+
+    @classmethod
+    def _path_to_uri(cls, path: Path):
+        return "file://" + str(path)

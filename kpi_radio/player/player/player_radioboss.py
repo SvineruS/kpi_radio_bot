@@ -30,13 +30,12 @@ class PlayerRadioboss(PlayerBase):
 
     @classmethod
     async def get_prev_now_next(cls):
+        result = [None] * 3
         playback = await radioboss.playbackinfo()
         if not playback or playback['Playback']['@state'] == 'stop':
-            return None
+            return result
 
-        result = [''] * 3
         for i, k in enumerate(('PrevTrack', 'CurrentTrack', 'NextTrack')):
-            title = playback[k]['TRACK']['@CASTTITLE']
-            if "setvol" not in title:
-                result[i] = title
+            if "setvol" not in playback[k]['TRACK']['@CASTTITLE']:
+                result[i] = playback[k]['TRACK']
         return result

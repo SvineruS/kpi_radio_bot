@@ -30,8 +30,8 @@ class Broadcast:
     @classmethod
     def now(cls):
         for b in cls.ALL:
-            # if b.is_now():
-            return b
+            if b.is_now():
+                return b
 
     @classmethod
     def get_closest(cls):
@@ -91,8 +91,8 @@ class Broadcast:
         return pl
 
     async def get_prev_now_next(self):
-        # if not self.is_now():
-        #     return None
+        if not self.is_now():
+            return None
         return await Playlist.get_prev_now_next()
 
     async def get_free_time(self) -> int:  # seconds
@@ -104,8 +104,7 @@ class Broadcast:
 
     async def add_track(self, tg_track, metadata=None, position=-1):
         pl = await self.playlist()
-        n_ = utils.get_by.get_audio_name(tg_track)
-        track = PlaylistItem(n_, self._get_audio_path(n_), tg_track.duration)
+        track = PlaylistItem.from_tg(tg_track, self.path)
         if pl.find_by_path(track.path):
             raise exceptions.DuplicateException()
         if await self.get_free_time() < track.duration:
@@ -114,9 +113,7 @@ class Broadcast:
         await track_info.write(track.path, *metadata)
         if self.is_now():
             position = await self._get_new_order_pos()
-        await pl.add_track(track, position)
-        # ебать костыли
-        track = (await self.playlist()).find_by_path(track.path)[0]
+        track = await pl.add_track(track, position)
         return track
 
     async def remove_track(self, tg_track):
