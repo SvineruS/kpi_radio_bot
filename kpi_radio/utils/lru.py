@@ -72,3 +72,6 @@ class LRU(OrderedDict):
         if not self.ttl:
             return None
         return round(time() / self.ttl)
+
+
+__all__ = ['lru', 'LRU']

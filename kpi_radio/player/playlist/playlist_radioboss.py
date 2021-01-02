@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 
-from utils.get_by import time_to_datetime
+from utils import DateTime
 from ._base import PlaylistBase, PlaylistItem
 from ..player import PlayerRadioboss
 
@@ -13,9 +12,9 @@ class PlaylistRadioboss(PlaylistBase):
         self[:] = [
             PlaylistItem(
                title=track['@CASTTITLE'],
-               time_start=time_to_datetime(datetime.strptime(track['@STARTTIME'], '%H:%M:%S').time()),  # set today
+               time_start=DateTime.from_time(DateTime.strptime(track['@STARTTIME'], '%H:%M:%S').time()),  # set today
                path=track['@FILENAME'],
-               duration=int((datetime.strptime(track['@STARTTIME'], '%H:%M:%S') - datetime(1900, 1, 1)).total_seconds())
+               duration=int((DateTime.strptime(track['@STARTTIME'], '%H:%M:%S') - DateTime(1900, 1, 1)).total_seconds())
             )
             for track in await PlayerRadioboss.get_playlist()
             if track['@STARTTIME']  # если STARTTIME == "" - это не песня (либо она стартанет через >=сутки)

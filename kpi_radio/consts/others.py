@@ -1,5 +1,6 @@
-from datetime import datetime
 from pathlib import Path
+from utils import DateTime
+
 
 HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
 
@@ -18,7 +19,7 @@ BAD_WORDS = [
     'fuck', 'bitch', 'shit', 'dick', 'cunt'
 ]
 
-ANIME_WORDS = ['anime', 'аниме']
+ANIME_WORDS = ['anime', 'аниме', 'tvアニメ', 'japan']
 
 BAD_NAMES = [
     'корж', 'тима', 'стрыкало', 'нервы', 'гречка', 'morgenstern', 'face', 'gspd',
@@ -70,7 +71,7 @@ BROADCAST_TIMES = BROADCAST_TIMES_NORMAL
 BROADCAST_TIMES_ = {
     day_k: {
         num_k: tuple(
-            datetime.strptime(time_string, '%H:%M').time()
+            DateTime.strptime(time_string, '%H:%M').time()
             for time_string in num_v
         )
         for num_k, num_v in day_v.items()

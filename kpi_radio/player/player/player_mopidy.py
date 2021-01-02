@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 from pathlib import Path
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, List, Optional
 
 from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
 from mopidy import models
@@ -75,14 +75,21 @@ class PlayerMopidy(PlayerBase):
 
     @classmethod
     @connection
-    async def get_prev_now_next(cls) -> Tuple[models.Track, models.Track, models.Track]:
+    async def get_prev_now_next(cls) -> List[Optional[models.Track]]:
         pl = await cls.get_playlist()
         cur = await cls._CLIENT.playback.get_current_tlid()
-        return (
+        if not cur:
+            return [None] * 3
+        return [
             pl.get(cur-1, None),
             pl.get(cur, None),
             pl.get(cur+1, None),
-        )
+        ]
+
+    @classmethod
+    @connection
+    async def get_client(cls):
+        return cls._CLIENT
 
     @classmethod
     def _path_to_uri(cls, path: Path):

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 
 from consts.config import AIOHTTP_SESSION
-from music._tagger import ffmpeg_metadata
+from music.search._tagger import ffmpeg_metadata
 
 
 class Searcher(abc.ABC):

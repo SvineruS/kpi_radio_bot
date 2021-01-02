@@ -4,7 +4,7 @@ from typing import Tuple, Optional
 from aiogram.types import Message
 
 from consts.config import BOT, ADMINS_CHAT_ID
-from utils import get_by, lru
+from utils import utils, lru
 from .id_to_hashtag import id_to_hashtag
 
 # key value db: to_message_id: (from_chat_id, from_message_id)
@@ -28,7 +28,7 @@ async def user_message(message: Message):
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
 
-    text = f"От {get_by.get_user_name(message.from_user)} #{id_to_hashtag(message.from_user.id)}: \n"
+    text = f"От {utils.get_user_name(message.from_user)} #{id_to_hashtag(message.from_user.id)}: \n"
     await _resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
@@ -43,7 +43,7 @@ async def admin_message(message: Message):
     if reply_to:
         text = ''
     elif message.reply_to_message.audio:
-        text = "На ваш заказ <i>(" + get_by.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
+        text = "На ваш заказ <i>(" + utils.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
     else:
         text = "На ваше сообщение ответили: \n"
 
@@ -53,7 +53,7 @@ async def admin_message(message: Message):
 def get_from_message(message: Message) -> Optional[Tuple[int, Optional[int]]]:
     if cache_is_set(message.message_id):
         return cache_get(message.message_id)
-    if user := get_by.get_user_from_entity(message):
+    if user := utils.get_user_from_entity(message):
         return user.id, None
     return None
 

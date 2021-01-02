@@ -12,7 +12,7 @@ from aiogram import types, exceptions
 from bot.bot_utils import communication, kb, stats
 from consts import texts, config, BOT
 from player import Broadcast, Player
-from utils import user_utils, get_by, db
+from utils import utils, db
 
 
 async def ban(message: types.Message):
@@ -27,10 +27,10 @@ async def ban(message: types.Message):
     db.Users.ban_set(user, ban_time)
 
     if ban_time == 0:
-        return await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} разбанен")
+        return await message.reply(f"{utils.get_user_name_(user, 'Пользователь')} разбанен")
 
-    ban_time_text = f'{ban_time} ' + get_by.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
-    await message.reply(f"{get_by.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
+    ban_time_text = f'{ban_time} ' + utils.case_by_num(ban_time, 'минуту', 'минуты', 'минут')
+    await message.reply(f"{utils.get_user_name_(user, 'Пользователь')} забанен на {ban_time_text}. {reason}")
     communication.cache_add(await BOT.send_message(user, texts.BAN_YOU_BANNED.format(ban_time_text, reason)), message)
 
 
@@ -138,6 +138,6 @@ def _get_volume_from_message(message: types.Message) -> Optional[int]:
 async def _get_moderator_from_mention(message: types.Message) -> Optional[types.User]:
     if message.entities[1].type == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
-        return await user_utils.get_admin_by_username(moderator)
+        return await utils.get_admin_by_username(moderator)
     else:
         return message.entities[1].user

@@ -5,8 +5,8 @@ from aiohttp import web
 
 from bot import DP
 from consts.config import WEBHOOK_PATH, RADIOBOSS_DATA
+from main import events
 from music import search_text
-from utils import events
 
 APP = web.Application()
 ROUTES = web.RouteTableDef()

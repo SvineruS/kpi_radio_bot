@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Iterable, Union, List
+from typing import Optional, Iterable, List
 
 from aiogram import types
 
-from utils import get_by
+from utils.utils import get_by
 from consts import others
 
 

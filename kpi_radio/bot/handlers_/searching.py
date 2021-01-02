@@ -8,7 +8,7 @@ from aiogram import types, exceptions
 import music
 from bot.bot_utils import kb
 from consts import texts
-from utils import get_by
+from utils import utils
 
 
 async def search_audio(message: types.Message):
@@ -62,7 +62,7 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
         file = await audio.download()
     else:
         raise Exception("шо ты мне передал блядь ебаный рот")
-    name = get_by.get_audio_name(audio)
+    name = utils.get_audio_name(audio)
 
     bad_list = (
         (texts.BAD_ORDER_SHORT, audio.duration < 60),

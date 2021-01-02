@@ -8,11 +8,11 @@ import asyncio
 
 import aioschedule
 
-from consts.others import BROADCAST_TIMES
-from utils.events import broadcast_begin, broadcast_end, day_end
-
 
 async def start():
+    from consts.others import BROADCAST_TIMES
+    from main.events import broadcast_begin, broadcast_end, day_end
+
     aioschedule.every().day.at("23:00").do(day_end)
 
     for day_num, day_name in enumerate(('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')):

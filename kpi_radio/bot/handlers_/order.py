@@ -1,7 +1,6 @@
 """Обработка заказов"""
 
 from contextlib import suppress
-from datetime import datetime
 from urllib.parse import quote
 
 from aiogram import types, exceptions
@@ -11,7 +10,7 @@ from bot import handlers_
 from bot.bot_utils import communication, kb, stats, id_to_hashtag
 from consts import texts, others, config, BOT
 from player import Broadcast, exceptions as player_exceptions
-from utils import user_utils, get_by, db
+from utils import utils, db, DateTime
 
 
 async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
@@ -30,7 +29,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
 
     await handlers_.users.menu(query.message)
 
-    admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(broadcast, user, audio_name=utils.get_audio_name(query.message.audio))
     mes = await BOT.send_audio(config.ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
                                reply_markup=kb.admin_moderate(broadcast))
     communication.cache_add(mes, query.message)
@@ -38,7 +37,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
 
 
 async def order_choose_time(query: types.CallbackQuery, day: int):
-    is_moder = await user_utils.is_admin(query.from_user.id)
+    is_moder = await utils.is_admin(query.from_user.id)
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(
             caption=texts.CHOOSE_TIME.format(others.WEEK_DAYS[day]),
@@ -67,9 +66,9 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 
 
 async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
-    user = get_by.get_user_from_entity(query.message)
+    user = utils.get_user_from_entity(query.message)
     moder = query.from_user
-    audio_name = get_by.get_audio_name(query.message.audio)
+    audio_name = utils.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
 
     try:
@@ -77,7 +76,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
-    stats.add(query.message.message_id, moder.id, user.id, audio_name, status, datetime.now())
+    stats.add(query.message.message_id, moder.id, user.id, audio_name, status, DateTime.now())
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
         return communication.cache_add(
@@ -109,8 +108,8 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
                 msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
 
             else:
-                minutes_left = round((new_track.time_start - datetime.now()).seconds / 60)
-                when_playing = f'через {minutes_left} ' + get_by.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
+                minutes_left = round((new_track.time_start - DateTime.now()).seconds / 60)
+                when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
                 msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
 
     if msg_to_user:
@@ -121,8 +120,8 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
 
 async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
-    user = get_by.get_user_from_entity(query.message)
-    admin_text = await _gen_order_caption(broadcast, user, audio_name=get_by.get_audio_name(query.message.audio))
+    user = utils.get_user_from_entity(query.message)
+    admin_text = await _gen_order_caption(broadcast, user, audio_name=utils.get_audio_name(query.message.audio))
 
     try:
         await query.message.edit_caption(admin_text, reply_markup=kb.admin_moderate(broadcast))
@@ -138,7 +137,7 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
 async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
     is_now = broadcast.is_now()
-    user_name = get_by.get_user_name(user) + ' #' + id_to_hashtag(user.id)
+    user_name = utils.get_user_name(user) + ' #' + id_to_hashtag(user.id)
     text_datetime = broadcast.name + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
@@ -152,7 +151,7 @@ async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                f'{is_anime}{bad_words}'
     else:
         status_text = "✅Принят" if status != kb.STATUS.REJECT else "❌Отклонен"
-        moder_name = get_by.get_user_name(moder)
+        moder_name = utils.get_user_name(moder)
 
         return f'Заказ: \n' \
                f'{text_datetime}\n' \

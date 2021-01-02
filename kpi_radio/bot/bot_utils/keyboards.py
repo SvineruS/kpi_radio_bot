@@ -1,11 +1,10 @@
-from datetime import datetime
-
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 from consts import btns_text
 from consts.btns_text import STATUS, MENU
 from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
 from player import Broadcast
+from utils import DateTime
 from . import _callbacks as cb
 
 
@@ -46,13 +45,13 @@ BAD_ORDER_BUT_OK = InlineKeyboardMarkup(row_width=1).add(
 
 
 async def order_choose_day() -> InlineKeyboardMarkup:
-    today = datetime.today().weekday()
+    today = DateTime.day_num()
     btns = []
 
     if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
         btns.append(_ikb(NEXT_DAYS[-1], cb.CBOrderTime(today, broadcast_now.num)))
 
-    if datetime.now().hour < 22:  # кнопка сегодня
+    if DateTime.now().hour < 22:  # кнопка сегодня
         btns.append(_ikb(NEXT_DAYS[0], cb.CBOrderDay(today)))
 
     for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
@@ -104,7 +103,7 @@ def admin_unmoderate(broadcast: Broadcast, status: str) -> InlineKeyboardMarkup:
 
 
 def playlist_choose_day() -> InlineKeyboardMarkup:
-    today = datetime.today().weekday()
+    today = DateTime.day_num()
     btns = []
     for day in range(4):
         day = (day + today) % 7

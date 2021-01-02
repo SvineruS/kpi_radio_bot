@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Iterable
 
-import utils.get_by
+from utils import lru, utils, DateTime
 from consts import others
-from utils.lru import lru
 from .player_utils import files, exceptions, track_info
 from .playlist import Playlist, PlaylistItem, PlaylistBase
 
 
 class Broadcast:
     ALL: List[Broadcast] = []
+    datetime = DateTime
 
-    @lru()
+    @lru.lru()
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
 
@@ -28,17 +27,17 @@ class Broadcast:
         self.num: int = num
 
     @classmethod
-    def now(cls):
+    def now(cls) -> Broadcast:
         for b in cls.ALL:
             if b.is_now():
                 return b
 
     @classmethod
-    def get_closest(cls):
+    def get_closest(cls) -> Broadcast:
         if br := Broadcast.now():
             return br
 
-        today = datetime.today().weekday()
+        today = cls.datetime.day_num()
         today_brs = [Broadcast(today, time) for time in others.BROADCAST_TIMES_[today]]
         for br in today_brs:
             if not br.is_already_play_today():
@@ -62,24 +61,24 @@ class Broadcast:
         return ', '.join((others.WEEK_DAYS[self.day], others.TIMES[self.num]))
 
     @property
-    def start_time(self) -> datetime:
-        return utils.get_by.time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][0])
+    def start_time(self) -> DateTime:
+        return self.datetime.from_time(others.BROADCAST_TIMES_[self.day][self.num][0])
 
     @property
-    def stop_time(self) -> datetime:
-        return utils.get_by.time_to_datetime(others.BROADCAST_TIMES_[self.day][self.num][1])
+    def stop_time(self) -> DateTime:
+        return self.datetime.from_time(others.BROADCAST_TIMES_[self.day][self.num][1])
 
     def is_today(self) -> bool:
-        return self.day == datetime.now().weekday()
+        return self.day == self.datetime.day_num()
 
     def is_now(self) -> bool:
-        return self.is_today() and self.start_time < datetime.now() < self.stop_time
+        return self.is_today() and self.start_time < self.datetime.now() < self.stop_time
 
     def is_will_be_play_today(self) -> bool:
-        return self.is_today() and self.start_time > datetime.now()
+        return self.is_today() and self.start_time > self.datetime.now()
 
     def is_already_play_today(self) -> bool:
-        return self.is_today() and self.stop_time < datetime.now()
+        return self.is_today() and self.stop_time < self.datetime.now()
 
     async def playlist(self) -> PlaylistBase:
         return await Playlist(self).load()
@@ -87,7 +86,7 @@ class Broadcast:
     async def get_playlist_next(self) -> PlaylistBase:
         pl = await self.playlist()
         if self.is_now():
-            return pl.trim(datetime.now(), self.stop_time)
+            return pl.trim(self.datetime.now(), self.stop_time)
         return pl
 
     async def get_prev_now_next(self):
@@ -97,7 +96,7 @@ class Broadcast:
 
     async def get_free_time(self) -> int:  # seconds
         pl = await self.playlist()
-        pl = pl.trim(datetime.now(), self.stop_time).only_orders()
+        pl = pl.trim(self.datetime.now(), self.stop_time).only_orders()
         tracks_duration = pl.duration()
         broadcast_duration = int((self.stop_time - self.start_time).total_seconds())
         return max(0, broadcast_duration - tracks_duration)
@@ -117,7 +116,7 @@ class Broadcast:
         return track
 
     async def remove_track(self, tg_track):
-        path = self._get_audio_path(utils.get_by.get_audio_name(tg_track))
+        path = self._get_audio_path(utils.get_audio_name(tg_track))
         files.delete_file(path)
         pl = await self.playlist()
         await pl.remove_track(path)

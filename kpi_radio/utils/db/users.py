@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from peewee import Model, BooleanField, BigIntegerField, DateTimeField
 
-from utils.db._connector import DB
+from ._connector import DB
 
 
 class Users(Model):

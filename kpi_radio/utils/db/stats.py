@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from peewee import Model, BigIntegerField, CharField, DateTimeField
 
 from consts.btns_text import STATUS
-from utils.db._connector import DB
+from ._connector import DB
 
 
 class Stats(Model):
