@@ -7,8 +7,9 @@ from typing import Optional, Iterable, List
 
 from aiogram import types
 
-from utils.utils import get_by
 from consts import others
+from utils import DateTime
+from utils.utils import get_by
 
 
 @dataclass
@@ -16,17 +17,17 @@ class PlaylistItem:
     title: str
     path: Path
     duration: int
-    time_start: Optional[datetime] = None
+    start_time: Optional[datetime] = None
 
     @property
     def is_order(self) -> bool:
-        return others.PATHS['orders'] in self.path.parents
+        return others.PATHS.ORDERS in self.path.parents
 
     @property
-    def time_stop(self) -> datetime:
-        if self.time_start is None:
-            raise Exception("can't calculate time_stop without time_start")
-        return self.time_start + timedelta(seconds=self.duration)
+    def stop_time(self) -> datetime:
+        if self.start_time is None:
+            raise AttributeError("can't calculate time_stop without time_start")
+        return self.start_time + timedelta(seconds=self.duration)
 
     @classmethod
     def from_tg(cls, tg_track: types.Audio, path_base: Path) -> PlaylistItem:
@@ -43,12 +44,15 @@ class PlaylistBase(list):
         raise NotImplementedError
 
     async def add_track(self, track: PlaylistItem, position: int = -1) -> PlaylistItem:
-        track.time_start = self._get_start_time(position-1)
+        track.start_time = self._get_start_time(position - 1)
         self.insert(position, track)
         return self[position]
 
-    async def remove_track(self, file_path: Path) -> Iterable[int]:
-        pos = self.find_by_path(file_path)[0]
+    async def remove_track(self, file_path: Path) -> Iterable[Optional[int]]:
+        tracks = self.find_by_path(file_path)
+        if not tracks:
+            return None, None
+        pos = tracks[0]
         track = self[pos]
         self.pop(pos)
         return pos, track
@@ -65,7 +69,7 @@ class PlaylistBase(list):
     def trim(self, time_min: datetime = None, time_max: datetime = None) -> PlaylistBase:
         def trim_():
             for track in self:
-                time_start = track.time_start
+                time_start = track.start_time
                 if time_min and time_start < time_min:
                     continue
                 if time_max and time_start > time_max:
@@ -79,5 +83,7 @@ class PlaylistBase(list):
     def _get_start_time(self, index: int = -1):
         try:
             return self[index].stop_time
-        except KeyError:
+        except IndexError:
+            if self.broadcast.is_now():
+                return DateTime.now()
             return self.broadcast.start_time

@@ -5,8 +5,6 @@ from player.player import PlayerMopidy
 
 
 class TestPlayerMopidy(TestCase):
-    # def tearDown(self) -> None:
-    #     asyncio.run(PlayerMopidy._CLIENT.disconnect())
 
     def test_set_volume(self):
         asyncio.run(self._test_set_volume())
@@ -16,7 +14,6 @@ class TestPlayerMopidy(TestCase):
         for i in (5, 55):
             await PlayerMopidy.set_volume(i)
             self.assertEqual(i, await client.mixer.get_volume())
-
 
     def test_set_next_track(self):
         self.fail()

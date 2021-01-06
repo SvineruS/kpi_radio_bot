@@ -61,7 +61,7 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
     elif isinstance(audio, music.AudioResult):  # аудио найденное ботом по названию
         file = await audio.download()
     else:
-        raise Exception("шо ты мне передал блядь ебаный рот")
+        raise TypeError("шо ты мне передал блядь ебаный рот")
     name = utils.get_audio_name(audio)
 
     bad_list = (

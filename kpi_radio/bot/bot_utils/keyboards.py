@@ -129,8 +129,8 @@ async def playlist_move(pl=None):
         pl = await Broadcast.now().get_playlist_next()
     btns = [
         _ikb(
-            f"{_EMOJI_NUMBERS[i]} 🕖{track.time_start.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
-            cb.CBPlaylistMove(track.index_, track.time_start.timestamp())
+            f"{_EMOJI_NUMBERS[i]} 🕖{track.start_time.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
+            cb.CBPlaylistMove(track.index_, track.start_time.timestamp())
         )
         for i, track in enumerate(pl[:10])
     ] + [_ikb("🔄Обновить", cb.CBPlaylistMove(-1, 0))]

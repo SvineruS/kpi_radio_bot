@@ -14,9 +14,7 @@ def load(filepath) -> Iterable[Track]:
             for track in f:
                 if not track.startswith('#EXTINF:'):
                     continue
-                # duration, artist_title = track.removeprefix('#EXTINF:').split(', ')
                 duration, artist_title = track.strip()[8:].split(', ')
-                # artist, title = artist_title.split(' - ')
                 path = next(f).strip()
                 yield Track(artist_title, path, int(duration))
     except FileNotFoundError:

@@ -9,7 +9,7 @@ from urllib.parse import unquote
 
 from aiogram import types, exceptions
 
-from bot.bot_utils import communication, kb, stats
+from bot.bot_utils import communication, kb, stats, small_utils
 from consts import texts, config, BOT
 from player import Broadcast, Player
 from utils import utils, db
@@ -42,10 +42,6 @@ async def set_volume(message: types.Message):
 
 
 async def get_stats(message: types.Message):
-    # if 'csv' in message.get_args():
-    #     await message.chat.do('upload_document')
-    #     return await message.answer_document(stats.PATH_STATS_CSV.open('rb'))
-
     await message.chat.do('upload_photo')
 
     if len(message.entities) >= 2 and message.entities[1].type in ('mention', 'text_mention'):
@@ -70,7 +66,7 @@ async def show_playlist_control(message: types.Message):
 async def playlist_move(query: types.CallbackQuery, track_index, track_start_time):
     pl = await Broadcast.now().get_playlist_next()
     _in_playback = [i for i, track in enumerate(pl) if
-                    track.index_ == track_index and track.time_start.timestamp() == track_start_time]
+                    track.index_ == track_index and track.start_time.timestamp() == track_start_time]
 
     if track_index == -1:  # просто обновить
         pass
@@ -138,6 +134,6 @@ def _get_volume_from_message(message: types.Message) -> Optional[int]:
 async def _get_moderator_from_mention(message: types.Message) -> Optional[types.User]:
     if message.entities[1].type == 'mention':
         moderator = message.entities[1].get_text(message.text)[1:]
-        return await utils.get_admin_by_username(moderator)
+        return await small_utils.get_admin_by_username(moderator)
     else:
         return message.entities[1].user

@@ -2,7 +2,7 @@ from typing import Dict, Optional
 
 from aiogram.types import ChatMember, User
 
-from consts.config import BOT, ADMINS_CHAT_ID
+from consts.config import ADMINS_CHAT_ID, BOT
 from utils.lru import lru
 
 

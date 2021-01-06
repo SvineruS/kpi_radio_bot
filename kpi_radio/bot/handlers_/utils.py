@@ -35,14 +35,5 @@ async def send_perezaklad(user_id: int, path: Path):
             logging.warning(f"pls pls add exception {type(ex)}{ex} in except")
 
 
-#
-
-
-async def set_webhook():
-    url, cert = config.WEBHOOK_URL, config.SSL_CERT.open('rb')
-    if (await config.BOT.get_webhook_info()).url != url:
-        await config.BOT.set_webhook(url, certificate=cert)
-
-
 async def send_startup_message():
     await BOT.send_message(config.ADMINS_CHAT_ID, "Ребутнулся!")

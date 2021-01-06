@@ -1,6 +1,6 @@
 from pathlib import Path
-from utils import DateTime
 
+from utils import DateTime
 
 HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
 
@@ -79,15 +79,9 @@ BROADCAST_TIMES_ = {
     for day_k, day_v in BROADCAST_TIMES.items()
 }
 
-PATHS = {
-    'orders': Path('D:/Вещание Радио/Заказы'),  # сюда бот кидает заказанные песни
-    'archive': Path('D:/Вещание Радио/Архив'),  # сюда песни перемещаются каждую ночь с папки заказов
-    'ether': Path('D:/Вещание Радио/Эфир'),  # тут песни выбранные радистами, не используется
-}
 
-# летние пути
-# paths = {
-#     'orders': Path('D:/Вещание Радио/Летний эфир/Заказы'),
-#     'archive': Path('D:/Вещание Радио/Летний эфир/Архив'),
-#     'ether': Path('D:/Вещание Радио/Летний эфир/Эфир'),
-# }
+class PATHS:
+    _BASE = Path('D:/Вещание Радио')
+    ORDERS = _BASE / 'Заказы'  # сюда бот кидает заказанные песни
+    ARCHIVE = _BASE / 'Архив'  # сюда песни перемещаются каждую ночь с папки заказов
+    ETHER = _BASE / 'Эфир'  # тут песни выбранные радистами, не используется

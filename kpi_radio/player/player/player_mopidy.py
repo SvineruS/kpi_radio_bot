@@ -1,50 +1,41 @@
 from __future__ import annotations
 
-import functools
 from pathlib import Path
-from typing import Dict, Tuple, Union, List, Optional
+from typing import Dict, Union, List, Optional
 
-from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
 from mopidy import models
+from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
 
 from ._base import PlayerBase
 
 
-def connection(function):
-    @functools.wraps(function)
-    async def on_call(cls: PlayerMopidy, *args, **kwargs):
-        if cls._CLIENT is None:
-            cls._CLIENT = await MopidyClient(parse_results=True).connect()
-        return await function(cls, *args, **kwargs)
-    return on_call
-
-
 class PlayerMopidy(PlayerBase):
-
-    _CLIENT: MopidyClient = None
+    _CLIENT = MopidyClient(parse_results=True)
 
     @classmethod
-    @connection
     async def set_volume(cls, volume):
         return await cls._CLIENT.mixer.set_volume(volume)
 
     @classmethod
-    @connection
     async def next_track(cls):
         return await cls._CLIENT.playback.next()
 
     @classmethod
-    @connection
+    async def play(cls, tlid=None):
+        return await cls._CLIENT.playback.play(tlid=tlid)
+
+    @classmethod
     async def set_next_track(cls, pos):
         new_pos = await cls._CLIENT.tracklist.get_next_tlid()
         return await cls._CLIENT.tracklist.move(pos, pos, new_pos)
 
     @classmethod
-    @connection
-    async def add_track(cls, path, position):
+    async def add_track(cls, path, position=0):
         position = None if position == -1 else position
         uri = cls._path_to_uri(path)
-        return await cls._CLIENT.tracklist.add(uris=[uri], at_position=position)
+        r = await cls._CLIENT.tracklist.add(uris=[uri], at_position=position)
+        await cls.play()
+        return r
 
     @classmethod
     async def remove_track(cls, position_or_path: Union[Path, int]):
@@ -55,18 +46,15 @@ class PlayerMopidy(PlayerBase):
         raise TypeError()
 
     @classmethod
-    @connection
     async def remove_track_by_path(cls, path: Path):
         uri = cls._path_to_uri(path)
         return await cls._CLIENT.tracklist.remove({'uri': [uri]})
 
     @classmethod
-    @connection
     async def remove_track_by_position(cls, position: int):
         return await cls._CLIENT.tracklist.remove({'tlid': [position]})
 
     @classmethod
-    @connection
     async def get_playlist(cls) -> Dict[int, models.Track]:
         return {
             i.tlid: i.track
@@ -74,7 +62,10 @@ class PlayerMopidy(PlayerBase):
         }
 
     @classmethod
-    @connection
+    async def get_next_tlid(cls):
+        return await cls._CLIENT.tracklist.get_next_tlid()
+
+    @classmethod
     async def get_prev_now_next(cls) -> List[Optional[models.Track]]:
         pl = await cls.get_playlist()
         cur = await cls._CLIENT.playback.get_current_tlid()
@@ -87,10 +78,24 @@ class PlayerMopidy(PlayerBase):
         ]
 
     @classmethod
-    @connection
-    async def get_client(cls):
+    async def get_state(cls):
+        return await cls._CLIENT.playback.get_state()
+
+    @classmethod
+    def get_client(cls):
         return cls._CLIENT
 
     @classmethod
+    def bind_event(cls, event, callback):
+        return cls._CLIENT.listener.bind(event, callback)
+
+    @classmethod
     def _path_to_uri(cls, path: Path):
-        return "file://" + str(path)
+        return "file://" + str(path.absolute())
+
+    @classmethod
+    async def play_playlist(cls, path: Path):
+        uri = "m3u://" + str(path.absolute())
+        await cls._CLIENT.tracklist.clear()
+        await cls._CLIENT.tracklist.add(uris=[uri])
+        await cls.play()

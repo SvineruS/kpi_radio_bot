@@ -16,7 +16,7 @@ class PlaylistMopidy(PlaylistBase):
     @staticmethod
     async def get_prev_now_next():
         pl = await PlayerMopidy.get_prev_now_next()
-        return [i.name if i else None for i in pl]
+        return [PlaylistMopidy.tl_to_pl(i).title if i else None for i in pl]
 
     async def add_track(self, track: PlaylistItem, position: int = -1) -> PlaylistItem:
         track = await super().add_track(track, position)
@@ -29,9 +29,10 @@ class PlaylistMopidy(PlaylistBase):
 
     @staticmethod
     def tl_to_pl(tl, start_time=None):
+        artist = list(tl.artists)[0].name if tl.artists else ""
         return PlaylistItem(
-            title=tl.name,
+            title=f"{artist} - {tl.name}",
             path=Path(tl.uri),
             duration=tl.length,
-            time_start=start_time
+            start_time=start_time
         )

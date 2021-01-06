@@ -7,7 +7,7 @@ from aiogram import types, exceptions
 
 import music
 from bot import handlers_
-from bot.bot_utils import communication, kb, stats, id_to_hashtag
+from bot.bot_utils import communication, kb, stats, id_to_hashtag, small_utils
 from consts import texts, others, config, BOT
 from player import Broadcast, exceptions as player_exceptions
 from utils import utils, db, DateTime
@@ -37,7 +37,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
 
 
 async def order_choose_time(query: types.CallbackQuery, day: int):
-    is_moder = await utils.is_admin(query.from_user.id)
+    is_moder = await small_utils.is_admin(query.from_user.id)
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(
             caption=texts.CHOOSE_TIME.format(others.WEEK_DAYS[day]),
@@ -108,7 +108,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
                 msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
 
             else:
-                minutes_left = round((new_track.time_start - DateTime.now()).seconds / 60)
+                minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
                 when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
                 msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
 

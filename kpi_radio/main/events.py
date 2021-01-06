@@ -3,17 +3,30 @@
 import asyncio
 
 from bot.handlers_ import utils
+from consts import config
 from player import Broadcast, Player
+from player.player import PlayerMopidy
 from player.player_utils import files, track_info
 from utils import scheduler
 
 
-async def send_history(fields):
+async def track_begin(path, artist, title):
     if Broadcast.is_broadcast_right_now():  # кидать только во время перерыва
-        await utils.send_history_track(fields['path'], fields['artist'], fields['title'] or fields['casttitle'])
+        await utils.send_history_track(path, artist, title)
 
 
-async def broadcast_begin(time):
+async def track_end_mopidy(_):
+    # если нет следующей песни - ставим с архива
+    if await PlayerMopidy.get_state() != 'stopped':
+        return
+    if not (track := files.get_random_from_archive()):
+        return
+    track = (await Player.add_track(track, -1))[0]
+    await Player.play(tlid=track.tlid)
+
+
+async def broadcast_begin(day, time):
+    await Broadcast(day, time).play()
     await utils.send_broadcast_begin(time)
     await Player.set_volume(100)  # включить музло на перерыве
 
@@ -27,14 +40,20 @@ async def day_end():
     files.move_to_archive()
 
 
-async def start_up():
-    await utils.set_webhook()
-    await utils.send_startup_message()
+async def start_up(_):
     asyncio.create_task(scheduler.start())
 
+    if config.PLAYER == 'MOPIDY':
+        await PlayerMopidy.get_client().connect()
+        PlayerMopidy.bind_event("track_playback_ended", track_end_mopidy)
 
-async def shut_down():
-    pass
+    if not config.IS_TEST_ENV:
+        await utils.send_startup_message()
+
+
+async def shut_down(_):
+    if config.PLAYER == 'MOPIDY':
+        await PlayerMopidy.get_client().disconnect()
 
 
 async def _perezaklad(day, time):

@@ -18,7 +18,8 @@ class Users(Model):
 
     @classmethod
     def get(cls, id_):
-        cls.get_or_create(user_id=id_)
+        user, _ = cls.get_or_create(user_id=id_)
+        return user
 
     def is_banned(self) -> bool:
         return bool(self.ban and self.ban > datetime.now())

@@ -5,11 +5,12 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
+from random import choice
 from typing import List
 
 from aiogram.types import Audio
 
-import consts
+from consts.others import PATHS
 
 
 def delete_file(path: Path) -> None:
@@ -25,8 +26,8 @@ def delete_file(path: Path) -> None:
 def move_to_archive(day: int = None) -> None:
     if not day:
         day = datetime.now().weekday()
-    src = str(consts.others.PATHS['orders'] / f"D0{day + 1}")  # заказы
-    dst = str(consts.others.PATHS['archive'])  # архив
+    src = str(PATHS.ORDERS / f"D0{day + 1}")  # заказы
+    dst = str(PATHS.ARCHIVE)  # архив
 
     if not os.path.exists(dst):
         os.makedirs(dst)
@@ -40,6 +41,15 @@ def move_to_archive(day: int = None) -> None:
             except Exception as ex:
                 logging.error(f'move file: {ex} {src_file}')
                 logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
+
+
+def get_random_from_archive():
+    tracks = [p for p in PATHS.ARCHIVE.iterdir()]
+    if tracks:
+        return choice(tracks)
+    else:
+        logging.warning("ARCHIVE is empty")
+        return None
 
 
 async def download_audio(audio: Audio, path: Path) -> None:

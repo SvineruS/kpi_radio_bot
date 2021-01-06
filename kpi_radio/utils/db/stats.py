@@ -13,7 +13,7 @@ class Stats(Model):
     moderator_id = BigIntegerField()
     user_id = BigIntegerField()
     track_title = CharField(max_length=500)
-    moderation_status = CharField(max_length=10, choices=STATUS)
+    moderation_status = CharField(max_length=20)
     date = DateTimeField()
 
     @classmethod

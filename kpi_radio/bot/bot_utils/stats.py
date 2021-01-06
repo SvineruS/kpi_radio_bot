@@ -16,7 +16,8 @@ from typing import Dict, Optional, List, Iterator
 from matplotlib import pyplot as plt
 
 from consts.config import PATH_STUFF
-from utils import utils, db, DateTime
+from utils import db, DateTime
+from .small_utils import get_moders
 
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
 
@@ -42,7 +43,7 @@ async def moder_stats(moder_id: int) -> Optional[float]:
 
 async def all_moders_stats(days: int):
     stats = _parse_stats(days)
-    moders = await utils.get_moders()
+    moders = await get_moders()
 
     stats = [
         (moders[moder_id].first_name, sum(stat['all'].values()), sum(stat['own'].values()))
@@ -50,7 +51,10 @@ async def all_moders_stats(days: int):
     ]
 
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
-    names, moderations_all, moderations_own = zip(*stats)
+    if stats:
+        names, moderations_all, moderations_own = zip(*stats)
+    else:
+        names, moderations_all, moderations_own = [], [], []
     _draw_bars_plot(names, moderations_all, moderations_own)
 
 

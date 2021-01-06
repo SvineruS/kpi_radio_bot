@@ -1,14 +1,9 @@
-import asyncio
-
-from aiogram import types, Bot, Dispatcher
 from aiohttp import web
 
-from bot import DP
-from consts.config import WEBHOOK_PATH, RADIOBOSS_DATA
+from consts.config import RADIOBOSS_DATA
 from main import events
 from music import search_text
 
-APP = web.Application()
 ROUTES = web.RouteTableDef()
 
 
@@ -28,26 +23,9 @@ async def history_save(request):
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
-    fields = {
-        'artist': args.get('artist'),
-        'title': args.get('title'),
-        'casttitle': args.get('casttitle'),
-        'path': args.get('path'),
-    }
-    await events.send_history(fields)
+    await events.track_begin(
+        args.get('path'),
+        args.get('artist'),
+        args.get('title') or args.get('casttitle')
+    )
     return web.Response(text='ok')
-
-
-@ROUTES.post(WEBHOOK_PATH)
-async def webhook_handle(request):
-    update = await request.json()
-    update = types.Update(**update)
-
-    Bot.set_current(DP.bot)  # без этого не работает
-    Dispatcher.set_current(DP)
-    asyncio.create_task(DP.process_update(update))
-
-    return web.Response(text='ok')
-
-
-APP.add_routes(ROUTES)

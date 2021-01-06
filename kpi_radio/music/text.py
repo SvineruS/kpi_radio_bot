@@ -27,6 +27,7 @@ class MyHTMLParser(HTMLParser):
         self.data += data
 
     def error(self, message):
+        # ignore
         pass
 
 

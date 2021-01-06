@@ -1,5 +1,7 @@
-from ._base import PlayerBase
+from pathlib import Path
+
 from player.player_utils import radioboss
+from ._base import PlayerBase
 
 
 class PlayerRadioboss(PlayerBase):
@@ -39,3 +41,8 @@ class PlayerRadioboss(PlayerBase):
             if "setvol" not in playback[k]['TRACK']['@CASTTITLE']:
                 result[i] = playback[k]['TRACK']
         return result
+
+    @classmethod
+    async def play_playlist(cls, path: Path):
+        # радиобосс сейчас сам все делает
+        pass

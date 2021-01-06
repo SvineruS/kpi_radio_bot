@@ -13,14 +13,14 @@ class PlaylistM3U(PlaylistBase):
 
     async def load(self) -> PlaylistBase:
         self[:] = []
-        for i in m3u_parser.load(self._get_path()):
+        for i in m3u_parser.load(self.get_path()):
             self.append(
-                PlaylistItem(title=i.title, path=i.path, duration=i.duration, time_start=self._get_start_time())
+                PlaylistItem(title=i.title, path=i.path, duration=i.duration, start_time=self._get_start_time())
             )
         return self
 
     async def _save(self):
-        m3u_parser.dump(self._get_path(), self)
+        m3u_parser.dump(self.get_path(), self)
 
     async def add_track(self, track: PlaylistItem, position: int = -1):
         await super().add_track(track, position)
@@ -33,5 +33,5 @@ class PlaylistM3U(PlaylistBase):
     def trim(self, time_min: datetime = None, time_max: datetime = None):
         return self
 
-    def _get_path(self):
+    def get_path(self):
         return self.PATH_BASE / f"{self.broadcast.day}-{self.broadcast.num}"

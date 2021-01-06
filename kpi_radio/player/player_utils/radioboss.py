@@ -12,29 +12,29 @@ from consts.config import RADIOBOSS_DATA, AIOHTTP_SESSION
 
 
 async def setvol(vol: int, fade: int = 500) -> bool:
-    return await _radioboss_api(cmd=f'setvol {vol} {fade}')
+    return bool(await _radioboss_api(cmd=f'setvol {vol} {fade}'))
 
 
 async def cmd_next() -> bool:
-    return await _radioboss_api(cmd='next')
+    return bool(await _radioboss_api(cmd='next'))
 
 
 async def move(pos1: int, pos2: int) -> bool:
-    return await _radioboss_api(action='move', pos1=pos1, pos2=pos2)
+    return bool(await _radioboss_api(action='move', pos1=pos1, pos2=pos2))
 
 
 async def inserttrack(filename: Path, pos: int) -> bool:
-    return await _radioboss_api(action='inserttrack', filename=filename, pos=pos)
+    return bool(await _radioboss_api(action='inserttrack', filename=filename, pos=pos))
 
 
 async def setnexttrack(pos: int) -> bool:
-    return await _radioboss_api(action='setnexttrack', pos=pos)
+    return bool(await _radioboss_api(action='setnexttrack', pos=pos))
 
 
 async def delete(pos: Union[int, str, Iterable[int]]) -> bool:
     if isinstance(pos, list):
         pos = ','.join(map(str, pos))
-    return await _radioboss_api(action='delete', pos=pos)
+    return bool(await _radioboss_api(action='delete', pos=pos))
 
 
 async def playbackinfo() -> Optional[dict]:
@@ -56,7 +56,7 @@ async def readtag(filename: Path) -> Optional[dict]:
 
 
 async def writetag(filename: Path, data: str) -> bool:
-    return await _radioboss_api(action='writetag', fn=filename, data=data)
+    return bool(await _radioboss_api(action='writetag', fn=filename, data=data))
 
 
 #
