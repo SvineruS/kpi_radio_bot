@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from utils import DateTime
-
 HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
 
 BAD_WORDS = [
@@ -66,18 +64,6 @@ BROADCAST_TIMES_VACATION = {
 }
 
 BROADCAST_TIMES = BROADCAST_TIMES_NORMAL
-
-
-BROADCAST_TIMES_ = {
-    day_k: {
-        num_k: tuple(
-            DateTime.strptime(time_string, '%H:%M').time()
-            for time_string in num_v
-        )
-        for num_k, num_v in day_v.items()
-    }
-    for day_k, day_v in BROADCAST_TIMES.items()
-}
 
 
 class PATHS:

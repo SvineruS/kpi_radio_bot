@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 from consts import btns_text
 from consts.btns_text import STATUS, MENU
-from consts.others import BROADCAST_TIMES_, HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS
+from consts.others import HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS, BROADCAST_TIMES
 from player import Broadcast
 from utils import DateTime
 from . import _callbacks as cb
@@ -63,7 +63,7 @@ async def order_choose_day() -> InlineKeyboardMarkup:
 
 async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup:
     btns = []
-    for num in BROADCAST_TIMES_[day]:
+    for num in BROADCAST_TIMES[day]:
         broadcast = Broadcast(day, num)
         if broadcast.is_already_play_today():
             continue  # если сегодня и перерыв прошел - не добавляем кнопку
@@ -114,7 +114,7 @@ def playlist_choose_day() -> InlineKeyboardMarkup:
 def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
     btns = [
         _ikb(TIMES[time], cb.CBPlaylistTime(day, time))
-        for time in BROADCAST_TIMES_[day]
+        for time in BROADCAST_TIMES[day]
     ] + [_ikb(btns_text.BACK, cb.CBPlaylistBack())]
     return InlineKeyboardMarkup(row_width=3).add(*btns)
 

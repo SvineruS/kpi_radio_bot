@@ -1,5 +1,6 @@
-from . import exceptions, files, m3u_parser, track_info
+from . import exceptions, files
+from .track_info import TrackInfo
 
 __all__ = [
-    'exceptions', 'files', 'm3u_parser', 'track_info'
+    'exceptions', 'files', 'TrackInfo'
 ]

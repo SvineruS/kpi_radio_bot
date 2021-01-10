@@ -10,7 +10,7 @@
 
 import functools
 from collections import Counter
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Dict, Optional, List, Iterator
 
 from matplotlib import pyplot as plt
@@ -105,7 +105,7 @@ def _get_counters(start_date):
     return {'all': counter, 'own': counter.copy()}
 
 
-def _get_all_days_to_today(date_from: DateTime) -> Iterator[DateTime]:
+def _get_all_days_to_today(date_from: datetime) -> Iterator[datetime]:
     date_to = DateTime.today()
     day_delta = timedelta(days=1)
     while date_from < date_to:

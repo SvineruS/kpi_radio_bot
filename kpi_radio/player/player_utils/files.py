@@ -3,14 +3,14 @@
 import logging
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
 from random import choice
-from typing import List
+from typing import List, Optional
 
 from aiogram.types import Audio
 
 from consts.others import PATHS
+from utils import DateTime
 
 
 def delete_file(path: Path) -> None:
@@ -25,7 +25,7 @@ def delete_file(path: Path) -> None:
 
 def move_to_archive(day: int = None) -> None:
     if not day:
-        day = datetime.now().weekday()
+        day = DateTime.day_num()
     src = str(PATHS.ORDERS / f"D0{day + 1}")  # заказы
     dst = str(PATHS.ARCHIVE)  # архив
 
@@ -43,7 +43,7 @@ def move_to_archive(day: int = None) -> None:
                 logging.warning(f"pls pls add exception {type(ex)}{ex}in except")
 
 
-def get_random_from_archive():
+def get_random_from_archive() -> Optional[Path]:
     tracks = [p for p in PATHS.ARCHIVE.iterdir()]
     if tracks:
         return choice(tracks)

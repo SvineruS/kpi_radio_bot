@@ -1,8 +1,8 @@
 from aiohttp import web
 
 from consts.config import RADIOBOSS_DATA
-from main import events
 from music import search_text
+from .events import TRACK_BEGIN_EVENT
 
 ROUTES = web.RouteTableDef()
 
@@ -23,7 +23,7 @@ async def history_save(request):
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
-    await events.track_begin(
+    await TRACK_BEGIN_EVENT.notify(
         args.get('path'),
         args.get('artist'),
         args.get('title') or args.get('casttitle')

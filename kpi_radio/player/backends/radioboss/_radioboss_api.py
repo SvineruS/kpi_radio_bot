@@ -1,4 +1,3 @@
-import json
 import logging
 from pathlib import Path
 from typing import Union, Optional, Iterable
@@ -6,7 +5,6 @@ from urllib.parse import quote_plus
 
 import aiohttp
 import xmltodict
-from aiogram.types import User
 
 from consts.config import RADIOBOSS_DATA, AIOHTTP_SESSION
 
@@ -37,21 +35,22 @@ async def delete(pos: Union[int, str, Iterable[int]]) -> bool:
     return bool(await _radioboss_api(action='delete', pos=pos))
 
 
-async def playbackinfo() -> Optional[dict]:
-    if not (playback := await _radioboss_api(action='playbackinfo')):
-        return None
+async def playbackinfo() -> dict:
+    playback = await _radioboss_api(action='playbackinfo')
+    assert isinstance(playback, dict)
     return playback['Info']
 
 
-async def getplaylist2(cnt: int = 100) -> Optional[dict]:
-    if not (playlist := await _radioboss_api(action='getplaylist2', cnt=cnt)):
-        return None
+async def getplaylist2(cnt: int = 100) -> dict:
+    playlist = await _radioboss_api(action='getplaylist2', cnt=cnt)
+    assert isinstance(playlist, dict)
     return playlist['Playlist']
 
 
 async def readtag(filename: Path) -> Optional[dict]:
     if not (tag := await _radioboss_api(action='readtag', fn=filename)):
         return None
+    assert isinstance(tag, dict)
     return tag
 
 
@@ -61,33 +60,6 @@ async def writetag(filename: Path, data: str) -> bool:
 
 #
 
-
-async def write_track_additional_info(path: Path, user_obj: User, moderation_id: int) -> bool:
-    tag = {
-        'id': user_obj.id,
-        'name': user_obj.first_name,
-        'moderation_id': moderation_id
-    }
-    tag = json.dumps(tag)
-    return await _write_comment_tag(path, tag)
-
-
-async def read_track_additional_info(path: Path) -> Optional[dict]:
-    if not (tag := await _read_comment_tag(path)):
-        return None
-
-    try:
-        return json.loads(tag)
-    except json.JSONDecodeError:
-        logging.warning(f"can't read track comment {tag}")
-        return None
-
-
-async def clear_track_additional_info(path: Path) -> bool:
-    return await _write_comment_tag(path, '')
-
-
-#
 
 async def _radioboss_api(**kwargs) -> Union[dict, bool]:
     url = 'http://{}:{}/?pass={}'.format(*RADIOBOSS_DATA)

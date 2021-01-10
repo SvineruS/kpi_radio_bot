@@ -2,63 +2,60 @@
 
 import asyncio
 
-from bot.handlers_ import utils
 from consts import config
 from player import Broadcast, Player
-from player.player import PlayerMopidy
-from player.player_utils import files, track_info
-from utils import scheduler
+from utils import Event
+
+STARTUP_EVENT = Event('statup')
+SHUTDOWN_EVENT = Event('shutdown')
+
+TRACK_BEGIN_EVENT = Event('track_begin')
+ORDERS_QUEUE_EMPTY_EVENT = Event('orders_empty')
+
+BROADCAST_BEGIN_EVENT = Event('broadcast_begin')
+BROADCAST_END_EVENT = Event('broadcast_end')
+
+DAY_END_EVENT = Event('day_end')
 
 
+@TRACK_BEGIN_EVENT.handler
 async def track_begin(path, artist, title):
+    from bot.handlers_ import utils
     if Broadcast.is_broadcast_right_now():  # кидать только во время перерыва
         await utils.send_history_track(path, artist, title)
 
 
-async def track_end_mopidy(_):
-    # если нет следующей песни - ставим с архива
-    if await PlayerMopidy.get_state() != 'stopped':
-        return
-    if not (track := files.get_random_from_archive()):
-        return
-    track = (await Player.add_track(track, -1))[0]
-    await Player.play(tlid=track.tlid)
-
-
+@BROADCAST_BEGIN_EVENT.handler
 async def broadcast_begin(day, time):
+    from bot.handlers_ import utils
     await Broadcast(day, time).play()
     await utils.send_broadcast_begin(time)
     await Player.set_volume(100)  # включить музло на перерыве
 
 
-async def broadcast_end(day, time):
+@BROADCAST_END_EVENT.handler
+async def broadcast_end(*_):
     await Player.set_volume(0)  # выключить музло на паре
-    await _perezaklad(day, time)
 
 
-async def day_end():
-    files.move_to_archive()
+@STARTUP_EVENT.handler
+async def start_up():
+    from utils import scheduler
+    from bot.handlers_ import utils
 
-
-async def start_up(_):
     asyncio.create_task(scheduler.start())
-
-    if config.PLAYER == 'MOPIDY':
-        await PlayerMopidy.get_client().connect()
-        PlayerMopidy.bind_event("track_playback_ended", track_end_mopidy)
 
     if not config.IS_TEST_ENV:
         await utils.send_startup_message()
 
 
-async def shut_down(_):
-    if config.PLAYER == 'MOPIDY':
-        await PlayerMopidy.get_client().disconnect()
+@DAY_END_EVENT.handler
+async def day_end(day):
+    for b in Broadcast.ALL:
+        if b.day == day:
+            await b.get_playlist_provider().clear()
 
 
-async def _perezaklad(day, time):
-    tracks = files.get_downloaded_tracks(Broadcast(day, time).path)
-    for track_path in tracks:
-        if tag := await track_info.read(track_path):
-            await utils.send_perezaklad(tag['id'], track_path)
-            await asyncio.sleep(3)
+@ORDERS_QUEUE_EMPTY_EVENT.handler
+async def orders_queue_empty():
+    await Broadcast.play_from_archive()

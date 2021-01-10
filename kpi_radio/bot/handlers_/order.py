@@ -84,8 +84,8 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
     await query.message.chat.do('record_audio')
     try:
-        new_track = await broadcast.add_track(query.message.audio, (user, query.message.message_id),
-                                              position=0 if status == kb.STATUS.NOW else -1)
+        new_track = await broadcast.add_track(query.message.audio, (user.id, user.first_name, query.message.message_id),
+                                              position=-2 if status == kb.STATUS.NOW else -1)
     except player_exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
         msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)

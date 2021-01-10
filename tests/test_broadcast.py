@@ -24,7 +24,7 @@ class TestBroadcast(TestCase):
         self.assertIsNot(b11, b22)
 
     def test_now(self):
-        DateTime.fake(DateTime(2021, 1, 1, 8, 5, 0).timestamp())
+        DateTime.fake(2021, 1, 1, 8, 5, 0)
         br = Broadcast.now()
         self.assertTrue(br.is_now())
         self.assertTrue(br.is_today())
@@ -32,7 +32,7 @@ class TestBroadcast(TestCase):
         self.assertIs(br, Broadcast.get_closest())
 
     def test_relative_time(self):
-        DateTime.fake(DateTime(2021, 1, 1, 8, 5, 0).timestamp())
+        DateTime.fake(2021, 1, 1, 8, 5, 0)
         br = Broadcast(4, 1)
         self.assertFalse(br.is_already_play_today())
         self.assertTrue(br.is_will_be_play_today())

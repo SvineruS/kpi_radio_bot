@@ -8,34 +8,36 @@ def lru(maxsize: int = None, ttl: int = None):
     def decorator(function):
         cache = LRU(maxsize=maxsize, ttl=ttl)
 
-        def get_key(args, kwargs):
+        def _get_key(args, kwargs):
             return tuple(args), tuple(kwargs.items())
 
         def cache_clear():
             cache.clear()
 
         def cache_del(*args, **kwargs):
-            k = get_key(args, kwargs)
+            k = _get_key(args, kwargs)
             if k in cache:
                 del cache[k]
 
         if asyncio.iscoroutinefunction(function):
             @functools.wraps(function)
             async def on_call(*args, **kwargs):
-                k = get_key(args, kwargs)
-                if k in on_call.cache:
-                    return on_call.cache[k]
-                result = await function(*args, **kwargs)
-                on_call.cache[k] = result
+                k = _get_key(args, kwargs)
+                try:
+                    result = on_call.cache[k]
+                except KeyError:
+                    result = await function(*args, **kwargs)
+                    on_call.cache[k] = result
                 return result
         else:
             @functools.wraps(function)
             def on_call(*args, **kwargs):
-                k = get_key(args, kwargs)
-                if k in on_call.cache:
-                    return on_call.cache[k]
-                result = function(*args, **kwargs)
-                on_call.cache[k] = result
+                k = _get_key(args, kwargs)
+                try:
+                    result = on_call.cache[k]
+                except KeyError:
+                    result = function(*args, **kwargs)
+                    on_call.cache[k] = result
                 return result
 
         on_call.cache = cache
@@ -58,7 +60,7 @@ class LRU(OrderedDict):
         ttl, value = val
         if ttl and ttl != self._get_ttl():
             del self[key]
-            return None
+            raise KeyError()
         self.move_to_end(key)
         return value
 
