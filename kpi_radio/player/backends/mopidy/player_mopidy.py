@@ -33,13 +33,16 @@ class PlayerMopidy(PlayerBase):
             prev = await self._CLIENT.library.lookup(uris=[history[0][1].uri])
             return list(prev.values())[0][0]
 
-        cur = await self._CLIENT.playback.get_current_tlid()
-        next_ = await self._CLIENT.tracklist.get_next_tlid()
-        res = _tltracks_to_dict(await self._CLIENT.tracklist.filter({'tlid': [cur, next_]}))
+        async def _get_next():
+            if not (tlid := await self._CLIENT.tracklist.get_next_tlid()):
+                return None
+            next_ = await self._CLIENT.tracklist.filter({'tlid': [tlid]})
+            return next_[0].track
+
         res = [
             await _get_prev(),
-            res.get(cur, None),
-            res.get(next_, None)
+            (await self._CLIENT.playback.get_current_tl_track()).track,
+            await _get_next()
         ]
 
         return [self.internal_to_playlist_item(i) if i else None for i in res]
@@ -102,10 +105,6 @@ class PlayerMopidy(PlayerBase):
             duration=track.length // 1000,
             start_time=start_time
         )
-
-
-def _tltracks_to_dict(tltracks: List[models.TlTrack]) -> Dict[int, models.Track]:
-    return {i.tlid: i.track for i in tltracks}
 
 
 def _path_to_uri(path: Path):
