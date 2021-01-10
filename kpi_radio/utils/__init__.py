@@ -1,8 +1,8 @@
-from . import lru, scheduler, db, utils
+from . import lru, db, utils
 from .others import DateTime, Event
 
 
 __all__ = [
-    'lru', 'scheduler', 'db', 'utils',
+    'lru', 'db', 'utils',
     'DateTime', 'Event'
 ]
