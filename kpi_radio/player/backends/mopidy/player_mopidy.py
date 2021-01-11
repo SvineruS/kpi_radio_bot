@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from mopidy import models
 from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
@@ -47,9 +47,9 @@ class PlayerMopidy(PlayerBase):
 
         return [self.internal_to_playlist_item(i) if i else None for i in res]
 
-    async def play_playlist(self, path: Path):
-        uri = "m3u://" + str(path.absolute())
-        return await self._CLIENT.tracklist.add(uris=[uri])
+    async def play_playlist(self, playlist: Playlist):
+        uris = [_path_to_uri(track.path) for track in playlist]
+        return await self._CLIENT.tracklist.add(uris=uris)
 
     async def play(self):
         return await self._CLIENT.playback.play()
@@ -65,16 +65,18 @@ class PlayerMopidy(PlayerBase):
             ))
         return Playlist(pl)
 
-    async def add_track(self, track: PlaylistItem, position: int) -> PlaylistItem:
+    async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
         if position == -2:
             position = await self._CLIENT.tracklist.index() + 1
-        await self._CLIENT.tracklist.add(uris=[_path_to_uri(track.path)],
-                                         at_position=None if position == -1 else position)
+        if position == -1:
+            position = None
+        await self._CLIENT.tracklist.add(uris=[_path_to_uri(track.path)], at_position=position)
         pl = await self.get_playlist()
-        return pl[position]
+        return pl.find_by_path(track.path)[0]
 
-    async def remove_track(self, track_path: Path):
-        return await self._CLIENT.tracklist.remove({'uri': [_path_to_uri(track_path)]})
+    async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
+        tr = await self._CLIENT.tracklist.remove({'uri': [_path_to_uri(track_path)]})
+        return self.internal_to_playlist_item(tr)
 
     async def clear(self):
         await self._CLIENT.tracklist.clear()

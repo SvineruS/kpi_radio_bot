@@ -1,7 +1,9 @@
+# deprecated - не хранит TrackInfo
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from consts import config
 from utils import DateTime
@@ -38,13 +40,13 @@ class M3UPlaylistProvider(LocalPlaylistProviderBase):
         await self._save(pl)
         return pl[position]
 
-    async def remove_track(self, track_path: Path):
+    async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         pl = await self.get_playlist()
-        pos = pl.find_by_path(track_path)
-        if not pos:
-            return
-        del pl[pos[0]]
+        tracks = pl.find_by_path(track_path)
+        for track in tracks:
+            pl.remove(track)
         await self._save(pl)
+        return tracks[0] if tracks else None
 
     async def clear(self):
         await self._save(Playlist([]))

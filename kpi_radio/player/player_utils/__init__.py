@@ -1,6 +1,5 @@
-from . import exceptions, files
-from .track_info import TrackInfo
+from . import exceptions, archive
 
 __all__ = [
-    'exceptions', 'files', 'TrackInfo'
+    'exceptions', 'archive'
 ]

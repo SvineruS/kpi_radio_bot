@@ -23,9 +23,13 @@ async def history_save(request):
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
+    from player import PlaylistItem
     await TRACK_BEGIN_EVENT.notify(
-        args.get('path'),
-        args.get('artist'),
-        args.get('title') or args.get('casttitle')
+        PlaylistItem(
+            path=args.get('path'),
+            performer=args.get('artist'),
+            title=args.get('title') or args.get('casttitle'),
+            duration=0
+        )
     )
     return web.Response(text='ok')

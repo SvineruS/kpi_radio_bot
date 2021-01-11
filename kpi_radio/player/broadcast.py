@@ -1,3 +1,5 @@
+# todo выглядит немножко bloated
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -7,11 +9,11 @@ from typing import Optional, List, Iterable
 
 from consts import others, config
 from utils import DateTime
-from .backends import Player, LocalPlaylist, Playlist, PlaylistItem, IPlaylistProvider
-from .player_utils import files, exceptions, TrackInfo
+from .backends import Playlist, PlaylistItem, Backend
+from .player_utils import archive, exceptions
 
 
-class Broadcast:
+class Broadcast(Backend):
     ALL: List[Broadcast] = []
 
     @cache
@@ -82,14 +84,19 @@ class Broadcast:
     def is_already_play_today(self) -> bool:
         return self.is_today() and self.stop_time < DateTime.now()
 
-    async def playlist(self) -> Playlist:
-        return await self.get_playlist_provider().get_playlist()
+    #
 
-    def get_playlist_provider(self) -> IPlaylistProvider:
-        return Player if self.is_now() else LocalPlaylist
+    def get_local_playlist(self):
+        return self._get_local_playlist_provider()(self)
+
+    async def get_playlist(self) -> Playlist:
+        if self.is_now():
+            return await self.get_local_playlist().get_playlist()
+        return await self.get_player().get_playlist()
 
     async def get_playlist_next(self) -> Playlist:
-        pl = await self.playlist()
+        # todo а нужно ли...
+        pl = await self.get_playlist()
         if self.is_now():
             return pl.trim(DateTime.now(), self.stop_time)
         return pl
@@ -97,32 +104,36 @@ class Broadcast:
     async def get_playback(self):
         if not self.is_now():
             return None
-        return await Player.get_playback()
+        return await self.get_player().get_playback()
 
     async def get_free_time(self) -> int:  # seconds
-        pl = await self.playlist()
+        pl = await self.get_playlist()
         pl = pl.trim(DateTime.now(), self.stop_time).only_orders()
         tracks_duration = pl.duration()
         broadcast_duration = int((self.stop_time - self.start_time).total_seconds())
         return max(0, broadcast_duration - tracks_duration)
 
-    async def add_track(self, tg_track, metadata, position):
-        track = PlaylistItem.from_tg(tg_track, self.path)
-        if (await self.playlist()).find_by_path(track.path):
+    async def add_track(self, track: PlaylistItem, position):
+        pl = await self.get_local_playlist().get_playlist()
+        if pl.find_by_path(track.path):
             raise exceptions.DuplicateException()
         if await self.get_free_time() < track.duration:
-            raise exceptions.NotEnoughSpace
-        await files.download_audio(tg_track, track.path)
-        if metadata:
-            await TrackInfo(*metadata).write(track.path)
-        track = await self.get_playlist_provider().add_track(track, position)
-        print(track)
+            raise exceptions.NotEnoughSpace()
+
+        track = await self.get_local_playlist().add_track(track, position)
+        if self.is_now():
+            track = await self.get_player().add_track(track, position)
         return track
 
     async def remove_track(self, tg_track):
         path = PlaylistItem.from_tg(tg_track, self.path).path
-        files.delete_file(path)
-        await self.get_playlist_provider().remove_track(path)
+        path.unlink(missing_ok=True)
+        await self.get_local_playlist().remove_track(path)
+        if self.is_now():
+            await self.get_player().remove_track(path)
+
+    async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
+        return await self.get_local_playlist().remove_track(path)
 
     #
 
@@ -131,19 +142,21 @@ class Broadcast:
             return
         if not self.is_now():
             return
-        playlist_path = LocalPlaylist(self).get_path()
-        res = await Player.play_playlist(playlist_path)
-        if not res:
+
+        pl = await self.get_local_playlist().get_playlist()
+        if pl:
+            await self.get_player().play_playlist(pl)
+        else:
             await self.play_from_archive()
 
-    @staticmethod
-    async def play_from_archive():
+    @classmethod
+    async def play_from_archive(cls):
         if config.PLAYER != 'MOPIDY':  # mopidy specific
             return
-        if not (track := files.get_random_from_archive()):
+        if not (track := archive.get_random_from_archive()):
             return
-        await Player.add_track(PlaylistItem.from_path(track), -1)
-        await Player.play()
+        await cls.get_player().add_track(PlaylistItem.from_path(track), -1)
+        await cls.get_player().play()
 
     #
 
@@ -156,5 +169,3 @@ class Broadcast:
 
 
 Broadcast.ALL = [Broadcast(day, num) for day, _num in others.BROADCAST_TIMES.items() for num in _num]
-
-#

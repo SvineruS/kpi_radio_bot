@@ -28,7 +28,7 @@ class PlayerRadioboss(PlayerBase):
                 result[i] = self.internal_to_playlist_item(playback[k]['TRACK'])
         return result
 
-    async def play_playlist(self, path: Path):
+    async def play_playlist(self, playlist: Playlist):
         # радиобосс сейчас сам все делает
         pass
 
@@ -55,15 +55,15 @@ class PlayerRadioboss(PlayerBase):
         if position == -1:  # в очередь
             position = self._get_position_after_order()
         await _radioboss_api.inserttrack(track.path, position)
-        pl = await self.get_playlist()
-        return pl[pl.find_by_path(track.path)[0]]
+        return (await self.get_playlist()).find_by_path(track.path)[0]
 
-    async def remove_track(self, track_path: Path):
+    async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         pl = await self.get_playlist()
-        pos = pl.find_by_path(track_path)
-        if not pos:
-            return
-        await _radioboss_api.delete(pos[0])
+        tracks = pl.find_by_path(track_path)
+        for track in tracks:
+            await _radioboss_api.delete(pl.index(track))
+            return track
+        return None
 
     async def clear(self):
         # ненадо

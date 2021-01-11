@@ -4,7 +4,7 @@ import asyncio
 import aioschedule
 
 from consts import config, others
-from player import Broadcast, Player
+from player import Broadcast, PlaylistItem
 from utils import Event
 
 STARTUP_EVENT = Event('statup')
@@ -20,10 +20,15 @@ DAY_END_EVENT = Event('day_end')
 
 
 @TRACK_BEGIN_EVENT.handler
-async def track_begin(path, artist, title):
+async def track_begin(track: PlaylistItem):
+    if not (br := Broadcast.now()):
+        return
+
+    # трек на входе без TrackInfo, надо спиздить с локального плейлиста, если есть
+    if local_track := await br.mark_played(track.path):
+        track = track.add_track_info_(local_track.track_info)
     from bot.handlers_ import utils
-    if Broadcast.is_broadcast_right_now():  # кидать только во время перерыва
-        await utils.send_history_track(path, artist, title)
+    await utils.send_history_track(track)
 
 
 @BROADCAST_BEGIN_EVENT.handler
@@ -31,12 +36,12 @@ async def broadcast_begin(day, time):
     from bot.handlers_ import utils
     await Broadcast(day, time).play()
     await utils.send_broadcast_begin(time)
-    await Player.set_volume(100)  # включить музло на перерыве
+    await Broadcast.get_player().set_volume(100)  # включить музло на перерыве
 
 
 @BROADCAST_END_EVENT.handler
 async def broadcast_end(*_):
-    await Player.set_volume(0)  # выключить музло на паре
+    await Broadcast.get_player().set_volume(0)  # выключить музло на паре
 
 
 @STARTUP_EVENT.handler
@@ -53,7 +58,7 @@ async def start_up():
 async def day_end(day):
     for b in Broadcast.ALL:
         if b.day == day:
-            await b.get_playlist_provider().clear()
+            await b.get_local_playlist().clear()
 
 
 @ORDERS_QUEUE_EMPTY_EVENT.handler

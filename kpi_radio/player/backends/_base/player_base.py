@@ -12,7 +12,7 @@ class IPlaylistProvider(abc.ABC):
     async def add_track(self, track: PlaylistItem, position: int) -> PlaylistItem:
         raise NotImplementedError
 
-    async def remove_track(self, track_path: Path):
+    async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         raise NotImplementedError
 
     async def clear(self):
@@ -32,7 +32,7 @@ class PlayerBase(IPlaylistProvider, abc.ABC):
     async def get_playback(self) -> List[Optional[PlaylistItem]]:
         raise NotImplementedError
 
-    async def play_playlist(self, path: Path):
+    async def play_playlist(self, playlist: Playlist):
         raise NotImplementedError
 
     async def play(self):
@@ -42,6 +42,3 @@ class PlayerBase(IPlaylistProvider, abc.ABC):
 class LocalPlaylistProviderBase(IPlaylistProvider, abc.ABC):
     def __init__(self, broadcast):
         self._broadcast = broadcast
-
-    def get_path(self):
-        raise NotImplementedError

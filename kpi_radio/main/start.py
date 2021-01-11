@@ -46,7 +46,7 @@ def _register_player_backend(backend):
 
         async def track_playback_started(data):
             track = PlayerMopidy.internal_to_playlist_item(data['tl_track'].track)
-            await events.TRACK_BEGIN_EVENT.notify(track.path, track.performer, track.title)
+            await events.TRACK_BEGIN_EVENT.notify(track)
 
         player_.bind_event("playback_state_changed", playback_state_changed)
         player_.bind_event("track_playback_started", track_playback_started)
@@ -60,8 +60,8 @@ def _register_player_backend(backend):
         player_ = PlayerRadioboss()
 
         async def move_to_archive(day):
-            from player.player_utils import files
-            files.move_to_archive(day)
+            from player.player_utils import archive
+            archive.move_to_archive(day)
 
         events.BROADCAST_END_EVENT.register(utils.perezaklad)
         events.DAY_END_EVENT.register(move_to_archive)
@@ -69,8 +69,7 @@ def _register_player_backend(backend):
     else:
         raise ValueError(f"шо за хуйня такая {backend}")
 
-    from player.backends import register_backends, m3u
-    local_playlist = m3u.M3UPlaylistProvider
+    from player.backends import Backend, db
+    local_playlist = db.DBPlaylistProvider
 
-    register_backends(player_, local_playlist)
-
+    Backend.register_backends(player_, local_playlist)

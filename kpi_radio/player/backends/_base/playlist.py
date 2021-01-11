@@ -12,12 +12,20 @@ from utils import DateTime, utils
 
 
 @dataclass
+class TrackInfo:
+    user_id: int
+    user_name: str
+    moderation_id: int
+
+
+@dataclass
 class PlaylistItem:
     performer: str
     title: str
     path: Path
     duration: int
     start_time: Optional[datetime] = None
+    track_info: Optional[TrackInfo] = None
 
     @property
     def is_order(self) -> bool:
@@ -38,6 +46,13 @@ class PlaylistItem:
     def from_path(cls, path: Path):
         return PlaylistItem("", "", path, 0)
 
+    def add_track_info(self, user_id: int, user_name: str, moderation_msg_id: int):
+        return self.add_track_info_(TrackInfo(user_id, user_name, moderation_msg_id))
+
+    def add_track_info_(self, track_info: TrackInfo):
+        self.track_info = track_info
+        return self
+
     def __str__(self):
         return f"{self.performer} - {self.title}"
 
@@ -46,8 +61,11 @@ class Playlist(list):
     def __init__(self, seq=()):
         super().__init__(seq)
 
-    def find_by_path(self, path: Path) -> List[int]:
-        return [i for i, t in enumerate(self) if t.path == path]
+    def find_by_path(self, path: Path) -> List[PlaylistItem]:
+        return [t for t in self if t.path == path]
+
+    def find_by_user_id(self, user_id: int) -> List[PlaylistItem]:
+        return [t for t in self if t.track_info and t.track_info.user_id == user_id]
 
     def only_next(self) -> Iterable[PlaylistItem]:
         return self.trim(DateTime.now())

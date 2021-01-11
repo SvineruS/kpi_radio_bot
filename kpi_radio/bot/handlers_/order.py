@@ -1,6 +1,7 @@
 """Обработка заказов"""
 
 from contextlib import suppress
+from typing import Optional
 from urllib.parse import quote
 
 from aiogram import types, exceptions
@@ -9,7 +10,7 @@ import music
 from bot import handlers_
 from bot.bot_utils import communication, kb, stats, id_to_hashtag, small_utils
 from consts import texts, others, config, BOT
-from player import Broadcast, exceptions as player_exceptions
+from player import Broadcast, exceptions as player_exceptions, PlaylistItem
 from utils import utils, db, DateTime
 
 
@@ -18,6 +19,9 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     user_db = db.Users.get(user.id)
     if user_db.is_banned():
         return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to()))
+
+    if broadcast.num != 5 and len(await (broadcast.get_local_playlist().get_playlist()).find_by_user_id(user.id)) > 5:
+        return await query.message.answer(texts.ORDER_ERR_TOOMUCH)
 
     try:
         await query.message.edit_caption(
@@ -68,49 +72,52 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
     user = utils.get_user_from_entity(query.message)
     moder = query.from_user
-    audio_name = utils.get_audio_name(query.message.audio)
     admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
+    track = PlaylistItem.from_tg(query.message.audio, broadcast.path)\
+        .add_track_info(user.id, user.first_name, query.message.message_id)
 
     try:
         await query.message.edit_caption(admin_text, reply_markup=kb.admin_unmoderate(broadcast, status))
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
-    stats.add(query.message.message_id, moder.id, user.id, audio_name, status, DateTime.now())
+    stats.add(query.message.message_id, moder.id, user.id, str(track), status, DateTime.now())
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
         return communication.cache_add(
-            await BOT.send_message(user.id, texts.ORDER_ERR_DENIED.format(audio_name, broadcast.name)), query.message)
+            await BOT.send_message(user.id, texts.ORDER_DENIED.format(track, broadcast.name)), query.message)
 
     await query.message.chat.do('record_audio')
+    msg_to_user: Optional[str]
     try:
-        new_track = await broadcast.add_track(query.message.audio, (user.id, user.first_name, query.message.message_id),
-                                              position=-2 if status == kb.STATUS.NOW else -1)
+        new_track = await broadcast.add_track(track, position=-2 if status == kb.STATUS.NOW else -1)
     except player_exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
-        msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
+        msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
     except player_exceptions.NotEnoughSpace:
         when_playing = 'не успел :('
         msg_to_user = None
         communication.cache_add(await BOT.send_audio(
             user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
-            caption=texts.ORDER_ACCEPTED_TOOLATE.format(audio_name, broadcast.name)), query.message
+            caption=texts.ORDER_ACCEPTED_TOOLATE.format(track, broadcast.name)), query.message
         )
     else:
+        await query.message.audio.download(track.path)
+
         if status == kb.STATUS.NOW:  # кнопка сейчас
             when_playing = 'прямо сейчас!'
-            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
+            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
 
         else:  # кнопка принять
             # если прямо сейчас не тот эфир, на который заказ
             if not broadcast.is_now():
                 when_playing = 'Заиграет когда надо'
-                msg_to_user = texts.ORDER_ACCEPTED.format(audio_name, broadcast.name)
+                msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
 
             else:
                 minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
                 when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-                msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(audio_name, when_playing)
+                msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
 
     if msg_to_user:
         communication.cache_add(await BOT.send_message(user.id, msg_to_user), query.message)
@@ -141,6 +148,7 @@ async def _gen_order_caption(broadcast: Broadcast, user: types.User,
     text_datetime = broadcast.name + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
+        assert audio_name is not None
         is_now_mark = '‼️' if is_now else '❗️'
         bad_words = await _get_bad_words_text(audio_name)
         is_anime = '🅰️' if await music.check.is_anime(audio_name) else ''
@@ -150,6 +158,7 @@ async def _gen_order_caption(broadcast: Broadcast, user: types.User,
                f'от {user_name}<code>   </code>{texts.HASHTAG_MODERATE}\n' \
                f'{is_anime}{bad_words}'
     else:
+        assert moder is not None
         status_text = "✅Принят" if status != kb.STATUS.REJECT else "❌Отклонен"
         moder_name = utils.get_user_name(moder)
 
@@ -170,5 +179,5 @@ async def _get_bad_words_text(audio_name: str) -> str:
     return f"⚠ {title}: " + ', '.join(b_w)
 
 
-def _get_gettext_link(audio_name):
+def _get_gettext_link(audio_name: str) -> str:
     return f"https://{config.HOST}/gettext/{quote(audio_name[:100])}"

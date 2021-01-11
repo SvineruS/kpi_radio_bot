@@ -1,4 +1,3 @@
-from .backends import Player
-from .broadcast import Broadcast, exceptions
+from .broadcast import Broadcast, exceptions, PlaylistItem
 
-__all__ = ['Broadcast', 'Player', 'exceptions']
+__all__ = ['Broadcast', 'exceptions', 'PlaylistItem']

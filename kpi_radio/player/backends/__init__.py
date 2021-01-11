@@ -1,41 +1,25 @@
 from typing import Type
 
-from ._base import PlayerBase, LocalPlaylistProviderBase, Playlist, PlaylistItem, IPlaylistProvider
+from ._base import PlayerBase, LocalPlaylistProviderBase, Playlist, PlaylistItem
 
 
-class Descriptor:
-    def __init__(self, f):
-        self.f = f
+class Backend:
+    _player: PlayerBase
+    _local_playlist: Type[LocalPlaylistProviderBase]
 
-    def __get__(self, instance=None, owner=None):
-        return self.f()
+    @classmethod
+    def get_player(cls) -> PlayerBase:
+        return cls._player
 
-    def __call__(self, *args, **kwargs):
-        return self.f().__call__(*args, **kwargs)
+    @classmethod
+    def _get_local_playlist_provider(cls) -> Type[LocalPlaylistProviderBase]:
+        return cls._local_playlist
 
-    def __getattr__(self, item):
-        return getattr(self.f(), item)
-
-
-_player: PlayerBase
-_local_playlist: Type[LocalPlaylistProviderBase]
-
-
-# todo пиздец некрасиво
-Player: PlayerBase = Descriptor(lambda: _player)
-LocalPlaylist: Type[LocalPlaylistProviderBase] = Descriptor(lambda: _local_playlist)
-
-
-def register_backends(player: PlayerBase, local_playlist: Type[LocalPlaylistProviderBase]):
-    global _player, _local_playlist
-    _player, _local_playlist = player, local_playlist
+    @classmethod
+    def register_backends(cls, player: PlayerBase, local_playlist: Type[LocalPlaylistProviderBase]):
+        cls._player, cls._local_playlist = player, local_playlist
 
 
 __all__ = [
-    'Player', 'LocalPlaylist', 'IPlaylistProvider',
-    'Playlist', 'PlaylistItem',
-    'register_backends'
+    'Playlist', 'PlaylistItem', 'Backend'
 ]
-
-
-
