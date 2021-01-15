@@ -20,14 +20,13 @@ class Tracklist(Model):
     info_user_id = BigIntegerField()
     info_user_name = CharField(max_length=100)
     info_message_id = BigIntegerField()
-
-    broadcast_day = DecimalField(max_digits=1)
-    broadcast_num = DecimalField(max_digits=1)
+    broadcast_day = DecimalField(max_digits=1, decimal_places=0)
+    broadcast_num = DecimalField(max_digits=1, decimal_places=0)
 
     position = DecimalField(max_digits=5, decimal_places=_POSITION_EXTRA_SPACE)
 
     @classmethod
-    def add(cls, track_position, track_path, track_performer, track_title, track_duration,
+    def add(cls, position, track_path, track_performer, track_title, track_duration,
             info_user_id, info_user_name, info_message_id,
             broadcast_day, broadcast_num
             ):
@@ -37,22 +36,22 @@ class Tracklist(Model):
             дробная часть - меняется для устранения "коллизий" оставляя порядок"""
             if pos is None:
                 new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_num == broadcast_num, cls.broadcast_day == broadcast_day)\
+                    .where(cls.broadcast_day == broadcast_day, cls.broadcast_num == broadcast_num) \
                     .order_by(cls.position.desc()).limit(1)
                 if new_pos:
-                    return new_pos[0]
+                    return new_pos[0].position
                 return Decimal(0)
             else:
                 new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_num == broadcast_num, cls.broadcast_day == broadcast_day,
+                    .where(cls.broadcast_day == broadcast_day, cls.broadcast_num == broadcast_num,
                            cls.position.between(pos, pos + 1)) \
                     .order_by(cls.position.asc()).limit(1)
                 if new_pos:
-                    return new_pos - 10 ** (_POSITION_EXTRA_SPACE * -1)
+                    return new_pos.position - 10 ** (_POSITION_EXTRA_SPACE * -1)
                 return Decimal(pos)
 
         cls.insert(
-            track_position=_get_available_position(track_position),
+            position=_get_available_position(position),
             track_path=track_path, track_performer=track_performer,
             track_title=track_title, track_duration=track_duration,
             info_user_id=info_user_id, info_user_name=info_user_name, info_message_id=info_message_id,
@@ -61,11 +60,11 @@ class Tracklist(Model):
 
     @classmethod
     def get_by_broadcast(cls, day, num) -> List[Tracklist]:
-        return cls.select().where(cls.broadcast_num == day, cls.broadcast_num == num).order_by(cls.position.asc())
+        return cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num).order_by(cls.position.asc())
 
     @classmethod
     def get_track_by_path(cls, day, num, path) -> Optional[Tracklist]:
-        res = cls.select().where(cls.broadcast_num == day, cls.broadcast_num == num, cls.track_path == path)
+        res = cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num, cls.track_path == path)
         return res[0] if res else None
 
     @classmethod
@@ -77,7 +76,7 @@ class Tracklist(Model):
 
     @classmethod
     def remove_tracks(cls, day, num):
-        cls.delete().where(cls.broadcast_num == day, cls.broadcast_num == num)
+        cls.delete().where(cls.broadcast_day == day, cls.broadcast_num == num)
 
     class Meta:
         indexes = (  # связка уникальных полей
