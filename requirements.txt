@@ -1,4 +1,3 @@
-xmltodict
 aiogram
 aiohttp
 aioschedule
@@ -6,5 +5,10 @@ matplotlib
 python-dotenv
 youtube-dl
 peewee
+
+# mopidy
 Mopidy
-mopidy_async_client
+mopidy-async-client
+
+# radioboss
+xmltodict
