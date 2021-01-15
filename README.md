@@ -7,6 +7,9 @@
 
 Также канал истории [@rkpi_music](https://t.me/rkpi_music)
 
+
+Сайт [r.kpi.ua](http://r.kpi.ua) в [ этой репе](https://github.com/SvineruS/kpi_radio_web)
+
 Автор [@svinerus](https://t.me/svinerus)
 
 Бесплатно Для КПИ
