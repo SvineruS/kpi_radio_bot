@@ -20,7 +20,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     if user_db.is_banned():
         return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to()))
 
-    if broadcast.num != 5 and len(await (broadcast.get_local_playlist().get_playlist()).find_by_user_id(user.id)) > 5:
+    if broadcast.num != 5 and len((await broadcast.get_local_playlist().get_playlist()).find_by_user_id(user.id)) > 5:
         return await query.message.answer(texts.ORDER_ERR_TOOMUCH)
 
     try:

@@ -91,8 +91,8 @@ class Broadcast(Backend):
 
     async def get_playlist(self) -> Playlist:
         if self.is_now():
-            return await self.get_local_playlist().get_playlist()
-        return await self.get_player().get_playlist()
+            return await self.get_player().get_playlist()
+        return await self.get_local_playlist().get_playlist()
 
     async def get_playlist_next(self) -> Playlist:
         # todo а нужно ли...

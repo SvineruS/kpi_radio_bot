@@ -40,11 +40,6 @@ class PlayerRadioboss(PlayerBase):
 
     async def get_playlist(self) -> Playlist:
         pl = (await _radioboss_api.getplaylist2())['TRACK']
-        for track in pl:
-            cast_title = track['@CASTTITLE'].split(' - ')
-            track['@ARTIST'] = cast_title[0] if len(cast_title) > 1 else ""
-            track['@TITLE'] = cast_title[-1]
-
         return Playlist([
             self.internal_to_playlist_item(track)
             for track in pl
@@ -53,9 +48,10 @@ class PlayerRadioboss(PlayerBase):
 
     async def add_track(self, track: PlaylistItem, position: int) -> PlaylistItem:
         if position == -1:  # в очередь
-            position = self._get_position_after_order()
+            position = await self._get_position_after_order()
         await _radioboss_api.inserttrack(track.path, position)
-        return (await self.get_playlist()).find_by_path(track.path)[0]
+        pl = await self.get_playlist()
+        return pl.find_by_path(track.path)[0]
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         pl = await self.get_playlist()
@@ -80,10 +76,18 @@ class PlayerRadioboss(PlayerBase):
 
     @staticmethod
     def internal_to_playlist_item(track: Dict) -> PlaylistItem:
+        if not track.get('@ARTIST', None) or not track.get('@TITLE', None):
+            cast_title = track['@CASTTITLE'].split(' - ')
+            track['@ARTIST'] = cast_title[0] if len(cast_title) > 1 else ""
+            track['@TITLE'] = cast_title[-1]
+
+        start_time = None
+        if '@STARTTIME' in track:
+            start_time = DateTime.strptoday(track['@STARTTIME'], '%H:%M:%S')  # set today
         return PlaylistItem(
             performer=track['@ARTIST'],
             title=track['@TITLE'],
-            path=track['@FILENAME'],
-            duration=DateTime.strpduration(track['@STARTTIME'], '%H:%M:%S'),
-            start_time=DateTime.strptoday(track['@STARTTIME'], '%H:%M:%S')  # set today
+            path=Path(track['@FILENAME']),
+            duration=DateTime.strpduration(track['@DURATION'], '%M:%S'),
+            start_time=start_time
         )

@@ -92,6 +92,6 @@ async def _get_playlist_text(broadcast: Broadcast) -> str:
         return name + "❗️Еще ничего не заказали"
 
     return '\n'.join([
-        f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
+        f"🕖<b>{track.start_time.strftime('%H:%M:%S')}</b> {track.title}"
         for track in pl[:10]
     ]) + ('\n<pre>   ...</pre>' if len(pl) > 10 else '')

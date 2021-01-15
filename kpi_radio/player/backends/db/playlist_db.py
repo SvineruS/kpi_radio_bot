@@ -25,7 +25,7 @@ class DBPlaylistProvider(LocalPlaylistProviderBase):
             pl.append(PlaylistItem(
                 performer=i.track_performer,
                 title=i.track_title,
-                path=i.track_path,
+                path=Path(i.track_path),
                 duration=i.track_duration,
                 start_time=_get_start_time(pl[-1] if pl else None)
             ).add_track_info(
