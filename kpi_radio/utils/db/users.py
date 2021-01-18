@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from peewee import Model, BooleanField, BigIntegerField, DateTimeField
+from peewee import BooleanField, BigIntegerField, DateTimeField
 
-from ._connector import DB
+from ._connector import BaseModel
 
 
-class Users(Model):
+class Users(BaseModel):
     user_id = BigIntegerField(primary_key=True)
     ban: datetime = DateTimeField(null=True)
     notifications = BooleanField(default=True)
@@ -39,6 +39,3 @@ class Users(Model):
     @classmethod
     def notification_set(cls, id_: int, status_: bool):
         cls.update(notifications=status_).where(cls.user_id == id_)
-
-    class Meta:
-        database = DB

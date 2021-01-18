@@ -3,15 +3,15 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import List, Optional
 
-from peewee import Model, IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey
+from peewee import IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey
 
-from ._connector import DB
+from ._connector import BaseModel
 
 
 _POSITION_EXTRA_SPACE = 5
 
 
-class Tracklist(Model):
+class Tracklist(BaseModel):
     track_path = CharField(max_length=750)
     track_performer = CharField(max_length=200)
     track_title = CharField(max_length=200)
@@ -84,4 +84,3 @@ class Tracklist(Model):
             (('broadcast_day', 'broadcast_num', 'position'), True),
         )
         primary_key = CompositeKey('broadcast_day', 'broadcast_num', 'track_path')
-        database = DB

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from peewee import Model, BigIntegerField, CharField, DateTimeField
+from peewee import BigIntegerField, CharField, DateTimeField
 
 from consts.btns_text import STATUS
-from ._connector import DB
+from ._connector import BaseModel
 
 
-class Stats(Model):
+class Stats(BaseModel):
     message_id = BigIntegerField(primary_key=True)
     moderator_id = BigIntegerField()
     user_id = BigIntegerField()
@@ -34,6 +34,3 @@ class Stats(Model):
 
     def is_own(self):
         return self.user_id == self.moderator_id
-
-    class Meta:
-        database = DB
