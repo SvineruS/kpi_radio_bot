@@ -34,7 +34,7 @@ async def perezaklad(day, time):
             logging.info(f"perezaklad err: {ex}")
             logging.warning(f"pls pls add exception {type(ex)}{ex} in except")
 
-    tracks = Broadcast(day, time).get_local_playlist().get_playlist()
+    tracks = await Broadcast(day, time).get_local_playlist().get_playlist()
     for track in tracks:
         await _send_perezaklad(track.track_info.user_id, track.path)
         await asyncio.sleep(3)
