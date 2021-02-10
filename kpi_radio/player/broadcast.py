@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, List, Iterable
 
 from consts import others, config
-from utils import DateTime
+from utils import DateTime, lru
 from .backends import Playlist, PlaylistItem, Backend
 from .player_utils import archive, exceptions
 
@@ -16,7 +16,7 @@ from .player_utils import archive, exceptions
 class Broadcast(Backend):
     ALL: List[Broadcast] = []
 
-    @cache
+    @lru.lru()
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
 
