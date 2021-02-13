@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Iterable
 
 from .playlist import PlaylistItem, Playlist
 
@@ -30,6 +30,9 @@ class PlayerBase(IPlaylistProvider, abc.ABC):
         raise NotImplementedError
 
     async def get_playback(self) -> List[Optional[PlaylistItem]]:
+        raise NotImplementedError
+
+    async def get_history(self) -> Iterable[PlaylistItem]:
         raise NotImplementedError
 
     async def play_playlist(self, playlist: Playlist):

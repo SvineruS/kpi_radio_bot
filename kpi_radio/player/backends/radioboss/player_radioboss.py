@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Iterable
 
 from utils import DateTime
 from . import _radioboss_api
@@ -27,6 +27,10 @@ class PlayerRadioboss(PlayerBase):
             if "setvol" not in playback[k]['TRACK']['@CASTTITLE']:
                 result[i] = self.internal_to_playlist_item(playback[k]['TRACK'])
         return result
+
+    async def get_history(self) -> Iterable[PlaylistItem]:
+        lastplayed = await _radioboss_api.getlastplayed()
+        return map(self.internal_to_playlist_item, lastplayed)
 
     async def play_playlist(self, playlist: Playlist):
         # радиобосс сейчас сам все делает

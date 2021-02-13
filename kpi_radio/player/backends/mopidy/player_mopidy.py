@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Iterable
 
 from mopidy import models
 from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
@@ -64,6 +64,10 @@ class PlayerMopidy(PlayerBase):
                 start_time=await self._get_start_time(pl[-1] if pl else None)
             ))
         return Playlist(pl)
+
+    async def get_history(self) -> Iterable[PlaylistItem]:
+        # todo
+        pass
 
     async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
         if position == -2:

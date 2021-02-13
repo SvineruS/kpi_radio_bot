@@ -35,3 +35,9 @@ async def history_save(request):
         )
     )
     return web.Response(text='ok')
+
+
+@ROUTES.get("/history")
+async def history_get(request):
+    # todo send history
+    return web.Response(text='WIP')

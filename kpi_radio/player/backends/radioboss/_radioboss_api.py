@@ -47,6 +47,12 @@ async def getplaylist2(cnt: int = 100) -> dict:
     return playlist['Playlist']
 
 
+async def getlastplayed() -> dict:
+    lastplayed = await _radioboss_api(action='getlastplayed')
+    assert isinstance(lastplayed, dict)
+    return lastplayed['LastPlayed']
+
+
 async def readtag(filename: Path) -> Optional[dict]:
     if not (tag := await _radioboss_api(action='readtag', fn=filename)):
         return None
