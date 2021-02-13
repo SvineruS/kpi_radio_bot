@@ -30,7 +30,7 @@ class PlayerRadioboss(PlayerBase):
 
     async def get_history(self) -> Iterable[PlaylistItem]:
         lastplayed = await _radioboss_api.getlastplayed()
-        return map(self.internal_to_playlist_item, lastplayed)
+        return map(self.internal_to_playlist_item, lastplayed['TRACK'])
 
     async def play_playlist(self, playlist: Playlist):
         # радиобосс сейчас сам все делает
@@ -87,7 +87,11 @@ class PlayerRadioboss(PlayerBase):
 
         start_time = None
         if '@STARTTIME' in track:
-            start_time = DateTime.strptoday(track['@STARTTIME'], '%H:%M:%S')  # set today
+            if len(track['@STARTTIME']) > 10:
+                start_time = DateTime.strptime(track['@STARTTIME'], '%Y-%m-%d %H:%M:%S')
+            else:
+                start_time = DateTime.strptoday(track['@STARTTIME'], '%H:%M:%S')  # set today
+
         return PlaylistItem(
             performer=track['@ARTIST'],
             title=track['@TITLE'],

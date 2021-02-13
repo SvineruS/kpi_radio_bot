@@ -1,3 +1,4 @@
+from itertools import islice
 from pathlib import Path
 
 from aiohttp import web
@@ -39,5 +40,14 @@ async def history_save(request):
 
 @ROUTES.get("/history")
 async def history_get(request):
-    # todo send history
-    return web.Response(text='WIP')
+    from player import Broadcast
+    history = await Broadcast.get_player().get_history()
+    history = [
+        {
+            'performer': item.performer,
+            'title': item.title,
+            'start_time': str(item.start_time)
+        }
+        for item in islice(history, 5)
+    ]
+    return web.json_response(history)
