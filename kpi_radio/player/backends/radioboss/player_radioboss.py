@@ -96,6 +96,6 @@ class PlayerRadioboss(PlayerBase):
             performer=track['@ARTIST'],
             title=track['@TITLE'],
             path=Path(track['@FILENAME']),
-            duration=DateTime.strpduration(track['@DURATION'], '%M:%S'),
+            duration=DateTime.strpduration(track['@DURATION'], '%M:%S') if '--:--' not in track['@DURATION'] else 0,
             start_time=start_time
         )
