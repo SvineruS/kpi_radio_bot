@@ -53,9 +53,11 @@ async def admin_message(message: Message):
 def get_from_message(message: Message) -> Optional[Tuple[int, Optional[int]]]:
     if cache_is_set(message.message_id):
         return cache_get(message.message_id)
-    if user := utils.get_user_from_entity(message):
+    try:
+        user = utils.get_user_from_entity(message)
         return user.id, None
-    return None
+    except ValueError:
+        return None
 
 
 #

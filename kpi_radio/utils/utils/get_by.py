@@ -27,6 +27,8 @@ def get_user_name_(id_: int, name: str) -> str:
 
 def get_user_from_entity(message: Message) -> User:
     entities = message.caption_entities if message.audio or message.photo else message.entities
+    if not entities:
+        raise ValueError
     return entities[0].user
 
 
