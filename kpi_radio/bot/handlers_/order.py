@@ -74,7 +74,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     moder = query.from_user
     admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
     track = PlaylistItem.from_tg(query.message.audio, broadcast.path)\
-        .add_track_info(user.id, user.first_name, query.message.message_id)
+                        .add_track_info(user.id, user.first_name, query.message.message_id)
 
     try:
         await query.message.edit_caption(admin_text, reply_markup=kb.admin_unmoderate(broadcast, status))
@@ -90,7 +90,9 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     await query.message.chat.do('record_audio')
     msg_to_user: Optional[str]
     try:
-        new_track = await broadcast.add_track(track, position=-2 if status == kb.STATUS.NOW else -1)
+        new_track = await broadcast.add_track(track,
+                                              position=-2 if status == kb.STATUS.NOW else -1,
+                                              audio=query.message.audio)
     except player_exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
         msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
@@ -102,8 +104,6 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
             caption=texts.ORDER_ACCEPTED_TOOLATE.format(track, broadcast.name)), query.message
         )
     else:
-        await query.message.audio.download(track.path)
-
         if status == kb.STATUS.NOW:  # кнопка сейчас
             when_playing = 'прямо сейчас!'
             msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)

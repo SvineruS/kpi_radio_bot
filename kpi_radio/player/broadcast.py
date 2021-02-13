@@ -113,13 +113,14 @@ class Broadcast(Backend):
         broadcast_duration = int((self.stop_time - self.start_time).total_seconds())
         return max(0, broadcast_duration - tracks_duration)
 
-    async def add_track(self, track: PlaylistItem, position):
+    async def add_track(self, track: PlaylistItem, position, audio):
         pl = await self.get_local_playlist().get_playlist()
         if pl.find_by_path(track.path):
             raise exceptions.DuplicateException()
         if await self.get_free_time() < track.duration:
             raise exceptions.NotEnoughSpace()
 
+        await audio.download(track.path)
         track = await self.get_local_playlist().add_track(track, position)
         if self.is_now():
             track = await self.get_player().add_track(track, position)
