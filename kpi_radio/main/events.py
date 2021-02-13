@@ -67,13 +67,13 @@ async def orders_queue_empty():
 
 
 async def start_scheduler():
-    aioschedule.every().day.at("23:00").do(DAY_END_EVENT)
 
     for day_num, day_name in enumerate(('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')):
+        day = getattr(aioschedule.every(), day_name)
         for broadcast_num, (broadcast_time_start, broadcast_time_stop) in others.BROADCAST_TIMES[day_num].items():
-            day = getattr(aioschedule.every(), day_name)
             day.at(broadcast_time_start).do(BROADCAST_BEGIN_EVENT, day_num, broadcast_num)
             day.at(broadcast_time_stop).do(BROADCAST_END_EVENT, day_num, broadcast_num)
+        day.at("23:00").do(DAY_END_EVENT, day_num)
 
     while True:
         await aioschedule.run_pending()
