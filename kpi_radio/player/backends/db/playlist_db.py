@@ -21,17 +21,9 @@ class DBPlaylistProvider(LocalPlaylistProviderBase):
         pl_ = db.Tracklist.get_by_broadcast(*self._broadcast)
 
         pl: List[PlaylistItem] = []
-        for i in pl_:
-            pl.append(PlaylistItem(
-                performer=i.track_performer,
-                title=i.track_title,
-                path=Path(i.track_path),
-                duration=i.track_duration,
-                start_time=_get_start_time(pl[-1] if pl else None)
-            ).add_track_info(
-                user_id=i.info_user_id,
-                user_name=i.info_user_name,
-                moderation_msg_id=i.info_message_id
+        for track in pl_:
+            pl.append(self.internal_to_playlist_item(
+                track, start_time=_get_start_time(pl[-1] if pl else None)
             ))
         return Playlist(pl)
 
@@ -51,7 +43,23 @@ class DBPlaylistProvider(LocalPlaylistProviderBase):
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         track = db.Tracklist.remove_track(self._broadcast.day, self._broadcast.num, track_path)
-        return track
+        if not track:
+            return None
+        return self.internal_to_playlist_item(track)
 
     async def clear(self):
         db.Tracklist.remove_tracks(self._broadcast.day, self._broadcast.num)
+
+    @staticmethod
+    def internal_to_playlist_item(track: db.Tracklist, start_time=None) -> PlaylistItem:
+        return PlaylistItem(
+            performer=track.track_performer,
+            title=track.track_title,
+            path=Path(track.track_path),
+            duration=track.track_duration,
+            start_time=start_time
+        ).add_track_info(
+            user_id=track.info_user_id,
+            user_name=track.info_user_name,
+            moderation_msg_id=track.info_message_id
+        )
