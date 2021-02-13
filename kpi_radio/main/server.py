@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from aiohttp import web
 
 from consts.config import RADIOBOSS_DATA
@@ -26,7 +28,7 @@ async def history_save(request):
     from player import PlaylistItem
     await TRACK_BEGIN_EVENT.notify(
         PlaylistItem(
-            path=args.get('path'),
+            path=Path(args.get('path')),
             performer=args.get('artist'),
             title=args.get('title') or args.get('casttitle'),
             duration=0
