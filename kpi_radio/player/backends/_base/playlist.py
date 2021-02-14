@@ -7,7 +7,7 @@ from typing import Optional, Iterable, List
 
 from aiogram import types
 
-from consts import others
+from consts import others, config
 from utils import DateTime, utils
 
 
@@ -29,6 +29,8 @@ class PlaylistItem:
 
     @property
     def is_order(self) -> bool:
+        if config.IS_TEST_ENV and config.PLAYER == "RADIOBOSS":
+            return str(others.PATHS.ORDERS) in str(self.path).replace('\\', '/')
         return others.PATHS.ORDERS in self.path.parents
 
     @property

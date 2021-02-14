@@ -72,9 +72,10 @@ class PlayerRadioboss(PlayerBase):
     #
 
     async def _get_position_after_order(self) -> int:
-        for track in await self.get_playlist():
+        pl = await self.get_playlist()
+        for track in pl[1:]:
             if not track.is_order:
-                return track._index + 1
+                return track._index
         return -1  # все в плейлисте заказы -> будет последним
 
     @staticmethod
