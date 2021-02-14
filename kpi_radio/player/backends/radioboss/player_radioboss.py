@@ -61,7 +61,7 @@ class PlayerRadioboss(PlayerBase):
         pl = await self.get_playlist()
         tracks = pl.find_by_path(track_path)
         for track in tracks:
-            await _radioboss_api.delete(pl.index(track))
+            await _radioboss_api.delete(track._index)
             return track
         return None
 
