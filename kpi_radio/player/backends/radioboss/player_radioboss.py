@@ -71,11 +71,10 @@ class PlayerRadioboss(PlayerBase):
 
     #
 
-    async def _get_position_after_order(self):
-        pl = await self.get_playlist()
-        for i, track in enumerate(pl):
+    async def _get_position_after_order(self) -> int:
+        for track in await self.get_playlist():
             if not track.is_order:
-                return i
+                return track._index + 1
         return -1  # все в плейлисте заказы -> будет последним
 
     @staticmethod
@@ -92,10 +91,12 @@ class PlayerRadioboss(PlayerBase):
             else:
                 start_time = DateTime.strptoday(track['@STARTTIME'], '%H:%M:%S')  # set today
 
-        return PlaylistItem(
+        item = PlaylistItem(
             performer=track['@ARTIST'],
             title=track['@TITLE'],
             path=Path(track['@FILENAME']),
             duration=DateTime.strpduration(track['@DURATION'], '%M:%S') if '––:––' not in track['@DURATION'] else 0,
             start_time=start_time
         )
+        item._index = int(track['@INDEX'])
+        return item

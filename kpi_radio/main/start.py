@@ -16,12 +16,11 @@ def start():
         from utils import DateTime
         DateTime.fake(2021, 1, 6, 8, 15, 0)
         # events.STARTUP_EVENT.register(lambda: events.BROADCAST_BEGIN_EVENT.notify(2, 0))
-        # bot.start_longpoll(on_startup=on_startup, on_shutdown=on_shutdown)
-        start_server(on_startup=on_startup, on_shutdown=on_shutdown, port=8080)
+        bot.start_longpoll(on_startup=on_startup, on_shutdown=on_shutdown)
+        # start_server(on_startup=on_startup, on_shutdown=on_shutdown, port=8080)
     else:
         on_startup.append(lambda _: bot.set_webhook(config.WEBHOOK_URL, config.SSL_CERT.open('rb')))
-        # radioboss need ssl v23
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)  # radioboss need ssl v23
         ssl_context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)
         start_server(on_startup=on_startup, on_shutdown=on_shutdown, ssl_context=ssl_context)
 
