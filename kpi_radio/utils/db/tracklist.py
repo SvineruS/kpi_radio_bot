@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from peewee import IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey
 
+from player import PlaylistItem, Broadcast
 from ._connector import BaseModel
 
 
@@ -26,36 +27,35 @@ class Tracklist(BaseModel):
     position = DecimalField(max_digits=5, decimal_places=_POSITION_EXTRA_SPACE)
 
     @classmethod
-    def add(cls, position, track_path, track_performer, track_title, track_duration,
-            info_user_id, info_user_name, info_message_id,
-            broadcast_day, broadcast_num
-            ):
+    def add(cls, position: Optional[int], track: PlaylistItem, broadcast: Broadcast):
 
         def _get_available_position(pos: Optional[int] = None) -> Decimal:
             """Кароч позиция это Decimal, где целая часть - то, что приходит из вне, а
             дробная часть - меняется для устранения "коллизий" оставляя порядок"""
             if pos is None:
                 new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_day == broadcast_day, cls.broadcast_num == broadcast_num) \
+                    .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num) \
                     .order_by(cls.position.desc()).limit(1)
                 if new_pos:
                     return new_pos[0].position
                 return Decimal(0)
             else:
                 new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_day == broadcast_day, cls.broadcast_num == broadcast_num,
+                    .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num,
                            cls.position.between(pos, pos + 1)) \
                     .order_by(cls.position.asc()).limit(1)
                 if new_pos:
                     return new_pos.position - 10 ** (_POSITION_EXTRA_SPACE * -1)
                 return Decimal(pos)
 
+        assert track.track_info is not None, "Local playlist need track info!"
         cls.insert(
             position=_get_available_position(position),
-            track_path=track_path, track_performer=track_performer,
-            track_title=track_title, track_duration=track_duration,
-            info_user_id=info_user_id, info_user_name=info_user_name, info_message_id=info_message_id,
-            broadcast_day=broadcast_day, broadcast_num=broadcast_num
+            track_path=track.path, track_performer=track.performer,
+            track_title=track.title, track_duration=track.duration,
+            info_user_id=track.track_info.user_id, info_user_name=track.track_info.user_name,
+            info_message_id=track.track_info.moderation_id,
+            broadcast_day=broadcast.day, broadcast_num=broadcast.num
         ).on_conflict_replace().execute()
 
     @classmethod

@@ -28,16 +28,11 @@ class DBPlaylistProvider(LocalPlaylistProviderBase):
         return Playlist(pl)
 
     async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
-        assert track.track_info is not None, "Local playlist need track info!"
         if position == -2:
             position = 0
         if position == -1:
             position = None
-        db.Tracklist.add(
-            position, track.path, track.performer, track.title, track.duration,
-            track.track_info.user_id, track.track_info.user_name, track.track_info.moderation_id,
-            self._broadcast.day, self._broadcast.num
-        )
+        db.Tracklist.add(position, track, self._broadcast)
         pl = await self.get_playlist()
         return pl.find_by_path(track.path)[0]
 
