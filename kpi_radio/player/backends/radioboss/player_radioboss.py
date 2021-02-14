@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Iterable
 
@@ -54,6 +55,7 @@ class PlayerRadioboss(PlayerBase):
         if position == -1:  # в очередь
             position = await self._get_position_after_order()
         await _radioboss_api.inserttrack(track.path, position)
+        await asyncio.sleep(0.5)  # fuck radioboss
         pl = await self.get_playlist()
         return pl.find_by_path(track.path)[0]
 
