@@ -98,5 +98,5 @@ class PlayerRadioboss(PlayerBase):
             duration=DateTime.strpduration(track['@DURATION'], '%M:%S') if '––:––' not in track['@DURATION'] else 0,
             start_time=start_time
         )
-        item._index = int(track['@INDEX'])
+        item._index = int(track.get('@INDEX', -1))
         return item
