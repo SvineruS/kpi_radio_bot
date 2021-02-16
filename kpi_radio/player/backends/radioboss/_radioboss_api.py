@@ -82,13 +82,10 @@ async def _radioboss_api(**kwargs) -> Union[dict, bool]:
             return True
         return xmltodict.parse(res)
 
-    except aiohttp.ClientConnectionError as ex:
+    except (aiohttp.ClientConnectionError, Exception) as ex:
         logging.error(f'radioboss: {ex} {res} {url}')
-        return False
-    except Exception as ex:
-        logging.warning(f"pls add exception {type(ex)}{ex}in except")
-        return False
-
+        raise
+    
 
 async def _write_comment_tag(path: Path, tag: str) -> bool:
     if not (tag_info := await readtag(path)):
