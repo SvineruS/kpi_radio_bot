@@ -53,6 +53,7 @@ async def get_stats(message: types.Message):
 
     else:
         days = int(message.get_args()) if message.get_args().isdigit() else 7
+        days = min(days, 1000)
         await stats.all_moders_stats(days)
         caption = f'Стата за {days} дн.'
 
