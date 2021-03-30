@@ -121,7 +121,7 @@ def _get_ban_time_and_reason_from_message(message: types.Message) -> Tuple[int, 
         reason = f" Бан по причине: <i>{cmd[1]}</i>"
 
     # big numbers can produce overflow errors in datetime methods
-    ban_time = max(ban_time, 44640)
+    ban_time = min(ban_time, 44640)
                         
     return ban_time, reason
 
