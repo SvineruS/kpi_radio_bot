@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from peewee import Model, BooleanField, BigIntegerField, DateTimeField
+from peewee import BooleanField, BigIntegerField, DateTimeField
 
-from utils.db._connector import DB
+from ._connector import BaseModel
 
 
-class Users(Model):
+class Users(BaseModel):
     user_id = BigIntegerField(primary_key=True)
     ban: datetime = DateTimeField(null=True)
     notifications = BooleanField(default=True)
@@ -16,8 +16,13 @@ class Users(Model):
     def add(cls, id_):
         cls.insert(user_id=id_).on_conflict_ignore().execute()
 
+    @classmethod
+    def get(cls, id_):
+        user, _ = cls.get_or_create(user_id=id_)
+        return user
+
     def is_banned(self) -> bool:
-        return self.ban and self.ban > datetime.now()
+        return bool(self.ban and self.ban > datetime.now())
 
     def banned_to(self):
         return self.ban.strftime("%d.%m %H:%M")
@@ -34,6 +39,3 @@ class Users(Model):
     @classmethod
     def notification_set(cls, id_: int, status_: bool):
         cls.update(notifications=status_).where(cls.user_id == id_)
-
-    class Meta:
-        database = DB

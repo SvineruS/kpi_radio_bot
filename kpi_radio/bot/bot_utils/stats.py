@@ -10,19 +10,19 @@
 
 import functools
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 from typing import Dict, Optional, List, Iterator
 
 from matplotlib import pyplot as plt
 
 from consts.config import PATH_STUFF
-from utils.db import Stats
-from utils.user_utils import get_moders
+from utils import db, DateTime
+from .small_utils import get_moders
 
 PATH_STATS_PNG = PATH_STUFF / 'stats.png'
 
 
-add = Stats.add
+add = db.Stats.add
 
 
 async def moder_stats(moder_id: int) -> Optional[float]:
@@ -51,17 +51,20 @@ async def all_moders_stats(days: int):
     ]
 
     stats = tuple(sorted(stats, key=lambda i: i[1]))  # sort by 'all' value
-    names, moderations_all, moderations_own = zip(*stats)
+    if stats:
+        names, moderations_all, moderations_own = zip(*stats)
+    else:
+        names, moderations_all, moderations_own = [], [], []
     _draw_bars_plot(names, moderations_all, moderations_own)
 
 
 #
 
 
-def _parse_stats(n_days: int = float('inf')) -> Dict[int, Dict[str, Counter]]:
+def _parse_stats(n_days: float = float('inf')) -> Dict[int, Dict[str, Counter]]:
     stats = {}
 
-    for rec in Stats.get_last_n_days(n_days):
+    for rec in db.Stats.get_last_n_days(n_days):
         if rec.moderator_id not in stats:
             stats[rec.moderator_id] = _get_counters(rec.date)
 
@@ -103,7 +106,7 @@ def _get_counters(start_date):
 
 
 def _get_all_days_to_today(date_from: datetime) -> Iterator[datetime]:
-    date_to = datetime.today()
+    date_to = DateTime.today()
     day_delta = timedelta(days=1)
     while date_from < date_to:
         yield date_from

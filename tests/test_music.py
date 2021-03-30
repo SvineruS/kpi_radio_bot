@@ -2,7 +2,7 @@ import asyncio
 from unittest import TestCase
 
 from consts.config import AIOHTTP_SESSION
-from music import search
+from music import search, check
 
 
 class TestMusicSearch(TestCase):
@@ -32,3 +32,13 @@ class TestMusicSearch(TestCase):
 
     def test_download_url(self):
         self.loop.run_until_complete(self.async_test_download_url())
+
+    def test_check(self):
+        self.loop.run_until_complete(self._test_check())
+
+    async def _test_check(self):
+        self.assertTrue(await check.is_anime("Batta - chase"))
+        self.assertFalse(await check.is_anime("Плюнь мне в жопу"))
+
+        self.assertFalse(await check.is_contain_bad_words("Batta - chase"))
+        self.assertTrue(await check.is_contain_bad_words("Плюнь мне в жопу"))

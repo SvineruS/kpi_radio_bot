@@ -2,7 +2,7 @@ from typing import Dict, Optional
 
 from aiogram.types import ChatMember, User
 
-from consts.config import BOT, ADMINS_CHAT_ID
+from consts.config import ADMINS_CHAT_ID, BOT
 from utils.lru import lru
 
 
@@ -20,6 +20,7 @@ async def get_admin_by_username(username: str) -> Optional[User]:
     for admin in (await get_admins()).values():
         if admin.user.username == username:
             return admin.user
+    return None
 
 
 @lru(maxsize=10, ttl=60 * 60 * 12)

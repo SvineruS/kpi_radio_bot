@@ -1,16 +1,15 @@
 from typing import Optional, Tuple, List
 from urllib.parse import quote_plus
 
-from consts import others
-from consts.config import AIOHTTP_SESSION
+from consts import others, config
 from utils.lru import lru
 from .text import search_text
 
 
 @lru(maxsize=100, ttl=60 * 60 * 12)
 async def is_anime(audio_name: str) -> bool:
-    async with AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
-                                   headers={'user-agent': 'my custom agent'}) as res:
+    async with config.AIOHTTP_SESSION.get(f"https://www.google.com.ua/search?q={quote_plus(audio_name)}",
+                                          headers={'user-agent': 'my custom agent'}) as res:
         if res.status != 200:
             return False
         text = (await res.text()).lower()

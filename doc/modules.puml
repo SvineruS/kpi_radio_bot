@@ -1,0 +1,75 @@
+@startuml
+
+
+database sqlite {
+    [db_tracks]
+    [db_users]
+    [db_stats]
+}
+
+
+package Music{
+    frame search {
+        [youtube]
+        [musicless]
+    }
+    [check] -> [text]
+
+}
+
+package Player {
+    [Broadcast]
+    [PlayerBackend]
+    [LocalPlaylist]
+
+    [Broadcast] --> [PlayerBackend] : playback, volume, etc
+    [Broadcast] --> [LocalPlaylist] : store playlists
+
+    [PlayerBackend] --> Mopidy
+    [PlayerBackend] ..> Radioboss
+
+    [LocalPlaylist] --> db_tracks
+}
+
+
+
+package Bot {
+    package bot_utils {
+        [stats] --> db_stats
+        [keyboards]
+    }
+    package handlers {
+        [order] --> Broadcast : ordering music
+        [admins] --> stats
+        [users] -> db_users
+        [searching]
+    }
+    handlers --> keyboards
+
+    [searching] -> search : search music
+    [searching] -> check : check music
+
+
+}
+
+
+
+
+
+
+package Main {
+    [start] -> [server]
+    [start] --> Player : choose and init backend
+    [start] --> Bot : start
+
+    [events] --> handlers
+    [events] <--> Broadcast : track_begin, track_end, broadcast_begin, etc..
+
+    [server] ---> [text] : endpoint show song text
+
+}
+
+[_main_.py] --> [start]
+
+
+@enduml

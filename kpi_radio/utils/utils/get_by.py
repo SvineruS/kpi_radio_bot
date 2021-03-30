@@ -1,7 +1,4 @@
 """Методы, конвентирующие всякую хрень"""
-from datetime import datetime
-from typing import Optional
-
 from aiogram.types import Message, User, Audio
 
 
@@ -28,10 +25,11 @@ def get_user_name_(id_: int, name: str) -> str:
     return f'<a href="tg://user?id={id_}">{name}</a>'
 
 
-def get_user_from_entity(message: Message) -> Optional[User]:
-    if entities := message.caption_entities if message.audio or message.photo else message.entities:
-        return entities[0].user
-    return None
+def get_user_from_entity(message: Message) -> User:
+    entities = message.caption_entities if message.audio or message.photo else message.entities
+    if not entities:
+        raise ValueError
+    return entities[0].user
 
 
 def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
@@ -42,7 +40,3 @@ def case_by_num(num: int, c_1: str, c_2: str, c_3: str) -> str:
     if 2 <= num % 10 <= 4:
         return c_2
     return c_3
-
-
-def time_to_datetime(time: datetime.time) -> datetime:
-    return datetime.combine(datetime.today(), time)
