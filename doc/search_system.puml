@@ -1,0 +1,39 @@
+@startuml
+
+entity SearchResult {
+    *id: str
+    *download_url: str
+    --
+    *performer: str
+    *title: str
+    --
+    duration: int
+}
+
+interface  Searcher {
+    {abstract} + search(query)
+    {abstract} + is_for_me(query)
+}
+
+class Musicless implements Searcher {
+    + search(query)
+    + is_for_me(query)
+}
+
+class YoutubeMusic implements Searcher {
+    + search(query)
+    + is_for_me(query)
+}
+
+package Планується <<Cloud>> {
+    class Spotify implements Searcher {
+        + search(query)
+        + is_for_me(query)
+    }
+}
+
+Searcher -> SearchResult : search() return list of
+
+'sr }o-- "Searcher"
+
+@enduml

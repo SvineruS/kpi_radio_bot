@@ -1,0 +1,37 @@
+@startuml
+entity Users {
+    #user_id: BigInteger
+    ban: datetime: DateTime
+    notifications: Boolean[True]
+}
+
+entity Stats {
+    # message_id: BigInteger
+    * user_id: BigInteger
+    * track_title: CharField[500]
+    * moderation_status: CharField[20]
+    * date: DateTime
+}
+
+entity Tracklist {
+    # track_path: Char[750]
+    * track_performer: Char[200]
+    * track_title: Char[200]
+    * track_duration: Integer
+
+    * info_user_id: BigInteger
+    * info_user_name: Char[100]
+    * info_message_id: BigInteger
+    
+    # broadcast_day: Decimal[1, 0]
+    # broadcast_num: Decimal[1, 0]
+
+    # position: DecimalField[5, _POSITION_EXTRA_SPACE]
+}
+
+
+Users ||..o{ Stats
+Users ||..o{ Tracklist
+
+
+@enduml

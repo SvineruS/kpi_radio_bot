@@ -1,0 +1,32 @@
+@startuml
+
+actor "Користувач" as user
+participant "Пошукова підсистема" as Search
+participant YoutubeMusic <<(C,#ADD1B2)>>
+participant Spotify <<(C,#ADD1B2)>>
+participant Musicless <<(C,#ADD1B2)>>
+'database MusiclessAPI
+
+
+user -> Search : "Не хочу в армію"
+
+Search -> YoutubeMusic: is_for_me("Не хочу в армію")
+Search <[#red]- YoutubeMusic: False
+
+Search -> Spotify: is_for_me("Не хочу в армію")
+Search <[#red]- Spotify: False
+
+Search -> Musicless: is_for_me("Не хочу в армію")
+Search <[#green]- Musicless: True
+
+
+Search -[#blue]> Musicless: search("Не хочу в армію")
+
+Musicless -->]: HTTP POST /search/Не+хочу+в+армію
+note right of Musicless: Значний час очікування
+Musicless <--] : HTTP 200 JSON Payload
+
+Search <[#green]- Musicless: Список об'єктів SearchResult
+user <- Search : Аудіофайл(и)
+
+@enduml
