@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from music.search.searcher import Searcher, AudioResult
 from utils.lru import lru
 
-_BASE_URL = "http://api.svinua.cf/musicless/"
+_BASE_URL = "http://api.svinua.tk/musicless/"
 
 
 class Musicless(Searcher):
