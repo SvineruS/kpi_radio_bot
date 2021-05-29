@@ -14,7 +14,8 @@ from .._base import PlayerBase, PlaylistItem, Playlist
 
 
 class PlayerMopidy(PlayerBase):
-    _CLIENT = MopidyClient(parse_results=True)
+    def __init__(self, **kwargs):
+        self._CLIENT = MopidyClient(parse_results=True, **kwargs)
 
     async def set_volume(self, volume: int):
         return await self._CLIENT.mixer.set_volume(volume)

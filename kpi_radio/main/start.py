@@ -36,7 +36,7 @@ def start_server(on_startup, on_shutdown, ssl_context=None, port=config.PORT):
 def _register_player_backend(backend):
     if backend == 'MOPIDY':
         from player.backends.mopidy import PlayerMopidy
-        player_ = PlayerMopidy()
+        player_ = PlayerMopidy(url=config.MOPIDY_URL)
 
         async def playback_state_changed(data):
             # state = stopped => плейлист пустой
