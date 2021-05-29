@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 matplotlib.use('agg')  # что бы не устанавливать tkinter
 
 PATH_ROOT = Path(__file__).parent.parent.parent
-PATH_STUFF = PATH_ROOT / 'stuff'
+PATH_STUFF = Path('/stuff')
 PATH_LOG = PATH_STUFF / 'debug.log'
 
 load_dotenv(dotenv_path=PATH_STUFF / '.env')
@@ -45,6 +45,7 @@ RADIOBOSS_DATA = (
     getenv("RADIOBOSS_PASSWORD")
 )
 
+MOPIDY_URL = getenv("MOPIDY_URL")
 
 #
 
