@@ -1,0 +1,21 @@
+version: "3"
+services:
+  kpi_radio_bot:
+    build: ./kpi_radio/
+    ports:
+      - 443:443
+    volumes:
+    - ./stuff:/stuff
+    - ~/Music:/music
+    depends_on:
+      - mopidy
+  mopidy:
+    build: ./mopidy/
+    ports:
+      - 6680:6680
+    volumes:
+      - ~/Music:/music
+      - /tmp/pa:/tmp/pa
+    environment:
+      - PULSE_SERVER=unix:/tmp/pa/pulseaudio.socket
+      - PULSE_COOKIE=/tmp/pa/pulseaudio.cookie
