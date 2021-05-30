@@ -17,6 +17,10 @@ class PlayerMopidy(PlayerBase):
     def __init__(self, **kwargs):
         self._CLIENT = MopidyClient(parse_results=True, **kwargs)
 
+    async def connect(self):
+        await self._CLIENT.connect()
+        await self._CLIENT.tracklist.set_consume(True)
+
     async def set_volume(self, volume: int):
         return await self._CLIENT.mixer.set_volume(volume)
 

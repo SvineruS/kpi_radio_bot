@@ -49,7 +49,7 @@ def _register_player_backend(backend):
 
         player_.bind_event("playback_state_changed", playback_state_changed)
         player_.bind_event("track_playback_started", track_playback_started)
-        events.STARTUP_EVENT.register(player_.get_client().connect)
+        events.STARTUP_EVENT.register(player_.connect)
         events.SHUTDOWN_EVENT.register(player_.get_client().disconnect)
 
     elif backend == 'RADIOBOSS':
