@@ -76,7 +76,7 @@ class PlayerMopidy(PlayerBase):
 
     async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
         if position == -2:
-            position = await self._CLIENT.tracklist.index() + 1
+            position = (await self._CLIENT.tracklist.index() or 0) + 1
         if position == -1:
             position = None
         await self._CLIENT.tracklist.add(uris=[_path_to_uri(track.path)], at_position=position)
@@ -85,7 +85,8 @@ class PlayerMopidy(PlayerBase):
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         tr = await self._CLIENT.tracklist.remove({'uri': [_path_to_uri(track_path)]})
-        return self.internal_to_playlist_item(tr)
+        if tr:
+            return self.internal_to_playlist_item(tr)
 
     async def clear(self):
         await self._CLIENT.tracklist.clear()

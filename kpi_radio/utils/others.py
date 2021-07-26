@@ -53,8 +53,8 @@ class Event:
         for listener in self._listeners:
             try:
                 await listener(*args)
-            except Exception as ex:
-                raise type(ex)(f"notified event: '{self.name}', {listener=} {args=}") from ex
+            except Exception:
+                logging.exception(f"notified event: '{self.name}', {listener=} {args=}")
 
     def __call__(self, *args):
         return self.notify(*args)

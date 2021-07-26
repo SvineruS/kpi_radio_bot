@@ -24,7 +24,7 @@ async def search_audio(message: types.Message):
         logging.error(f'send audio: {ex} {audio.url}')
         await message.answer(texts.ERROR, reply_markup=kb.START)
     except Exception as ex:
-        logging.warning(f"pls add exception {type(ex)}{ex} in except")
+        logging.exception(ex)
         await message.answer(texts.ERROR, reply_markup=kb.START)
 
 
