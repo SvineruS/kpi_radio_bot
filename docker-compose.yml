@@ -3,7 +3,7 @@ services:
   kpi_radio_bot:
     build: ./kpi_radio/
     ports:
-      - 443:443
+      - 6000:6000
     volumes:
     - ./stuff:/stuff
     - ~/Music:/music
