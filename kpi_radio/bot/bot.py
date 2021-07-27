@@ -11,9 +11,9 @@ bind_filters(DP)
 register_handlers(DP)
 
 
-async def set_webhook(url, cert):
+async def set_webhook(url):
     if (await BOT.get_webhook_info()).url != url:
-        await BOT.set_webhook(url, certificate=cert)
+        await BOT.set_webhook(url)
 
 
 def start_longpoll(**kwargs):

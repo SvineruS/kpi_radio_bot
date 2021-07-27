@@ -1,5 +1,3 @@
-import ssl
-
 from aiohttp import web
 
 from bot import bot
@@ -19,10 +17,8 @@ def start():
         bot.start_longpoll(on_startup=on_startup, on_shutdown=on_shutdown)
         # start_server(on_startup=on_startup, on_shutdown=on_shutdown, port=8080)
     else:
-        on_startup.append(lambda _: bot.set_webhook(config.WEBHOOK_URL, config.SSL_CERT.open('rb')))
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)  # radioboss need ssl v23
-        ssl_context.load_cert_chain(config.SSL_CERT, config.SSL_PRIV)
-        start_server(on_startup=on_startup, on_shutdown=on_shutdown, ssl_context=ssl_context)
+        on_startup.append(lambda _: bot.set_webhook(config.WEBHOOK_URL))
+        start_server(on_startup=on_startup, on_shutdown=on_shutdown)
 
 
 def start_server(on_startup, on_shutdown, ssl_context=None, port=config.PORT):
