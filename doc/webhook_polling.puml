@@ -1,0 +1,26 @@
+@startuml
+
+'title Long-Polling
+'
+'Бот -> Telegram: POST https://api.telegram.org/bot<TOKEN>/getUpdates
+'Бот <- Telegram: Updates
+'...
+'Бот -> Telegram: POST https://api.telegram.org/bot<TOKEN>/getUpdates
+'Бот <- Telegram: Updates
+
+
+'title  Webhook
+'
+'
+'Бот -> Telegram: POST https://api.telegram.org/bot<TOKEN>/setWebhook
+'...
+'...
+'Бот <- Telegram: Updates
+'Бот <- Telegram: Updates
+'Бот <- Telegram: Updates
+'
+
+Бот -> Telegram: POST https://api.telegram.org/bot<TOKEN>/getMe
+Бот <- Telegram: HTTP 200 with JSON payload
+
+@enduml

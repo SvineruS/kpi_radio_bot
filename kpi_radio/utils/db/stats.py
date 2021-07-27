@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from peewee import Model, BigIntegerField, CharField, DateTimeField
+from peewee import BigIntegerField, CharField, DateTimeField
 
 from consts.btns_text import STATUS
-from utils.db._connector import DB
+from ._connector import BaseModel
 
 
-class Stats(Model):
+class Stats(BaseModel):
     message_id = BigIntegerField(primary_key=True)
     moderator_id = BigIntegerField()
     user_id = BigIntegerField()
     track_title = CharField(max_length=500)
-    moderation_status = CharField(max_length=10, choices=STATUS)
+    moderation_status = CharField(max_length=20)
     date = DateTimeField()
 
     @classmethod
@@ -34,6 +34,3 @@ class Stats(Model):
 
     def is_own(self):
         return self.user_id == self.moderator_id
-
-    class Meta:
-        database = DB

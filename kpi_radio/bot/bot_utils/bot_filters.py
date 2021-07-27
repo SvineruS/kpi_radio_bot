@@ -52,20 +52,6 @@ class JsonCallbackDataFilter(BoundFilter):
             return {'cb': data}
 
 
-# class OnlyAdminFilter(BoundFilter):
-#     key = 'only_admin'
-#
-#     def __init__(self, only_admin):
-#         self.only_admin = only_admin
-#
-#     async def check(self, message):
-#         if not self.only_admin:
-#             return True
-#         if message.chat.id == ADMINS_CHAT_ID:
-#             return True
-#         return is_admin(message.from_user.id)
-
-
 def bind_filters(dp_):
     dp_.filters_factory.bind(AdminChatFilter)
     dp_.filters_factory.bind(ReplyToBotTextFilter)

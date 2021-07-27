@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
@@ -18,7 +17,7 @@ BAD_WORDS = [
     'fuck', 'bitch', 'shit', 'dick', 'cunt'
 ]
 
-ANIME_WORDS = ['anime', 'аниме']
+ANIME_WORDS = ['anime', 'аниме', 'tvアニメ', 'japan']
 
 BAD_NAMES = [
     'корж', 'тима', 'стрыкало', 'нервы', 'гречка', 'morgenstern', 'face', 'gspd',
@@ -67,26 +66,8 @@ BROADCAST_TIMES_VACATION = {
 BROADCAST_TIMES = BROADCAST_TIMES_NORMAL
 
 
-BROADCAST_TIMES_ = {
-    day_k: {
-        num_k: tuple(
-            datetime.strptime(time_string, '%H:%M').time()
-            for time_string in num_v
-        )
-        for num_k, num_v in day_v.items()
-    }
-    for day_k, day_v in BROADCAST_TIMES.items()
-}
-
-PATHS = {
-    'orders': Path('D:/Вещание Радио/Заказы'),  # сюда бот кидает заказанные песни
-    'archive': Path('D:/Вещание Радио/Архив'),  # сюда песни перемещаются каждую ночь с папки заказов
-    'ether': Path('D:/Вещание Радио/Эфир'),  # тут песни выбранные радистами, не используется
-}
-
-# летние пути
-# paths = {
-#     'orders': Path('D:/Вещание Радио/Летний эфир/Заказы'),
-#     'archive': Path('D:/Вещание Радио/Летний эфир/Архив'),
-#     'ether': Path('D:/Вещание Радио/Летний эфир/Эфир'),
-# }
+class PATHS:
+    _BASE = Path('/music')
+    ORDERS = _BASE / 'orders'  # сюда бот кидает заказанные песни
+    ARCHIVE = _BASE / 'archive'  # сюда песни перемещаются каждую ночь с папки заказов
+    # ETHER = _BASE / 'Эфир'  # тут песни выбранные радистами, не используется

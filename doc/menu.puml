@@ -1,0 +1,113 @@
+@startuml
+
+hide empty description
+
+
+
+state "Вітання" as start
+state "Головне меню" as menu
+state "Розклад ефірів" as timetable
+
+
+[*] -> start
+
+start --> menu
+
+menu --> rules
+menu --> order
+menu --> playlist
+menu --> feedback
+menu --> timetable
+
+
+rules -up-> menu
+order --> menu
+playlist --> menu
+feedback --> menu
+timetable --> menu
+
+
+state "Замовити пісню" as order {
+    state "Обрати пісню" as choice_song
+    state "Обрати день" as choice_day
+    state "Обрати ефір" as choice_time
+    state "Замовлення зроблено" as order_success
+    state "Попередження" as warning
+
+    state c <<choice>>
+
+    [*] --> choice_song
+
+    choice_song --> c
+
+    c -> warning : [Є попередження]
+    c --> choice_day : [Немає попереджень]
+
+    warning --> choice_day
+    warning -> [*]
+
+    choice_day --> choice_time
+    choice_time --> order_success
+
+    choice_day -> [*]
+    choice_time -> [*]
+    order_success -> [*]
+}
+
+
+state "Правила" as rules {
+    state "Замовлення" as r_order
+    state "Модерація" as r_moder
+    state "Плейлист" as r_play
+    state "Зворотній зв'язок" as r_feed
+
+    [*] --> r_order
+
+    r_order --> r_moder
+    r_order -> r_play
+    r_order -> r_feed
+
+    r_moder -> r_order
+    r_moder -> r_play
+    r_moder -> r_feed
+
+    r_play -> r_order
+    r_play -> r_moder
+    r_play -> r_feed
+
+    r_feed --> r_play
+    r_feed -> r_order
+    r_feed -> r_moder
+
+    r_feed --> [*]
+    r_order --> [*]
+    r_play --> [*]
+    r_moder --> [*]
+
+}
+
+state "Що грає?" as playlist {
+    state "Що грає зараз" as pl_now
+    state "Що буде грати" as pl_next
+    state "Історія замовлень" as pl_prev
+
+    [*] --> pl_now
+    pl_now --> pl_next
+    pl_now --> pl_prev
+
+    pl_next --> [*]
+    pl_prev --> [*]
+    pl_now --> [*]
+}
+
+state "Зворотній зв'язок" as feedback {
+    state "Ввести повідомлення" as fb_st
+    state "Повіомлення відправлено" as fb_ok
+
+    [*] --> fb_st
+    fb_st --> fb_ok
+    fb_ok --> [*]
+}
+
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+
+interface Player {
+    {abstract} + pause()
+    {abstract} + play()
+    {abstract} + next()
+    --
+    {abstract} + get_current_track()
+    --
+    {abstract} + set_volume(vol)
+    {abstract} + set_next_track(path)
+}
+
+package "Не використовується" <<Cloud>> {
+
+    class Radioboss implements Player {
+         + pause()
+         + play()
+         + next()
+        --
+         + get_current_track()
+        --
+         + set_volume(vol)
+         + set_next_track(path)
+    }
+}
+
+class Mopidy implements Player {
+     + pause()
+     + play()
+     + next()
+    --
+     + get_current_track()
+    --
+     + set_volume(vol)
+     + set_next_track(path)
+}
+
+@enduml

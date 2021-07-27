@@ -1,14 +1,12 @@
-import asyncio
+from itertools import islice
+from pathlib import Path
 
-from aiogram import types, Bot, Dispatcher
 from aiohttp import web
 
-from bot import DP
-from consts.config import WEBHOOK_PATH, RADIOBOSS_DATA
+from consts.config import RADIOBOSS_DATA
 from music import search_text
-from utils import events
+from .events import TRACK_BEGIN_EVENT
 
-APP = web.Application()
 ROUTES = web.RouteTableDef()
 
 
@@ -28,26 +26,28 @@ async def history_save(request):
     args = request.rel_url.query
     if args.get('pass') != RADIOBOSS_DATA[2]:
         return web.Response(text='neok')
-    fields = {
-        'artist': args.get('artist'),
-        'title': args.get('title'),
-        'casttitle': args.get('casttitle'),
-        'path': args.get('path'),
-    }
-    await events.send_history(fields)
+    from player import PlaylistItem
+    await TRACK_BEGIN_EVENT.notify(
+        PlaylistItem(
+            path=Path(args.get('path')),
+            performer=args.get('artist'),
+            title=args.get('title') or args.get('casttitle'),
+            duration=0
+        )
+    )
     return web.Response(text='ok')
 
 
-@ROUTES.post(WEBHOOK_PATH)
-async def webhook_handle(request):
-    update = await request.json()
-    update = types.Update(**update)
-
-    Bot.set_current(DP.bot)  # без этого не работает
-    Dispatcher.set_current(DP)
-    asyncio.create_task(DP.process_update(update))
-
-    return web.Response(text='ok')
-
-
-APP.add_routes(ROUTES)
+@ROUTES.get("/history")
+async def history_get(request):
+    from player import Broadcast
+    history = await Broadcast.get_player().get_history()
+    history = [
+        {
+            'performer': item.performer,
+            'title': item.title,
+            'start_time': str(item.start_time)
+        }
+        for item in islice(history, 5)
+    ]
+    return web.json_response(history)

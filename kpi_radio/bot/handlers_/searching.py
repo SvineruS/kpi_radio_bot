@@ -8,15 +8,15 @@ from aiogram import types, exceptions
 import music
 from bot.bot_utils import kb
 from consts import texts
-from utils import get_by
+from utils import utils
 
 
 async def search_audio(message: types.Message):
     await message.chat.do('upload_audio')
-    if not (audio := await music.search(message.text)):
+    if not (audios := await music.search(message.text)):
         return await message.answer(texts.SEARCH_FAILED, reply_markup=kb.START)
 
-    audio = audio[0]
+    audio = audios[0]
 
     try:
         await sent_audio(message, audio)
@@ -24,7 +24,7 @@ async def search_audio(message: types.Message):
         logging.error(f'send audio: {ex} {audio.url}')
         await message.answer(texts.ERROR, reply_markup=kb.START)
     except Exception as ex:
-        logging.warning(f"pls add exception {type(ex)}{ex} in except")
+        logging.exception(ex)
         await message.answer(texts.ERROR, reply_markup=kb.START)
 
 
@@ -61,8 +61,8 @@ async def sent_audio(message: types.Message, audio: Union[types.Audio, music.Aud
     elif isinstance(audio, music.AudioResult):  # аудио найденное ботом по названию
         file = await audio.download()
     else:
-        raise Exception("шо ты мне передал блядь ебаный рот")
-    name = get_by.get_audio_name(audio)
+        raise TypeError("шо ты мне передал блядь ебаный рот")
+    name = utils.get_audio_name(audio)
 
     bad_list = (
         (texts.BAD_ORDER_SHORT, audio.duration < 60),

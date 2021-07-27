@@ -19,7 +19,7 @@ async def playlist_now(message: types.Message):
     if not (broadcast := Broadcast.now()):
         return await message.answer(texts.PLAYLIST_NOW_NOTHING, reply_markup=kb.WHAT_PLAYING)
 
-    playback = [i if i else r'¯\_(ツ)_/¯' for i in await broadcast.get_prev_now_next()]
+    playback = [str(i) if i else r'¯\_(ツ)_/¯' for i in await broadcast.get_playback()]
     await message.answer(texts.PLAYLIST_NOW.format(*playback), reply_markup=kb.WHAT_PLAYING)
 
 
@@ -92,6 +92,6 @@ async def _get_playlist_text(broadcast: Broadcast) -> str:
         return name + "❗️Еще ничего не заказали"
 
     return '\n'.join([
-        f"🕖<b>{track.time_start.strftime('%H:%M:%S')}</b> {track.title}"
+        f"🕖<b>{track.start_time.strftime('%H:%M:%S')}</b> {track.title}"
         for track in pl[:10]
     ]) + ('\n<pre>   ...</pre>' if len(pl) > 10 else '')

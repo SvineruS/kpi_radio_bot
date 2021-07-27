@@ -1,0 +1,32 @@
+name: Push to dockerhub
+
+on:
+  push:
+    branches:
+      - master
+      - action
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image bot
+        run: docker build kpi_radio --tag svinerus/kpi_radio_bot:latest
+
+      - name: Build image mopidy
+        run: docker build mopidy --tag svinerus/mopidy:latest
+
+      - name: Docker log in
+        run: docker login -u svinerus -p ${{secrets.DOCKER_PASSWORD}}
+
+      - name: Push image bot
+        run: docker push svinerus/kpi_radio_bot:latest
+
+      - name: Push image mopidy
+        run: docker push svinerus/mopidy:latest

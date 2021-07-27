@@ -3,13 +3,14 @@ import json
 from consts.btns_text import CALLBACKS as CB
 
 
+# callbackdata пробел base, не база данных
 class _CallbackDataBase:
-    DATA: tuple = None
+    DATA_FIELDS: tuple
 
     def __init__(self, *args):
-        if len(args) != len(self.DATA):
-            raise Exception("Wrong callback data")
-        for i, k in enumerate(self.DATA):
+        if len(args) != len(self.DATA_FIELDS):
+            raise ValueError("Wrong callback data")
+        for i, k in enumerate(self.DATA_FIELDS):
             self.__setattr__(k, args[i])
         self.data = args
 
@@ -31,7 +32,7 @@ class _CallbackDataBase:
     def c(cls, action, data=()):
         action = ''.join(map(str, map(int, action)))
         attrs = {
-            'DATA': data,
+            'DATA_FIELDS': data,
             **{k: None for k in data}
         }
         return type(action, (cls, ), attrs)
