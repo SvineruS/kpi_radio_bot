@@ -41,7 +41,7 @@ PLAYER = getenv("PLAYER")
 # ip, port, password.   Узнать в радиобоссе->настройки->api
 RADIOBOSS_DATA = (
     getenv("RADIOBOSS_IP"),
-    int(getenv("RADIOBOSS_PORT")),
+    int(getenv("RADIOBOSS_PORT") or 0),
     getenv("RADIOBOSS_PASSWORD")
 )
 
