@@ -49,14 +49,9 @@ MOPIDY_URL = getenv("MOPIDY_URL")
 
 #
 
-HOST = getenv("HOST")
-PORT = int(getenv("PORT"))  # 443, 80, 88 or 8443 (port need to be 'open')
+WEBHOOK_URL = getenv("WEBHOOK_URL")
+PORT = int(getenv("PORT"))  # port for internal server
 
-SSL_CERT = PATH_STUFF / 'webhook_cert.pem'
-SSL_PRIV = PATH_STUFF / 'webhook_pkey.pem'
-
-WEBHOOK_PATH = '/webhook'
-WEBHOOK_URL = f"https://{HOST}:{PORT}{WEBHOOK_PATH}"
 
 #
 
