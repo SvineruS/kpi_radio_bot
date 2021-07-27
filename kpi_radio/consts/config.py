@@ -49,10 +49,10 @@ MOPIDY_URL = getenv("MOPIDY_URL")
 
 #
 
-WEBHOOK_URL = getenv("WEBHOOK_URL")
+HOST = getenv("HOST")
 PORT = int(getenv("PORT"))  # port for internal server
 
-
+WEBHOOK_URL = f"https://{HOST}/webhook"
 #
 
 BOT = Bot(token=TOKEN, parse_mode='HTML')

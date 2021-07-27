@@ -6,7 +6,7 @@ services:
       - 6000:6000
     volumes:
     - ./stuff:/stuff
-    - ~/Music:/music
+    - /media/data/MUSIC/:/music
     depends_on:
       - mopidy
   mopidy:
@@ -14,7 +14,7 @@ services:
     ports:
       - 6680:6680
     volumes:
-      - ~/Music:/music
+      - /media/data/MUSIC/:/music
       - /tmp/pa:/tmp/pa
     environment:
       - PULSE_SERVER=unix:/tmp/pa/pulseaudio.socket
