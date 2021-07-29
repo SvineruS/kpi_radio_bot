@@ -45,7 +45,7 @@ class Tracklist(BaseModel):
                            cls.position.between(pos, pos + 1)) \
                     .order_by(cls.position.asc()).limit(1)
                 if new_pos:
-                    return new_pos[0].position - Decimal(10 ** (_POSITION_EXTRA_SPACE * -1))
+                    return new_pos[0].position + Decimal(10 ** -_POSITION_EXTRA_SPACE)
                 return Decimal(pos)
 
         assert track.track_info is not None, "Local playlist need track info!"
