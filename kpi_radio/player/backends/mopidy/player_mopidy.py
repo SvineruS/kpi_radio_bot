@@ -44,9 +44,12 @@ class PlayerMopidy(PlayerBase):
             next_ = await self._CLIENT.tracklist.filter({'tlid': [tlid]})
             return next_[0].track
 
+        current = await self._CLIENT.playback.get_current_tl_track()
+        current = getattr(current, 'track', None)
+
         res = [
             await _get_prev(),
-            (await self._CLIENT.playback.get_current_tl_track()).track,
+            current,
             await _get_next()
         ]
 
