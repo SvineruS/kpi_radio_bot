@@ -117,7 +117,7 @@ class PlayerMopidy(PlayerBase):
             performer=artist,
             title=track.name,
             path=Path(track.uri[7:]),  # remove 'file://' prefix
-            duration=track.length // 1000,
+            duration=(track.length or 3*60*1000) // 1000,
             start_time=start_time
         )
 
