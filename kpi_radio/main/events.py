@@ -37,6 +37,7 @@ async def broadcast_begin(day, time):
     await Broadcast(day, time).play()
     await utils.send_broadcast_begin(time)
     await Broadcast.get_player().set_volume(100)  # включить музло на перерыве
+    await Broadcast.get_player().play()
 
 
 @BROADCAST_END_EVENT.handler
