@@ -51,7 +51,7 @@ async def order_choose_day() -> InlineKeyboardMarkup:
     if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
         btns.append(_ikb(NEXT_DAYS[-1], cb.CBOrderTime(today, broadcast_now.num)))
 
-    if DateTime.now().hour < 22:  # кнопка сегодня
+    if Broadcast.get_closest().is_today():  # кнопка сегодня
         btns.append(_ikb(NEXT_DAYS[0], cb.CBOrderDay(today)))
 
     for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
