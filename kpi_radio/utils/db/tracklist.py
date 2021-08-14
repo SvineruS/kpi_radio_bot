@@ -16,7 +16,7 @@ _POSITION_MAX = 1 - _POSITION_D
 
 class Tracklist(BaseModel):
     track_path = CharField(max_length=750)
-    track_performer = CharField(max_length=200)
+    track_performer = CharField(max_length=200, null=True)
     track_title = CharField(max_length=200)
     track_duration = IntegerField()
 
