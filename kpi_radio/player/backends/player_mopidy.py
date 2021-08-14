@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import timedelta
 from pathlib import Path
@@ -10,21 +11,31 @@ from typing import List, Optional, Iterable
 from mopidy import models
 from mopidy_async_client import MopidyClient  # годная либа годный автор всем советую
 
+from main import events
 from utils import DateTime
-from .._base import PlayerBase, PlaylistItem, Playlist
+from .playlist import PlaylistItem, Playlist
 
 
-class PlayerMopidy(PlayerBase):
+class PlayerMopidy:
     def __init__(self, **kwargs):
         self._CLIENT = MopidyClient(parse_results=True, **kwargs)
 
     async def connect(self):
-        try:
-            await self._CLIENT.connect()
-        except ConnectionRefusedError:
+        for _ in range(10):
+            try:
+                await self._CLIENT.connect()
+                break
+            except:
+                logging.exception("Failed connect to mopidy")
+                await asyncio.sleep(2)
+        else:
             logging.exception("Failed connect to mopidy")
             exit(228)
+
         await self._CLIENT.tracklist.set_consume(True)
+
+        self.bind_event("playback_state_changed", playback_state_changed)
+        self.bind_event("track_playback_started", track_playback_started)
 
     async def set_volume(self, volume: int):
         return await self._CLIENT.mixer.set_volume(volume)
@@ -83,9 +94,9 @@ class PlayerMopidy(PlayerBase):
         pass
 
     async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
-        if position == -2:
+        if position == -2:  # после текущего
             position = (await self._CLIENT.tracklist.index() or 0) + 1
-        if position == -1:
+        if position == -1:  # в конец
             position = None
         await self._CLIENT.tracklist.add(uris=[_path_to_uri(track.path)], at_position=position)
         pl = await self.get_playlist()
@@ -125,6 +136,19 @@ class PlayerMopidy(PlayerBase):
             duration=(track.length or 3*60*1000) // 1000,
             start_time=start_time
         )
+
+
+# events
+
+async def playback_state_changed(data):
+    # state = stopped => плейлист пустой
+    if data == {'old_state': 'playing', 'new_state': 'stopped'}:
+        await events.ORDERS_QUEUE_EMPTY_EVENT.notify()
+
+
+async def track_playback_started(data):
+    track = PlayerMopidy.internal_to_playlist_item(data['tl_track'].track)
+    await events.TRACK_BEGIN_EVENT.notify(track)
 
 
 def _path_to_uri(path: Path):

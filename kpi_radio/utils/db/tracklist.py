@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from peewee import IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey
 
-from player import PlaylistItem, Broadcast
 from ._connector import BaseModel
+
+if TYPE_CHECKING:
+    from player import PlaylistItem, Broadcast
 
 
 _POSITION_EXTRA_SPACE = 5

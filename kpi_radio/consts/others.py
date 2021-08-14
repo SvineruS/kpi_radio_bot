@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from consts.config import IS_TEST_ENV, PATH_ROOT
+
 HISTORY_CHANNEL_LINK = 'https://t.me/rkpi_music'
 
 BAD_WORDS = [
@@ -67,7 +69,7 @@ BROADCAST_TIMES = BROADCAST_TIMES_VACATION
 
 
 class PATHS:
-    _BASE = Path('/music')
+    _BASE = Path('/music') if not IS_TEST_ENV else PATH_ROOT / 'music'
     ORDERS = _BASE / 'orders'  # сюда бот кидает заказанные песни
     ARCHIVE = _BASE / 'archive'  # сюда песни перемещаются каждую ночь с папки заказов
     # ETHER = _BASE / 'Эфир'  # тут песни выбранные радистами, не используется

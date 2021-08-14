@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from consts import config
 from utils import db, DateTime
-from .._base import LocalPlaylistProviderBase, Playlist, PlaylistItem
+from .playlist import Playlist, PlaylistItem
 
 
 def _get_start_time(prev_item: PlaylistItem = None):
@@ -14,8 +14,11 @@ def _get_start_time(prev_item: PlaylistItem = None):
     return DateTime.now()
 
 
-class DBPlaylistProvider(LocalPlaylistProviderBase):
+class DBPlaylistProvider:
     PATH_BASE = config.PATH_STUFF / 'playlists'
+
+    def __init__(self, broadcast):
+        self._broadcast = broadcast
 
     async def get_playlist(self) -> Playlist:
         pl_ = db.Tracklist.get_by_broadcast(*self._broadcast)
@@ -28,9 +31,9 @@ class DBPlaylistProvider(LocalPlaylistProviderBase):
         return Playlist(pl)
 
     async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
-        if position == -2:
+        if position == -2:  # после текущего
             position = 0
-        if position == -1:
+        if position == -1:  # в конец
             position = None
         db.Tracklist.add(position, track, self._broadcast)
         pl = await self.get_playlist()

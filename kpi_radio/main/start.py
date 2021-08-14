@@ -6,7 +6,6 @@ from main import server, events
 
 
 def start():
-    _register_player_backend(config.PLAYER)
     on_startup = [lambda _: events.STARTUP_EVENT()]
     on_shutdown = [lambda _: events.SHUTDOWN_EVENT()]
 
@@ -27,44 +26,3 @@ def start_server(on_startup, on_shutdown, ssl_context=None, port=config.PORT):
     app.on_startup.extend(on_startup)
     app.on_shutdown.extend(on_shutdown)
     web.run_app(app, host='0.0.0.0', port=port, ssl_context=ssl_context)
-
-
-def _register_player_backend(backend):
-    if backend == 'MOPIDY':
-        from player.backends.mopidy import PlayerMopidy
-        player_ = PlayerMopidy(url=config.MOPIDY_URL)
-
-        async def playback_state_changed(data):
-            # state = stopped => плейлист пустой
-            if data == {'old_state': 'playing', 'new_state': 'stopped'}:
-                await events.ORDERS_QUEUE_EMPTY_EVENT.notify()
-
-        async def track_playback_started(data):
-            track = PlayerMopidy.internal_to_playlist_item(data['tl_track'].track)
-            await events.TRACK_BEGIN_EVENT.notify(track)
-
-        player_.bind_event("playback_state_changed", playback_state_changed)
-        player_.bind_event("track_playback_started", track_playback_started)
-        events.STARTUP_EVENT.register(player_.connect)
-        events.SHUTDOWN_EVENT.register(player_.get_client().disconnect)
-
-    elif backend == 'RADIOBOSS':
-        from player.backends.radioboss import PlayerRadioboss
-        from bot.handlers_ import utils
-
-        player_ = PlayerRadioboss()
-
-        async def move_to_archive(day):
-            from player.player_utils import archive
-            archive.move_to_archive(day)
-
-        events.BROADCAST_END_EVENT.register(utils.perezaklad)
-        events.DAY_END_EVENT.register(move_to_archive)
-
-    else:
-        raise ValueError(f"шо за хуйня такая {backend}")
-
-    from player.backends import Backend, db
-    local_playlist = db.DBPlaylistProvider
-
-    Backend.register_backends(player_, local_playlist)

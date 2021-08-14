@@ -1,23 +1,21 @@
-from typing import Type
-
-from ._base import PlayerBase, LocalPlaylistProviderBase, Playlist, PlaylistItem
+from consts import config
+from .playlist import Playlist, PlaylistItem
 
 
 class Backend:
-    _player: PlayerBase
-    _local_playlist: Type[LocalPlaylistProviderBase]
+    from .player_mopidy import PlayerMopidy
+    from .playlist_db import DBPlaylistProvider
+
+    _local_playlist = DBPlaylistProvider
+    _player = PlayerMopidy(url=config.MOPIDY_URL)
 
     @classmethod
-    def get_player(cls) -> PlayerBase:
+    def get_player(cls):
         return cls._player
 
     @classmethod
-    def _get_local_playlist_provider(cls) -> Type[LocalPlaylistProviderBase]:
+    def _get_local_playlist_provider(cls):
         return cls._local_playlist
-
-    @classmethod
-    def register_backends(cls, player: PlayerBase, local_playlist: Type[LocalPlaylistProviderBase]):
-        cls._player, cls._local_playlist = player, local_playlist
 
 
 __all__ = [

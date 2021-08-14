@@ -49,10 +49,16 @@ async def broadcast_end(*_):
 async def start_up():
     from bot.handlers_ import utils
 
+    await Broadcast.get_player().connect()
     asyncio.create_task(start_scheduler())
 
     if not config.IS_TEST_ENV:
         await utils.send_startup_message()
+
+
+@SHUTDOWN_EVENT.handler
+async def shut_down():
+    await Broadcast.get_player().get_client().disconnect()
 
 
 @DAY_END_EVENT.handler
