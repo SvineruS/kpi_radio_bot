@@ -10,6 +10,8 @@ from ._connector import BaseModel
 
 
 _POSITION_EXTRA_SPACE = 5
+_POSITION_D = Decimal(10 ** -_POSITION_EXTRA_SPACE)
+_POSITION_MAX = 1 - _POSITION_D
 
 
 class Tracklist(BaseModel):
@@ -31,22 +33,23 @@ class Tracklist(BaseModel):
 
         def _get_available_position(pos: Optional[int] = None) -> Decimal:
             """Кароч позиция это Decimal, где целая часть - то, что приходит из вне, а
-            дробная часть - меняется для устранения "коллизий" оставляя порядок"""
-            if pos is None:
+            дробная часть - меняется для устранения "коллизий" оставляя порядок.
+            Новые значения вставляются с дробной частью 0.9999 что бы можно было вставить перед ним 0.9998 и т.д. """
+            if pos is None:  # вставить после всех
                 new_pos = cls.select(cls.position) \
                     .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num) \
                     .order_by(cls.position.desc()).limit(1)
-                if new_pos:
-                    return new_pos[0].position
-                return Decimal(0)
-            else:
+                if new_pos:  # если в бд что то есть - вставляем после него
+                    return int(new_pos[0].position) + 1 + _POSITION_MAX
+                return Decimal(0 + _POSITION_MAX)  # иначе вставляем на 0 позицию
+            else:  # вставить на определенную позицию, оттеснив всех ниже
                 new_pos = cls.select(cls.position) \
                     .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num,
-                           cls.position.between(pos, pos + 1)) \
+                           cls.position.between(pos, pos + _POSITION_MAX)) \
                     .order_by(cls.position.asc()).limit(1)
-                if new_pos:
-                    return new_pos[0].position + Decimal(10 ** -_POSITION_EXTRA_SPACE)
-                return Decimal(pos)
+                if new_pos:  # если в бд что то есть вставляем перед ним
+                    return new_pos[0].position - _POSITION_D
+                return Decimal(pos + _POSITION_MAX)  # иначе вставляем на эту позицию
 
         assert track.track_info is not None, "Local playlist need track info!"
         cls.insert(
