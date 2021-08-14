@@ -7,8 +7,10 @@ services:
     volumes:
     - ./stuff:/stuff
     - /media/data/MUSIC/:/music
+    - /etc/localtime:/etc/localtime:ro # sync time
     depends_on:
       - mopidy
+
   mopidy:
     build: ./mopidy/
     ports:
