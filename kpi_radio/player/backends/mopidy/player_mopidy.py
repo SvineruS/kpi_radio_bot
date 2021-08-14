@@ -30,7 +30,7 @@ class PlayerMopidy(PlayerBase):
         return await self._CLIENT.mixer.set_volume(volume)
 
     async def next_track(self):
-        return await self._CLIENT.playback.next()
+        await self._CLIENT.playback.next()
 
     async def set_next_track(self, pos: int):
         new_pos = await self._CLIENT.tracklist.index()

@@ -97,8 +97,7 @@ async def get_log(message: types.Message):
 
 
 async def next_track(message: types.Message):
-    if not await Broadcast.get_player().next_track():
-        await message.answer('хуй знает, не работает')
+    await Broadcast.get_player().next_track()
     prev, now, _ = await Broadcast.now().get_playback()
     await message.answer(f'<i>{prev} ➡ {now}</i>')
 
