@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 from pathlib import Path
 from typing import List, Optional, Iterable
@@ -18,7 +19,11 @@ class PlayerMopidy(PlayerBase):
         self._CLIENT = MopidyClient(parse_results=True, **kwargs)
 
     async def connect(self):
-        await self._CLIENT.connect()
+        try:
+            await self._CLIENT.connect()
+        except ConnectionRefusedError:
+            logging.exception("Failed connect to mopidy")
+            exit(228)
         await self._CLIENT.tracklist.set_consume(True)
 
     async def set_volume(self, volume: int):
