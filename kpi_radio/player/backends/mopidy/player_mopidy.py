@@ -38,9 +38,9 @@ class PlayerMopidy(PlayerBase):
 
     async def get_playback(self) -> List[Optional[PlaylistItem]]:
         async def _get_prev():
-            if not (history := await self._CLIENT.history.get_history()):
+            if not (history := await self._CLIENT.history.get_history()) or len(history) < 2:
                 return None
-            prev = await self._CLIENT.library.lookup(uris=[history[0][1].uri])
+            prev = await self._CLIENT.library.lookup(uris=[history[1][1].uri])
             return list(prev.values())[0][0]
 
         async def _get_next():
