@@ -1,6 +1,7 @@
 """Обработка ивентов (начало перерыва, заиграл трек, ...)"""
 
 import asyncio
+
 import aioschedule
 
 from consts import config, others
@@ -36,20 +37,21 @@ async def broadcast_begin(day, time):
     from bot.handlers_ import utils
     await Broadcast(day, time).play()
     await utils.send_broadcast_begin(time)
-    await Broadcast.get_player().set_volume(100)  # включить музло на перерыве
-    await Broadcast.get_player().play()
+    await Broadcast.player.set_volume(100)  # включить музло на перерыве
 
 
 @BROADCAST_END_EVENT.handler
 async def broadcast_end(*_):
-    await Broadcast.get_player().set_volume(0)  # выключить музло на паре
+    await Broadcast.player.set_volume(0)  # выключить музло на паре
 
 
 @STARTUP_EVENT.handler
 async def start_up():
     from bot.handlers_ import utils
 
-    await Broadcast.get_player().connect()
+    await asyncio.sleep(5)  # wait for mopidy
+    await Broadcast.player.connect()
+    
     asyncio.create_task(start_scheduler())
 
     if not config.IS_TEST_ENV:
@@ -58,19 +60,19 @@ async def start_up():
 
 @SHUTDOWN_EVENT.handler
 async def shut_down():
-    await Broadcast.get_player().get_client().disconnect()
+    await Broadcast.player.get_client().disconnect()
 
 
 @DAY_END_EVENT.handler
 async def day_end(day):
     for b in Broadcast.ALL:
         if b.day == day:
-            await b.get_local_playlist().clear()
+            await b.playlist.clear()
 
 
 @ORDERS_QUEUE_EMPTY_EVENT.handler
 async def orders_queue_empty():
-    await Broadcast.play_from_archive()
+    await Broadcast.now().play()
 
 
 async def start_scheduler():

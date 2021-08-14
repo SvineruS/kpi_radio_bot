@@ -36,15 +36,6 @@ HISTORY_CHAT_ID = int(getenv("HISTORY_CHAT_ID"))  # Канал истории
 
 #
 
-PLAYER = getenv("PLAYER")
-
-# ip, port, password.   Узнать в радиобоссе->настройки->api
-RADIOBOSS_DATA = (
-    getenv("RADIOBOSS_IP"),
-    int(getenv("RADIOBOSS_PORT") or 0),
-    getenv("RADIOBOSS_PASSWORD")
-)
-
 MOPIDY_URL = getenv("MOPIDY_URL")
 
 #

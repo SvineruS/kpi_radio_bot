@@ -37,7 +37,7 @@ async def ban(message: types.Message):
 async def set_volume(message: types.Message):
     if (volume := _get_volume_from_message(message)) is None:
         return await message.reply(f'Головонька опухла! Громкость - число от 0 до 100, а не <code>{volume}</code>')
-    await Broadcast.get_player().set_volume(volume)
+    await Broadcast.player.set_volume(volume)
     await message.reply(f'Громкость выставлена в {volume}!')
 
 
@@ -77,7 +77,7 @@ async def playlist_move(query: types.CallbackQuery, track_index, track_start_tim
     elif _in_playback[0] == pl[1].index_:
         await query.answer("Она сейчас играет -_-")
     else:
-        if await Broadcast.get_player().set_next_track(track_index):
+        if await Broadcast.player.set_next_track(track_index):
             pl.insert(1, pl.pop(_in_playback[0]))
             await query.answer("Успешно")
         else:
@@ -97,7 +97,7 @@ async def get_log(message: types.Message):
 
 
 async def next_track(message: types.Message):
-    await Broadcast.get_player().next_track()
+    await Broadcast.player.next_track()
     prev, now, _ = await Broadcast.now().get_playback()
     await message.answer(f'<i>{prev} ➡ {now}</i>')
 

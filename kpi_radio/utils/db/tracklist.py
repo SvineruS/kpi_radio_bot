@@ -64,7 +64,7 @@ class Tracklist(BaseModel):
         ).on_conflict_replace().execute()
 
     @classmethod
-    def get_by_broadcast(cls, day, num) -> List[Tracklist]:
+    def get_by_broadcast(cls, day, num):
         return cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num).order_by(cls.position.asc())
 
     @classmethod

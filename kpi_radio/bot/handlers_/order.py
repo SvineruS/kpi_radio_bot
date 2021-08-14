@@ -10,7 +10,7 @@ import music
 from bot import handlers_
 from bot.bot_utils import communication, kb, stats, id_to_hashtag, small_utils
 from consts import texts, others, config, BOT
-from player import Broadcast, exceptions as player_exceptions, PlaylistItem
+from player import Broadcast, Exceptions, PlaylistItem
 from utils import utils, db, DateTime
 
 
@@ -20,7 +20,7 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
     if user_db.is_banned():
         return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to()))
 
-    if broadcast.num != 5 and len((await broadcast.get_local_playlist().get_playlist()).find_by_user_id(user.id)) > 5:
+    if broadcast.num != 5 and len((await broadcast.playlist.get_playlist()).find_by_user_id(user.id)) > 5:
         return await query.message.answer(texts.ORDER_ERR_TOOMUCH)
 
     try:
@@ -73,8 +73,7 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
     user = utils.get_user_from_entity(query.message)
     moder = query.from_user
     admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
-    track = PlaylistItem.from_tg(query.message.audio, broadcast.path)\
-                        .add_track_info(user.id, user.first_name, query.message.message_id)
+    track = PlaylistItem.from_tg(query.message.audio).add_track_info(user.id, user.first_name, query.message.message_id)
 
     try:
         await query.message.edit_caption(admin_text, reply_markup=kb.admin_unmoderate(broadcast, status))
@@ -93,10 +92,10 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
         new_track = await broadcast.add_track(track,
                                               position=-2 if status == kb.STATUS.NOW else -1,
                                               audio=query.message.audio)
-    except player_exceptions.DuplicateException:
+    except Exceptions.DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
         msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
-    except player_exceptions.NotEnoughSpace:
+    except Exceptions.NotEnoughSpaceException:
         when_playing = 'не успел :('
         msg_to_user = None
         communication.cache_add(await BOT.send_audio(

@@ -67,9 +67,4 @@ BROADCAST_TIMES_VACATION = {
 
 BROADCAST_TIMES = BROADCAST_TIMES_VACATION
 
-
-class PATHS:
-    _BASE = Path('/music') if not IS_TEST_ENV else PATH_ROOT / 'music'
-    ORDERS = _BASE / 'orders'  # сюда бот кидает заказанные песни
-    ARCHIVE = _BASE / 'archive'  # сюда песни перемещаются каждую ночь с папки заказов
-    # ETHER = _BASE / 'Эфир'  # тут песни выбранные радистами, не используется
+PATH_MUSIC = Path('/music') if not IS_TEST_ENV else PATH_ROOT / 'music'

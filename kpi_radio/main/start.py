@@ -11,8 +11,8 @@ def start():
 
     if config.IS_TEST_ENV:
         from utils import DateTime
-        DateTime.fake(2021, 1, 6, 8, 15, 0)
-        # events.STARTUP_EVENT.register(lambda: events.BROADCAST_BEGIN_EVENT.notify(2, 0))
+        DateTime.fake(2021, 1, 6, 9, 15, 0)
+        events.STARTUP_EVENT.register(lambda: events.BROADCAST_BEGIN_EVENT.notify(2, 0))
         bot.start_longpoll(on_startup=on_startup, on_shutdown=on_shutdown)
         # start_server(on_startup=on_startup, on_shutdown=on_shutdown, port=8080)
     else:
