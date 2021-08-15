@@ -135,7 +135,7 @@ async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, sta
         return  # если не отредачилось значит кнопка уже отработалась
 
     if status != kb.STATUS.REJECT:  # если заказ был принят а щас отменяют
-        await broadcast.remove_track(query.message.audio)
+        await broadcast.remove_track(PlaylistItem.from_tg(query.message.audio))
 
 
 #

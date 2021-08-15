@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import timedelta
 from pathlib import Path
 from typing import Optional, Iterable
@@ -30,8 +31,10 @@ class PlayerMopidy:
     async def get_state(self):
         return await self._CLIENT.playback.get_state()
 
-    async def play(self):
-        return await self._CLIENT.playback.play()
+    async def play(self) -> bool:
+        await self._CLIENT.playback.play()
+        await asyncio.sleep(0.2)
+        return await self._CLIENT.playback.get_current_track() is not None
 
     async def set_volume(self, volume: int):
         return await self._CLIENT.mixer.set_volume(volume)

@@ -45,10 +45,9 @@ class Broadcast(BroadcastGetters):
         await audio.download(track.path)
         return await self.playlist.add_track(track, position)
 
-    async def remove_track(self, tg_track):
-        path = PlaylistItem.from_tg(tg_track).path
-        path.unlink(missing_ok=True)
-        await self.playlist.remove_track(path)
+    async def remove_track(self, track: PlaylistItem):
+        track.path.unlink(missing_ok=True)
+        await self.playlist.remove_track(track.path)
 
     async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
         return await self.playlist.remove_track(path)
@@ -59,7 +58,12 @@ class Broadcast(BroadcastGetters):
         track = await self.playlist.get_next_track() or get_random_from_archive()
         if track:
             await self.player.add_track(track)
-            await self.player.play()
+            if not await self.player.play():
+                logging.error("Failed to play " + str(track.path))
+                await self.remove_track(track)
+                await self.play()
+            else:
+                logging.info("Play" + str(track.path))
         else:
             logging.warning('No tracks to play')
 
