@@ -1,5 +1,4 @@
 FROM ubuntu
-WORKDIR .
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt update && apt install -y wget gnupg2 gstreamer1.0-libav pulseaudio python3 python3-pip \
     && wget -q -O - https://apt.mopidy.com/mopidy.gpg | apt-key add - \
