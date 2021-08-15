@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Optional
 
-from consts import config
+from consts import config, others
 from utils import db, DateTime
 from .playlist import Playlist, PlaylistItem
 
@@ -59,7 +59,7 @@ def internal_to_playlist_item(track: db.Tracklist, start_time=None) -> PlaylistI
     return PlaylistItem(
         performer=track.track_performer,
         title=track.track_title,
-        path=Path(track.track_path),
+        path=others.PATH_MUSIC / track.track_path,
         duration=track.track_duration,
         start_time=start_time
     ).add_track_info(

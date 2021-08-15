@@ -56,7 +56,7 @@ class Tracklist(BaseModel):
         assert track.track_info is not None, "Local playlist need track info!"
         cls.insert(
             position=_get_available_position(position),
-            track_path=track.path, track_performer=track.performer,
+            track_path=track.path.name, track_performer=track.performer,
             track_title=track.title, track_duration=track.duration,
             info_user_id=track.track_info.user_id, info_user_name=track.track_info.user_name,
             info_message_id=track.track_info.moderation_id,
@@ -69,7 +69,7 @@ class Tracklist(BaseModel):
 
     @classmethod
     def get_track_by_path(cls, day, num, path) -> Optional[Tracklist]:
-        res = cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num, cls.track_path == path)
+        res = cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num, cls.track_path == path.name)
         return res[0] if res else None
 
     @classmethod
