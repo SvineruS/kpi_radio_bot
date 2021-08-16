@@ -1,5 +1,5 @@
 """Обработка действий админов"""
-
+import asyncio
 import io
 import os
 from contextlib import suppress
@@ -98,6 +98,7 @@ async def get_log(message: types.Message):
 
 async def next_track(message: types.Message):
     await Broadcast.player.next_track()
+    await asyncio.sleep(0.2)
     prev, now, _ = await Broadcast.now().get_playback()
     await message.answer(f'<i>{prev} ➡ {now}</i>')
 
