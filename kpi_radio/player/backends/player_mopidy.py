@@ -19,9 +19,8 @@ class PlayerMopidy:
     def __init__(self, **kwargs):
         self._CLIENT = MopidyClient(parse_results=True, **kwargs)
 
-        self._CLIENT.listener.bind("track_playback_ended", lambda _: events.ORDERS_QUEUE_EMPTY_EVENT.notify())
-        self._CLIENT.listener.bind("track_playback_started", lambda data:
-                                   events.TRACK_BEGIN_EVENT.notify(_internal_to_playlist_item(data['tl_track'].track)))
+        self._CLIENT.listener.bind("playback_state_changed", playback_state_changed)
+        self._CLIENT.listener.bind("track_playback_started", track_playback_started)
 
     async def connect(self):
         await self._CLIENT.connect()
@@ -87,6 +86,18 @@ class PlayerMopidy:
 
     def get_client(self):
         return self._CLIENT
+
+
+# events
+
+async def playback_state_changed(data):
+    if data == {'old_state': 'playing', 'new_state': 'stopped'}:    # state = stopped => плейлист пустой
+        await events.ORDERS_QUEUE_EMPTY_EVENT.notify()
+
+
+async def track_playback_started(data):
+    track = _internal_to_playlist_item(data['tl_track'].track)
+    await events.TRACK_BEGIN_EVENT.notify(track)
 
 
 # utils
