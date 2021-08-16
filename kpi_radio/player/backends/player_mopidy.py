@@ -30,8 +30,9 @@ class PlayerMopidy:
     #
 
     async def play(self) -> bool:
-        await self._CLIENT.playback.play()
-        await asyncio.sleep(0.2)
+        if self._CLIENT.playback.get_state() != 'playing':
+            await self._CLIENT.playback.play()
+            await asyncio.sleep(0.2)
         return await self._CLIENT.playback.get_current_track() is not None
 
     async def set_volume(self, volume: int):

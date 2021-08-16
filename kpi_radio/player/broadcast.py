@@ -63,7 +63,7 @@ class Broadcast(BroadcastGetters):
                 await self.remove_track(track)
                 await self.play()
             else:
-                logging.info("Play" + str(track.path))
+                logging.info("Play " + str(track.path))
         else:
             logging.warning('No tracks to play')
 
