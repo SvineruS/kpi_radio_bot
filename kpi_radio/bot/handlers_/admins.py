@@ -1,7 +1,7 @@
 """Обработка действий админов"""
 import asyncio
 import io
-import os
+import subprocess
 from contextlib import suppress
 from time import time
 from typing import Tuple, Optional
@@ -104,8 +104,13 @@ async def next_track(message: types.Message):
 
 
 async def update(message: types.Message):
-    await message.answer('Ребутаюсь..')
-    os.system(rf'cmd.exe /C start {config.PATH_ROOT}\\update.bat')
+    # todo пулить с докерхаба
+    cmd = "docker-compose up --build --force-recreate --no-deps -d " + \
+        ("" if "all" in message.get_args() else "kpi_radio_bot")
+    msg = await message.reply("обновляюсь...")
+    git = subprocess.run("git pull", shell=True, text=True, stdout=subprocess.PIPE)
+    await msg.edit_text(f"обновился, ребутаюсь...\n{git.stdout}")
+    subprocess.run(cmd, shell=True)
 
 
 #
