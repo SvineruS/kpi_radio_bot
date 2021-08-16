@@ -33,10 +33,6 @@ def register_handlers(dp):
     async def next_handler(message: types.Message):
         await handlers_.admins.next_track(message)
 
-    @dp.message_handler(commands=['update'], admins_chat=True)
-    async def update_handler(message: types.Message):
-        await handlers_.admins.update(message)
-
     @dp.message_handler(commands=['ban'], admins_chat=True)
     async def ban_handler(message: types.Message):
         await handlers_.admins.ban(message)

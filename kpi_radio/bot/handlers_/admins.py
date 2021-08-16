@@ -102,17 +102,6 @@ async def next_track(message: types.Message):
     prev, now, _ = await Broadcast.now().get_playback()
     await message.answer(f'<i>{prev} ➡ {now}</i>')
 
-
-async def update(message: types.Message):
-    # todo пулить с докерхаба
-    cmd = "docker-compose up --build --force-recreate --no-deps -d " + \
-        ("" if "all" in message.get_args() else "kpi_radio_bot")
-    msg = await message.reply("обновляюсь...")
-    git = subprocess.run("git pull", shell=True, text=True, stdout=subprocess.PIPE)
-    await msg.edit_text(f"обновился, ребутаюсь...\n{git.stdout}")
-    subprocess.run(cmd, shell=True)
-
-
 #
 
 
