@@ -53,9 +53,7 @@ class Broadcast(BroadcastGetters):
         return await self.playlist.remove_track(path)
 
     async def play(self):
-        if not self.is_now():
-            return
-        track = await self.playlist.get_next_track() or get_random_from_archive()
+        track = (await self.playlist.get_next_track() if self.is_now() else None) or get_random_from_archive()
         if track:
             await self.player.add_track(track)
             if not await self.player.play():
