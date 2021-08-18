@@ -35,7 +35,7 @@ async def track_begin(track: PlaylistItem):
 @BROADCAST_BEGIN_EVENT.handler
 async def broadcast_begin(day, time):
     from bot.handlers_ import utils
-    await Broadcast(day, time).play()
+    await Broadcast.play(Broadcast(day, time))
     await utils.send_broadcast_begin(time)
     await Broadcast.player.set_volume(100)  # включить музло на перерыве
 
@@ -72,7 +72,7 @@ async def day_end(day):
 
 @ORDERS_QUEUE_EMPTY_EVENT.handler
 async def orders_queue_empty():
-    await Broadcast.now().play()
+    await Broadcast.play(Broadcast.now())
 
 
 async def start_scheduler():

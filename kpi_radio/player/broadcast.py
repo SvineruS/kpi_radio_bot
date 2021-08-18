@@ -42,7 +42,9 @@ class Broadcast(BroadcastGetters):
         if await self.get_free_time() < track.duration:
             raise Exceptions.NotEnoughSpaceException()
 
-        await audio.download(track.path)
+        if not track.path.exists():
+            await audio.download(track.path)
+
         return await self.playlist.add_track(track, position)
 
     async def remove_track(self, track: PlaylistItem):
@@ -52,18 +54,20 @@ class Broadcast(BroadcastGetters):
     async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
         return await self.playlist.remove_track(path)
 
-    async def play(self):
-        track = (await self.playlist.get_next_track() if self.is_now() else None) or get_random_from_archive()
-        if track:
-            await self.player.add_track(track)
-            if not await self.player.play():
-                logging.error("Failed to play " + str(track.path))
-                await self.remove_track(track)
-                await self.play()
-            else:
-                logging.info("Play " + str(track.path))
-        else:
-            logging.warning('No tracks to play')
+    @classmethod
+    async def play(cls, broadcast=None):
+        track = (await broadcast.playlist.get_next_track() if broadcast else None) or get_random_from_archive()
+        if not track:
+            return logging.warning('No tracks to play')
+
+        await cls.player.add_track(track)
+        if await cls.player.play():
+            return logging.info("Play " + str(track.path))
+
+        logging.error("Failed to play " + str(track.path))
+        if broadcast:
+            await broadcast.remove_track(track)
+        await cls.play()
 
 
 Broadcast.ALL = [Broadcast(day, num) for day, _num in others.BROADCAST_TIMES.items() for num in _num]
