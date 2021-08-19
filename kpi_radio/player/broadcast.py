@@ -47,8 +47,9 @@ class Broadcast(BroadcastGetters):
 
         return await self.playlist.add_track(track, position)
 
-    async def remove_track(self, track: PlaylistItem):
-        track.path.unlink(missing_ok=True)
+    async def remove_track(self, track: PlaylistItem, remove_file=True):
+        if remove_file:
+            track.path.unlink(missing_ok=True)
         await self.playlist.remove_track(track.path)
 
     async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
@@ -66,7 +67,7 @@ class Broadcast(BroadcastGetters):
 
         logging.error("Failed to play " + str(track.path))
         if broadcast:
-            await broadcast.remove_track(track)
+            await broadcast.remove_track(track, remove_file=False)
         await cls.play()
 
 

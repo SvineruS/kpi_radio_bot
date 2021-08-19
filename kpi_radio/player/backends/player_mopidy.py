@@ -29,9 +29,9 @@ class PlayerMopidy:
     #
 
     async def play(self) -> bool:
-        if self._CLIENT.playback.get_state() != 'playing':
+        if await self._CLIENT.playback.get_state() != 'playing':
             await self._CLIENT.playback.play()
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.3)
         return await self._CLIENT.playback.get_current_track() is not None
 
     async def set_volume(self, volume: int):
@@ -79,6 +79,7 @@ class PlayerMopidy:
         if track := await self.get_current_track():
             return DateTime.now() + timedelta(seconds=track.duration) - \
                    timedelta(milliseconds=await self._CLIENT.playback.get_time_position())
+        return DateTime.now()
 
     async def get_history(self) -> Iterable[PlaylistItem]:
         # todo
