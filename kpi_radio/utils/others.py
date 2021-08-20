@@ -14,7 +14,9 @@ class DateTime(datetime):
 
     @classmethod
     def now(cls, tz=None):
-        return cls._fake if cls._fake else datetime.now(tz)
+        r = cls._fake if cls._fake else datetime.now(tz)
+        logging.info(f"Now {r}")
+        return r
 
     @classmethod
     def today(cls):
