@@ -66,6 +66,7 @@ class BroadcastGetters:
         return self.day == DateTime.day_num()
 
     def is_now(self) -> bool:
+        logging.info(str(self))
         return self.is_today() and self.start_time < DateTime.now() < self.stop_time
 
     def is_will_be_play_today(self) -> bool:

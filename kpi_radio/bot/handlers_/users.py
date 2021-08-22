@@ -56,10 +56,10 @@ async def timetable(message: types.Message):
         for break_num, (start, stop) in others.BROADCAST_TIMES[day_num].items():
             text += f"   {start} - {stop}   {others.TIMES[break_num]}\n"
 
-    if Broadcast.now():
+    br = Broadcast.get_closest()
+    if br.is_now():
         text += "\nЭфир прямо сейчас!"
     else:
-        br = Broadcast.get_closest()
         text += f"\nБлижайший эфир - {'сегодня' if br.is_today() else others.WEEK_DAYS[br.day]}," \
                 f" {br.start_time.strftime('%H:%M')}"
 
