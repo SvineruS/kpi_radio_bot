@@ -1,22 +1,83 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
+from functools import cached_property, cache
 from pathlib import Path
-from typing import Optional, List
+from typing import Iterable, Optional, List
 
 from consts import others, config
+from utils import DateTime
 from .backends import Playlist, PlaylistItem, DBPlaylistProvider, PlayerMopidy
-from .player_utils import Exceptions, BroadcastGetters, get_random_from_archive
+from .player_utils import Exceptions, get_random_from_archive
 
 
-class Broadcast(BroadcastGetters):
+class Broadcast:
     ALL: List[Broadcast] = []
-    _local_playlist = DBPlaylistProvider
     player = PlayerMopidy(url=config.MOPIDY_URL)
+
+    @cache
+    def __new__(cls, day: int, num: int):
+        return super().__new__(cls)
+
+    def __init__(self, day: int, num: int):
+        if day not in others.BROADCAST_TIMES:
+            raise ValueError("wrong day")
+        if num not in others.BROADCAST_TIMES[day]:
+            raise ValueError("wrong num")
+
+        self.day: int = day
+        self.num: int = num
+
+    @classmethod
+    def now(cls):
+        for b in cls.ALL:
+            if b.is_now():
+                return b
+        return None
+
+    @classmethod
+    def get_closest(cls):
+        today = DateTime.day_num()
+        for br in (cls(today, time) for time in others.BROADCAST_TIMES[today]):
+            if br.is_now() or not br.is_already_play_today():
+                return br
+        tomorrow = (today + 1) % 7
+        return cls(tomorrow, 0)
+
+    @cached_property
+    def name(self) -> str:
+        return ', '.join((others.WEEK_DAYS[self.day], others.TIMES[self.num]))
+
+    @cached_property
+    def start_time(self) -> datetime:
+        return DateTime.strptoday(others.BROADCAST_TIMES[self.day][self.num][0], '%H:%M')
+
+    @cached_property
+    def stop_time(self) -> datetime:
+        return DateTime.strptoday(others.BROADCAST_TIMES[self.day][self.num][1], '%H:%M')
+
+    def is_today(self) -> bool:
+        return self.day == DateTime.day_num()
+
+    def is_now(self) -> bool:
+        return self.is_today() and self.start_time < DateTime.now() < self.stop_time
+
+    def is_will_be_play_today(self) -> bool:
+        return self.is_today() and self.start_time > DateTime.now()
+
+    def is_already_play_today(self) -> bool:
+        return self.is_today() and self.stop_time < DateTime.now()
+
+    def duration(self, from_now: bool = False):
+        s = DateTime.now() if from_now and self.is_now() else self.start_time
+        return int((self.stop_time - s).total_seconds())
+
+    #
 
     @property
     def playlist(self) -> DBPlaylistProvider:
-        return self._local_playlist(self)
+        return DBPlaylistProvider(self)
 
     async def get_playlist_next(self) -> Playlist:
         pl = await self.playlist.get_playlist()
@@ -69,6 +130,13 @@ class Broadcast(BroadcastGetters):
         if broadcast:
             await broadcast.remove_track(track, remove_file=False)
         await cls.play()
+
+    def __str__(self):
+        return self.name
+
+    def __iter__(self) -> Iterable[int]:
+        yield self.day
+        yield self.num
 
 
 Broadcast.ALL = [Broadcast(day, num) for day, _num in others.BROADCAST_TIMES.items() for num in _num]
