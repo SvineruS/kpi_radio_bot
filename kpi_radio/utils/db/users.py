@@ -30,12 +30,12 @@ class Users(BaseModel):
     @classmethod
     def ban_set(cls, id_: int, time_: int):
         ban_time = datetime.now() + timedelta(minutes=time_)
-        cls.update(ban=ban_time).where(cls.user_id == id_)
+        cls.update({cls.ban: ban_time}).where(cls.user_id == id_).execute()
 
     @classmethod
     def notification_get(cls, id_: int) -> bool:
-        return (user := cls.get_by_id(id_)) and user.notifications
+        return cls.get(id_).notifications
 
     @classmethod
     def notification_set(cls, id_: int, status_: bool):
-        cls.update(notifications=status_).where(cls.user_id == id_)
+        cls.update({cls.notifications: int(status_)}).where(cls.user_id == id_).execute()
