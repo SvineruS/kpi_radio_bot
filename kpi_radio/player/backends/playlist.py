@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta, datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Union, Iterable
 
 from aiogram import types
 
@@ -58,14 +59,22 @@ class PlaylistItem:
 
 
 class Playlist(list):
-    def __init__(self, seq=()):
+    def __init__(self, seq=(), time_start=None):
         super().__init__(seq)
+        self.time_start = time_start
+        self._recalc_time_start()
+
+    def add(self, tracks: Union[PlaylistItem, Playlist]):
+        t = tracks if isinstance(tracks, Iterable) else [tracks]
+        self.extend(t)
+        self._recalc_time_start(-len(t))
 
     def find_by_path(self, path: Path) -> List[PlaylistItem]:
         return [t for t in self if t.path == path]
 
     def find_by_user_id(self, user_id: int) -> List[PlaylistItem]:
-        return [t for t in self if t.track_info and t.track_info.user_id == user_id]
+        return [t for t in self
+                if t.track_info and t.track_info.user_id == user_id]
 
     def trim(self, time_min: datetime = None, time_max: datetime = None) -> Playlist:
         def trim_():
@@ -80,3 +89,15 @@ class Playlist(list):
 
     def duration(self) -> int:
         return sum((i.duration for i in self))
+
+    def _recalc_time_start(self, from_=0):
+        try:
+            start_time = self[from_ - 1].stop_time
+        except (IndexError, AttributeError):
+            start_time = self.time_start
+            from_ = 0
+
+        for t in self[from_:]:
+            t.start_time = start_time
+            start_time = t.stop_time
+

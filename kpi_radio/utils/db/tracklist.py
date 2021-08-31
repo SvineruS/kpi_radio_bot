@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-from decimal import Decimal
+from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING
 
-from peewee import IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey
+from peewee import IntegerField, BigIntegerField, CharField, DecimalField, CompositeKey, SmallIntegerField, fn
 
 from ._connector import BaseModel
 
 if TYPE_CHECKING:
-    from player import PlaylistItem, Broadcast
-
-
-_POSITION_EXTRA_SPACE = 5
-_POSITION_D = Decimal(10 ** -_POSITION_EXTRA_SPACE)
-_POSITION_MAX = 1 - _POSITION_D
+    from player import PlaylistItem, Ether
 
 
 class Tracklist(BaseModel):
@@ -25,67 +20,52 @@ class Tracklist(BaseModel):
     info_user_id = BigIntegerField()
     info_user_name = CharField(max_length=100)
     info_message_id = BigIntegerField()
-    broadcast_day = DecimalField(max_digits=1, decimal_places=0)
-    broadcast_num = DecimalField(max_digits=1, decimal_places=0)
+    ether_day = SmallIntegerField()
+    ether_num = SmallIntegerField()
 
-    position = DecimalField(max_digits=5, decimal_places=_POSITION_EXTRA_SPACE)
+    position = IntegerField()
 
     @classmethod
-    def add(cls, position: Optional[int], track: PlaylistItem, broadcast: Broadcast):
-
-        def _get_available_position(pos: Optional[int] = None) -> Decimal:
-            """Кароч позиция это Decimal, где целая часть - то, что приходит из вне, а
-            дробная часть - меняется для устранения "коллизий" оставляя порядок.
-            Новые значения вставляются с дробной частью 0.9999 что бы можно было вставить перед ним 0.9998 и т.д. """
-            if pos is None:  # вставить после всех
-                new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num) \
-                    .order_by(cls.position.desc()).limit(1)
-                if new_pos:  # если в бд что то есть - вставляем после него
-                    return int(new_pos[0].position) + 1 + _POSITION_MAX
-                return Decimal(0 + _POSITION_MAX)  # иначе вставляем на 0 позицию
-            else:  # вставить на определенную позицию, оттеснив всех ниже
-                new_pos = cls.select(cls.position) \
-                    .where(cls.broadcast_day == broadcast.day, cls.broadcast_num == broadcast.num,
-                           cls.position.between(pos, pos + _POSITION_MAX)) \
-                    .order_by(cls.position.asc()).limit(1)
-                if new_pos:  # если в бд что то есть вставляем перед ним
-                    return new_pos[0].position - _POSITION_D
-                return Decimal(pos + _POSITION_MAX)  # иначе вставляем на эту позицию
-
+    def add(cls, track: PlaylistItem, ether: Ether):
         assert track.track_info is not None, "Local playlist need track info!"
+        position = cls.select(fn.Max(cls.position)).where(*_e2cmp(ether)).first().position or 0
+        day, num = (0, 0) if ether is None else (ether.day, ether.num)
+
         cls.insert(
-            position=_get_available_position(position),
             track_path=track.path.name, track_performer=track.performer,
             track_title=track.title, track_duration=track.duration,
             info_user_id=track.track_info.user_id, info_user_name=track.track_info.user_name,
             info_message_id=track.track_info.moderation_id,
-            broadcast_day=broadcast.day, broadcast_num=broadcast.num
+            ether_day=day, ether_num=num, position=position
         ).on_conflict_replace().execute()
 
     @classmethod
-    def get_by_broadcast(cls, day, num):
-        return cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num).order_by(cls.position.asc())
+    def get_by_ether(cls, ether: Ether):
+        return cls.select().where(*_e2cmp(ether)).order_by(cls.position.asc())
 
     @classmethod
-    def get_track_by_path(cls, day, num, path) -> Optional[Tracklist]:
-        res = cls.select().where(cls.broadcast_day == day, cls.broadcast_num == num, cls.track_path == path.name)
-        return res[0] if res else None
+    def get_track_by_path(cls, ether: Ether, path: Path) -> Optional[Tracklist]:
+        return cls.select().where(*_e2cmp(ether), cls.track_path == path.name).first()
 
     @classmethod
-    def remove_track(cls, day, num, path) -> Optional[Tracklist]:
-        if track := cls.get_track_by_path(day, num, path):
+    def remove_track(cls, ether: Ether, path: Path) -> Optional[Tracklist]:
+        if track := cls.get_track_by_path(ether, path):
             track.delete_instance()
             return track
         return None
 
     @classmethod
-    def remove_tracks(cls, day, num):
-        cls.delete().where(cls.broadcast_day == day, cls.broadcast_num == num)
+    def clear_ether(cls, ether: Ether):
+        cls.delete().where(*_e2cmp(ether))
 
     class Meta:
         indexes = (  # связка уникальных полей
-            (('broadcast_day', 'broadcast_num', 'track_path'), True),
-            (('broadcast_day', 'broadcast_num', 'position'), True),
+            (('ether_day', 'ether_num', 'track_path'), True),
+            (('ether_day', 'ether_num', 'position'), True),
         )
-        primary_key = CompositeKey('broadcast_day', 'broadcast_num', 'track_path')
+        primary_key = CompositeKey('ether_day', 'ether_num', 'track_path')
+
+
+def _e2cmp(e: Ether):
+    day, num = (0, 0) if e is None else (e.day, e.num)
+    return Tracklist.ether_day == day, Tracklist.ether_num == num

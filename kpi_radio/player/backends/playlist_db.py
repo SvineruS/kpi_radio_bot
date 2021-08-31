@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from consts import config, others
+from player.ether import Ether
 from utils import db, DateTime
 from .playlist import Playlist, PlaylistItem
 
@@ -11,47 +12,36 @@ from .playlist import Playlist, PlaylistItem
 class DBPlaylistProvider:
     PATH_BASE = config.PATH_STUFF / 'playlists'
 
-    def __init__(self, broadcast):
-        self._broadcast = broadcast
+    def __init__(self, ether):
+        self.ether: Ether = ether
 
-    async def get_next_track(self) -> PlaylistItem:
-        if track := db.Tracklist.get_by_broadcast(*self._broadcast).first():
+    async def get_next_track(self) -> Optional[PlaylistItem]:
+        if track := db.Tracklist.get_by_ether(self.ether).first():
             return internal_to_playlist_item(track, start_time=await self._get_start_time())
 
     async def get_playlist(self) -> Playlist:
-        pl_ = db.Tracklist.get_by_broadcast(*self._broadcast)
+        pl = db.Tracklist.get_by_ether(self.ether)
+        return Playlist(
+            map(internal_to_playlist_item, pl),
+            time_start=await self._get_start_time()
+        )
 
-        pl: List[PlaylistItem] = []
-        for track in pl_:
-            pl.append(internal_to_playlist_item(
-                track,
-                start_time=await self._get_start_time(pl[-1] if pl else None)
-            ))
-        return Playlist(pl)
-
-    async def add_track(self, track: PlaylistItem, position: Optional[int]) -> PlaylistItem:
-        if position == -2:  # после текущего
-            position = 0
-        if position == -1:  # в конец
-            position = None
-        db.Tracklist.add(position, track, self._broadcast)
-        pl = await self.get_playlist()
-        return pl.find_by_path(track.path)[0]  # проставляем start_time
+    async def add_track(self, track: PlaylistItem) -> PlaylistItem:
+        db.Tracklist.add(track, self.ether)
+        t = await self.get_playlist()
+        return t[0]
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
-        track = db.Tracklist.remove_track(self._broadcast.day, self._broadcast.num, track_path)
-        if not track:
-            return None
-        return internal_to_playlist_item(track)
+        if track := db.Tracklist.remove_track(self.ether, track_path):
+            return internal_to_playlist_item(track)
 
     async def clear(self):
-        db.Tracklist.remove_tracks(self._broadcast.day, self._broadcast.num)
+        db.Tracklist.clear_ether(self.ether)
 
-    async def _get_start_time(self, prev_item: PlaylistItem = None):
-        if prev_item:
-            return prev_item.stop_time
-        if self._broadcast.now():
-            return await self._broadcast.player.current_track_stop_time()
+    async def _get_start_time(self):
+        from player import Broadcast
+        if Broadcast(self.ether).is_ether_now():
+            return await Broadcast.player.current_track_stop_time()
         return DateTime.now()
 
 

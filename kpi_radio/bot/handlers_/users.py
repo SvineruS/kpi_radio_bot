@@ -5,7 +5,7 @@ from aiogram import types, exceptions
 
 from bot.bot_utils import kb
 from consts import texts, others
-from player import Broadcast
+from player import Ether, Broadcast
 from utils.db import Users
 
 
@@ -16,18 +16,17 @@ async def menu(message: types.Message):
 # region playlist
 
 async def playlist_now(message: types.Message):
-    if not (broadcast := Broadcast.now()):
+    if not (ether := Ether.now()):
         return await message.answer(texts.PLAYLIST_NOW_NOTHING, reply_markup=kb.WHAT_PLAYING)
 
-    playback = [str(i) if i else r'¯\_(ツ)_/¯' for i in await broadcast.get_playback()]
+    playback = [str(i) if i else r'¯\_(ツ)_/¯' for i in await Broadcast(ether).get_playback()]
     await message.answer(texts.PLAYLIST_NOW.format(*playback), reply_markup=kb.WHAT_PLAYING)
 
 
 async def playlist_next(query: types.CallbackQuery):
-    if not (broadcast := Broadcast.now()):
+    if not (ether := Ether.now()):
         return await query.message.answer(texts.CHOOSE_DAY, reply_markup=kb.playlist_choose_day())
-    await query.message.answer(await _get_playlist_text(broadcast),
-                               reply_markup=kb.playlist_choose_time(broadcast.day))
+    await query.message.answer(await _get_playlist_text(ether), reply_markup=kb.playlist_choose_time(ether.day))
 
 
 async def playlist_choose_day(query: types.CallbackQuery):
@@ -41,10 +40,9 @@ async def playlist_choose_time(query: types.CallbackQuery, day: int):
                                       reply_markup=kb.playlist_choose_time(day))
 
 
-async def playlist_show(query: types.CallbackQuery, broadcast: Broadcast):
+async def playlist_show(query: types.CallbackQuery, ether: Ether):
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_text(await _get_playlist_text(broadcast),
-                                      reply_markup=kb.playlist_choose_time(broadcast.day))
+        await query.message.edit_text(await _get_playlist_text(ether), reply_markup=kb.playlist_choose_time(ether.day))
 
 
 # endregion
@@ -53,10 +51,10 @@ async def timetable(message: types.Message):
     text = ''
     for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
         text += f"{day_name} \n"
-        for break_num, (start, stop) in others.BROADCAST_TIMES[day_num].items():
-            text += f"   {start} - {stop}   {others.TIMES[break_num]}\n"
+        for break_num, (start, stop) in others.ETHER_TIMES[day_num].items():
+            text += f"   {start} - {stop}   {others.ETHER_NAMES[break_num]}\n"
 
-    br = Broadcast.get_closest()
+    br = Ether.get_closest()
     if br.is_now():
         text += "\nЭфир прямо сейчас!"
     else:
@@ -86,9 +84,9 @@ def add_in_db(message: types.Message):
 #
 
 
-async def _get_playlist_text(broadcast: Broadcast) -> str:
-    name = f"<b>{broadcast.name}</b>\n"
-    if not (pl := await broadcast.get_playlist_next()):
+async def _get_playlist_text(ether: Ether) -> str:
+    name = f"<b>{ether.name}</b>\n"
+    if not (pl := await Broadcast(ether).get_next_tracklist()):
         return name + "❗️Еще ничего не заказали"
 
     return '\n'.join([

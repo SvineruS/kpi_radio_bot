@@ -3,13 +3,13 @@ import logging
 from pathlib import Path
 
 from consts import BOT, texts, config, others
-from player import Broadcast, PlaylistItem
+from player import Ether, PlaylistItem, Broadcast
 from utils import utils, db
 from ..bot_utils import kb
 
 
-async def send_broadcast_begin(time):
-    await BOT.send_message(config.HISTORY_CHAT_ID, others.TIMES[time])
+async def send_ether_begin(time):
+    await BOT.send_message(config.HISTORY_CHAT_ID, others.ETHER_NAMES[time])
 
 
 async def send_history_track(track: PlaylistItem):
@@ -24,7 +24,7 @@ async def send_history_track(track: PlaylistItem):
         await BOT.send_audio(config.HISTORY_CHAT_ID, file, sender_name, performer=track.performer, title=track.title)
 
 
-async def perezaklad(day, time):
+async def perezaklad(ether: Ether):
     async def _send_perezaklad(user_id: int, path: Path):
         try:
             with path.open('rb') as file:
@@ -34,7 +34,7 @@ async def perezaklad(day, time):
             logging.info(f"perezaklad err: {ex}")
             logging.warning(f"pls pls add exception {type(ex)}{ex} in except")
 
-    tracks = await Broadcast(day, time).playlist.get_playlist()
+    tracks = await Broadcast(ether).playlist.get_playlist()
     for track in tracks:
         await _send_perezaklad(track.track_info.user_id, track.path)
         await asyncio.sleep(3)

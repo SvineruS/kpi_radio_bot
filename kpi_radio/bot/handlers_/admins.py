@@ -11,7 +11,7 @@ from aiogram import types, exceptions
 
 from bot.bot_utils import communication, kb, stats, small_utils
 from consts import texts, config, BOT
-from player import Broadcast
+from player import Ether, Broadcast
 from utils import utils, db
 
 
@@ -63,28 +63,28 @@ async def get_stats(message: types.Message):
 async def show_playlist_control(message: types.Message):
     await message.answer("Нажми на трек, что бы сделать его следующим", reply_markup=await kb.playlist_move())
 
-
-async def playlist_move(query: types.CallbackQuery, track_index, track_start_time):
-    pl = await Broadcast.now().get_playlist_next()
-    _in_playback = [i for i, track in enumerate(pl) if
-                    track.index_ == track_index and track.start_time.timestamp() == track_start_time]
-
-    if track_index == -1:  # просто обновить
-        pass
-    elif time() > track_start_time or not _in_playback:
-        await query.answer("Кнопка неактуальна, давай еще раз")
-        pl = await Broadcast.now().get_playlist_next()
-    elif _in_playback[0] == pl[1].index_:
-        await query.answer("Она сейчас играет -_-")
-    else:
-        if await Broadcast.player.set_next_track(track_index):
-            pl.insert(1, pl.pop(_in_playback[0]))
-            await query.answer("Успешно")
-        else:
-            await query.answer("Ошибка")
-
-    with suppress(exceptions.MessageNotModified):
-        await query.message.edit_reply_markup(await kb.playlist_move(pl))
+#
+# async def playlist_move(query: types.CallbackQuery, track_index, track_start_time):
+#     pl = await Ether.now().get_playlist_next()
+#     _in_playback = [i for i, track in enumerate(pl) if
+#                     track.index_ == track_index and track.start_time.timestamp() == track_start_time]
+#
+#     if track_index == -1:  # просто обновить
+#         pass
+#     elif time() > track_start_time or not _in_playback:
+#         await query.answer("Кнопка неактуальна, давай еще раз")
+#         pl = await Ether.now().get_playlist_next()
+#     elif _in_playback[0] == pl[1].index_:
+#         await query.answer("Она сейчас играет -_-")
+#     else:
+#         if await Broadcast.player.set_next_track(track_index):
+#             pl.insert(1, pl.pop(_in_playback[0]))
+#             await query.answer("Успешно")
+#         else:
+#             await query.answer("Ошибка")
+#
+#     with suppress(exceptions.MessageNotModified):
+#         await query.message.edit_reply_markup(await kb.playlist_move(pl))
 
 
 async def get_log(message: types.Message):
@@ -99,7 +99,7 @@ async def get_log(message: types.Message):
 async def next_track(message: types.Message):
     await Broadcast.player.next_track()
     await asyncio.sleep(0.2)
-    prev, now, _ = await Broadcast.now().get_playback()
+    prev, now, _ = await Broadcast(Ether.now()).get_playback()
     await message.answer(f'<i>{prev} ➡ {now}</i>')
 
 #

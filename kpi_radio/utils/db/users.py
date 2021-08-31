@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import Optional
 
 from peewee import BooleanField, BigIntegerField, DateTimeField
 
@@ -21,11 +22,9 @@ class Users(BaseModel):
         user, _ = cls.get_or_create(user_id=id_)
         return user
 
-    def is_banned(self) -> bool:
-        return bool(self.ban and self.ban > datetime.now())
-
-    def banned_to(self):
-        return self.ban.strftime("%d.%m %H:%M")
+    def banned_to(self) -> Optional[str]:
+        if self.ban and self.ban > datetime.now():
+            return self.ban.strftime("%d.%m %H:%M")
 
     @classmethod
     def ban_set(cls, id_: int, time_: int):

@@ -29,10 +29,10 @@ BAD_NAMES = [
 
 WEEK_DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 NEXT_DAYS = ['Сегодня', 'Завтра', 'Послезавтра', 'Послепослезавтра', 'Сейчас']
-TIMES = ['Утренний эфир', 'Первый перерыв', 'Второй перерыв', 'Третий перерыв', 'Четвертый перерыв', 'Вечерний эфир']
+ETHER_NAMES = ['Утренний эфир', 'Первый перерыв', 'Второй перерыв', 'Третий перерыв', 'Четвертый перерыв', 'Вечерний эфир']
 
 
-BROADCAST_TIMES_NORMAL = {  # короче эту тему лучше сделать как функцию геттер имхо
+ETHER_TIMES_NORMAL = {  # короче эту тему лучше сделать как функцию геттер имхо
     #  day:
     #       num:  start, stop
 
@@ -55,7 +55,7 @@ BROADCAST_TIMES_NORMAL = {  # короче эту тему лучше сдела
 
 }
 
-BROADCAST_TIMES_VACATION = {
+ETHER_TIMES_VACATION = {
     **dict.fromkeys(
         [0, 1, 2, 3, 4, 5, 6],
         {
@@ -65,6 +65,6 @@ BROADCAST_TIMES_VACATION = {
     ),
 }
 
-BROADCAST_TIMES = BROADCAST_TIMES_VACATION
+ETHER_TIMES = ETHER_TIMES_VACATION
 
 PATH_MUSIC = Path('/music') if not IS_TEST_ENV else PATH_ROOT / 'music'

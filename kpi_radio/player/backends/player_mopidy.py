@@ -35,6 +35,7 @@ class PlayerMopidy:
         return await self._CLIENT.playback.get_current_track() is not None
 
     async def set_volume(self, volume: int):
+        # todo use mute for ethers
         return await self._CLIENT.mixer.set_volume(volume)
 
     async def next_track(self):
@@ -42,19 +43,19 @@ class PlayerMopidy:
 
     # tracks
 
-    async def get_prev_track(self):
+    async def get_prev_track(self) -> Optional[PlaylistItem]:
         if not (history := await self._CLIENT.history.get_history()) or len(history) < 2:
             return None
         prev = await self._CLIENT.library.lookup(uris=[history[1][1].uri])
         prev = list(prev.values())[0][0]
         return _internal_to_playlist_item(prev)
 
-    async def get_current_track(self):
+    async def get_current_track(self) -> Optional[PlaylistItem]:
         if not (current := await self._CLIENT.playback.get_current_track()):
             return None
         return _internal_to_playlist_item(current)
 
-    async def get_next_track(self):  # not used
+    async def get_next_track(self) -> Optional[PlaylistItem]:  # not used
         if not (tlid := await self._CLIENT.tracklist.get_next_tlid()):
             return None
         next_ = await self._CLIENT.tracklist.filter({'tlid': [tlid]})

@@ -1,3 +1,3 @@
-from .broadcast import Broadcast, Exceptions, PlaylistItem
+from .broadcast import Ether, Broadcast, PlaylistItem
 
-__all__ = ['Broadcast', 'Exceptions', 'PlaylistItem']
+__all__ = ['Ether', 'Broadcast', 'PlaylistItem']

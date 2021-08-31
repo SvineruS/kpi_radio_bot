@@ -6,7 +6,7 @@ from aiogram import types, exceptions
 from bot import handlers_
 from bot.bot_utils import communication, kb
 from consts import texts
-from player import Broadcast
+from player import Ether
 
 ALLOWED_FEEDBACK_TYPES = ['text', 'audio', 'photo', 'sticker']
 
@@ -111,7 +111,7 @@ def register_handlers(dp):
 
     @dp.callback_query_handler(cb=kb.cb.CBOrderTime)  # Выбрали время
     async def query_handler_order_time(query: types.CallbackQuery, cb: kb.cb.CBOrderTime):
-        await handlers_.order.order_make(query, Broadcast(cb.day, cb.time))
+        await handlers_.order.order_make(query, Ether(cb.day, cb.time))
 
     @dp.callback_query_handler(cb=kb.cb.CBOrderBack)  # Кнопка назад при выборе времени
     async def query_handler_order_back(query):
@@ -127,11 +127,11 @@ def register_handlers(dp):
 
     @dp.callback_query_handler(cb=kb.cb.CBOrderModerate)  # Принять / отклонить
     async def query_handler_order_moderate(query: types.CallbackQuery, cb: kb.cb.CBOrderModerate):
-        await handlers_.order.admin_moderate(query, Broadcast(cb.day, cb.time), kb.STATUS(cb.status))
+        await handlers_.order.admin_moderate(query, Ether(cb.day, cb.time), kb.STATUS(cb.status))
 
     @dp.callback_query_handler(cb=kb.cb.CBOrderUnModerate)  # Отменить выбор
     async def query_handler_order_unmoderate(query: types.CallbackQuery, cb: kb.cb.CBOrderUnModerate):
-        await handlers_.order.admin_unmoderate(query, Broadcast(cb.day, cb.time), kb.STATUS(cb.status))
+        await handlers_.order.admin_unmoderate(query, Ether(cb.day, cb.time), kb.STATUS(cb.status))
 
     # endregion order
     # region playlist
@@ -147,15 +147,15 @@ def register_handlers(dp):
 
     @dp.callback_query_handler(cb=kb.cb.CBPlaylistTime)  # Выбор времени
     async def query_handler_playlist_time(query: types.CallbackQuery, cb: kb.cb.CBPlaylistTime):
-        await handlers_.users.playlist_show(query, Broadcast(cb.day, cb.time))
+        await handlers_.users.playlist_show(query, Ether(cb.day, cb.time))
 
     @dp.callback_query_handler(cb=kb.cb.CBPlaylistBack)  # Кнопка назад при выборе времени
     async def query_handler_playlist_back(query):
         await handlers_.users.playlist_choose_day(query)
 
-    @dp.callback_query_handler(cb=kb.cb.CBPlaylistMove)  # Перемещения трека
-    async def query_handler_playlist_move(query: types.CallbackQuery, cb: kb.cb.CBPlaylistMove):
-        await handlers_.admins.playlist_move(query, cb.index, cb.start_time)
+    # @dp.callback_query_handler(cb=kb.cb.CBPlaylistMove)  # Перемещения трека
+    # async def query_handler_playlist_move(query: types.CallbackQuery, cb: kb.cb.CBPlaylistMove):
+    #     await handlers_.admins.playlist_move(query, cb.index, cb.start_time)
 
     # endregion playlist
     # region other

@@ -2,8 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 
 from consts import btns_text
 from consts.btns_text import STATUS, MENU
-from consts.others import HISTORY_CHANNEL_LINK, NEXT_DAYS, TIMES, WEEK_DAYS, BROADCAST_TIMES
-from player import Broadcast
+from consts.others import HISTORY_CHANNEL_LINK, NEXT_DAYS, ETHER_NAMES, WEEK_DAYS, ETHER_TIMES
+from player import Ether, Broadcast
 from utils import DateTime
 from . import _callbacks as cb
 
@@ -48,10 +48,10 @@ async def order_choose_day() -> InlineKeyboardMarkup:
     today = DateTime.day_num()
     btns = []
 
-    if (broadcast_now := Broadcast.now()) and await broadcast_now.get_free_time() > 5:  # кнопка сейчас если эфир+влазит
-        btns.append(_ikb(NEXT_DAYS[-1], cb.CBOrderTime(today, broadcast_now.num)))
+    if (ether_now := Ether.now()) and await Broadcast(ether_now).get_free_time() > 5:  # кнопка сейчас если эфир+влазит
+        btns.append(_ikb(NEXT_DAYS[-1], cb.CBOrderTime(today, ether_now.num)))
 
-    if Broadcast.get_closest().is_today():  # кнопка сегодня
+    if Ether.get_closest().is_today():  # кнопка сегодня
         btns.append(_ikb(NEXT_DAYS[0], cb.CBOrderDay(today)))
 
     for i in range(1, 4):  # завтра (1), послезавтра (2), послепослезавтра  (3)
@@ -63,17 +63,17 @@ async def order_choose_day() -> InlineKeyboardMarkup:
 
 async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup:
     btns = []
-    for num in BROADCAST_TIMES[day]:
-        broadcast = Broadcast(day, num)
-        if broadcast.is_already_play_today():
+    for num in ETHER_TIMES[day]:
+        ether = Ether(day, num)
+        if ether.is_already_play_today():
             continue  # если сегодня и перерыв прошел - не добавляем кнопку
 
-        free_minutes = await broadcast.get_free_time()
+        free_minutes = await ether.get_free_time()
 
         if free_minutes == 0 and attempts > 0:
-            btn = _ikb('❌' + TIMES[num], cb.CBOrderNoTime(day, attempts))
+            btn = _ikb('❌' + ETHER_NAMES[num], cb.CBOrderNoTime(day, attempts))
         else:
-            btn = _ikb(('⚠' if free_minutes < 5 else '') + TIMES[num], cb.CBOrderTime(day, num))
+            btn = _ikb(('⚠' if free_minutes < 5 else '') + ETHER_NAMES[num], cb.CBOrderTime(day, num))
 
         btns.append(btn)
 
@@ -84,9 +84,9 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
 #
 
 
-def admin_moderate(broadcast: Broadcast) -> InlineKeyboardMarkup:
+def admin_moderate(ether: Ether) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup().add(*[
-        _ikb(text, cb.CBOrderModerate(*broadcast, status))
+        _ikb(text, cb.CBOrderModerate(*ether, status))
         for status, text in {
             STATUS.QUEUE: btns_text.QUEUE,
             STATUS.NOW: btns_text.NOW,
@@ -95,8 +95,8 @@ def admin_moderate(broadcast: Broadcast) -> InlineKeyboardMarkup:
     ])
 
 
-def admin_unmoderate(broadcast: Broadcast, status: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup().add(_ikb(btns_text.CANCEL, cb.CBOrderUnModerate(*broadcast, status)))
+def admin_unmoderate(ether: Ether, status: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup().add(_ikb(btns_text.CANCEL, cb.CBOrderUnModerate(*ether, status)))
 
 
 #
@@ -113,25 +113,25 @@ def playlist_choose_day() -> InlineKeyboardMarkup:
 
 def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
     btns = [
-        _ikb(TIMES[time], cb.CBPlaylistTime(day, time))
-        for time in BROADCAST_TIMES[day]
+        _ikb(ETHER_NAMES[time], cb.CBPlaylistTime(day, time))
+        for time in ETHER_TIMES[day]
     ] + [_ikb(btns_text.BACK, cb.CBPlaylistBack())]
     return InlineKeyboardMarkup(row_width=3).add(*btns)
 
 
 #
-
-_EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
-
-
-async def playlist_move(pl=None):
-    if pl is None:
-        pl = await Broadcast.now().get_playlist_next()
-    btns = [
-        _ikb(
-            f"{_EMOJI_NUMBERS[i]} 🕖{track.start_time.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
-            cb.CBPlaylistMove(track.index_, track.start_time.timestamp())
-        )
-        for i, track in enumerate(pl[:10])
-    ] + [_ikb("🔄Обновить", cb.CBPlaylistMove(-1, 0))]
-    return InlineKeyboardMarkup(row_width=1).add(*btns)
+#
+# _EMOJI_NUMBERS = ("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟")
+#
+#
+# async def playlist_move(pl=None):
+#     if pl is None:
+#         pl = await Ether.now().get_next_tracklist()
+#     btns = [
+#         _ikb(
+#             f"{_EMOJI_NUMBERS[i]} 🕖{track.start_time.strftime('%H:%M:%S')} {track.title.ljust(120)}.",
+#             cb.CBPlaylistMove(track.index_, track.start_time.timestamp())
+#         )
+#         for i, track in enumerate(pl[:10])
+#     ] + [_ikb("🔄Обновить", cb.CBPlaylistMove(-1, 0))]
+#     return InlineKeyboardMarkup(row_width=1).add(*btns)

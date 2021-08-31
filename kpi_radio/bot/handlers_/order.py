@@ -10,22 +10,27 @@ import music
 from bot import handlers_
 from bot.bot_utils import communication, kb, stats, id_to_hashtag, small_utils
 from consts import texts, others, config, BOT
-from player import Broadcast, Exceptions, PlaylistItem
+from player import Broadcast, Ether, PlaylistItem
 from utils import utils, db, DateTime
 
 
-async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
-    user = query.from_user
-    user_db = db.Users.get(user.id)
-    if user_db.is_banned():
-        return await query.message.answer(texts.BAN_TRY_ORDER.format(user_db.banned_to()))
+NotEnoughSpaceException = type("NotEnoughSpace", (Exception, ), {})
+DuplicateException = type("DuplicateException", (Exception, ), {})
+BannedException = type("BannedException", (Exception, ), {})
+TooManyOrdersException = type("BannedException", (Exception, ), {})
 
-    if broadcast.num != 5 and len((await broadcast.playlist.get_playlist()).find_by_user_id(user.id)) > 5:
+
+async def order_make(query: types.CallbackQuery, ether: Ether):
+    try:
+        await _can_make_order(ether, query.from_user)
+    except BannedException as be:
+        return await query.message.answer(texts.BAN_TRY_ORDER.format(be.arg))
+    except TooManyOrdersException:
         return await query.message.answer(texts.ORDER_ERR_TOOMUCH)
 
     try:
         await query.message.edit_caption(
-            caption=texts.ORDER_ON_MODERATION.format(broadcast.name),
+            caption=texts.ORDER_ON_MODERATION.format(ether.name),
             reply_markup=types.InlineKeyboardMarkup(),
         )
     except exceptions.MessageNotModified:
@@ -33,9 +38,9 @@ async def order_make(query: types.CallbackQuery, broadcast: Broadcast):
 
     await handlers_.users.menu(query.message)
 
-    admin_text = await _gen_order_caption(broadcast, user, audio_name=utils.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(ether, query.from_user, audio_name=utils.get_audio_name(query.message.audio))
     mes = await BOT.send_audio(config.ADMINS_CHAT_ID, query.message.audio.file_id, admin_text,
-                               reply_markup=kb.admin_moderate(broadcast))
+                               reply_markup=kb.admin_moderate(ether))
     communication.cache_add(mes, query.message)
     communication.cache_add(query.message, mes)
 
@@ -69,14 +74,14 @@ async def order_no_time(query: types.CallbackQuery, day: int, attempts: int):
 #
 
 
-async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
+async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.STATUS):
     user = utils.get_user_from_entity(query.message)
     moder = query.from_user
-    admin_text = await _gen_order_caption(broadcast, user, status=status, moder=moder)
+    admin_text = await _gen_order_caption(ether, user, status=status, moder=moder)
     track = PlaylistItem.from_tg(query.message.audio).add_track_info(user.id, user.first_name, query.message.message_id)
 
     try:
-        await query.message.edit_caption(admin_text, reply_markup=kb.admin_unmoderate(broadcast, status))
+        await query.message.edit_caption(admin_text, reply_markup=kb.admin_unmoderate(ether, status))
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
@@ -84,24 +89,25 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
     if status == kb.STATUS.REJECT:  # кнопка отмена
         return communication.cache_add(
-            await BOT.send_message(user.id, texts.ORDER_DENIED.format(track, broadcast.name)), query.message)
+            await BOT.send_message(user.id, texts.ORDER_DENIED.format(track, ether.name)), query.message)
 
     await query.message.chat.do('record_audio')
     msg_to_user: Optional[str]
     try:
-        new_track = await broadcast.add_track(track,
-                                              position=-2 if status == kb.STATUS.NOW else -1,
-                                              audio=query.message.audio)
-    except Exceptions.DuplicateException:
+        ether_ = None if status == kb.STATUS.NOW else ether
+        await _can_approve_order(ether_, query.message.audio)
+        new_track = await Broadcast(ether_).add_track(track, audio=query.message.audio)
+
+    except DuplicateException:
         when_playing = 'Такой же трек уже принят на этот эфир'
-        msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
-    except Exceptions.NotEnoughSpaceException:
+        msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
+    except NotEnoughSpaceException:
         when_playing = 'не успел :('
         msg_to_user = None
         communication.cache_add(await BOT.send_audio(
             user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
-            caption=texts.ORDER_ACCEPTED_TOOLATE.format(track, broadcast.name)), query.message
-        )
+            caption=texts.ORDER_ACCEPTED_TOOLATE.format(track, ether.name)), query.message
+                                )
     else:
         if status == kb.STATUS.NOW:  # кнопка сейчас
             when_playing = 'прямо сейчас!'
@@ -109,9 +115,9 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
 
         else:  # кнопка принять
             # если прямо сейчас не тот эфир, на который заказ
-            if not broadcast.is_now():
+            if not ether.is_now():
                 when_playing = 'Заиграет когда надо'
-                msg_to_user = texts.ORDER_ACCEPTED.format(track, broadcast.name)
+                msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
 
             else:
                 minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
@@ -122,29 +128,51 @@ async def admin_moderate(query: types.CallbackQuery, broadcast: Broadcast, statu
         communication.cache_add(await BOT.send_message(user.id, msg_to_user), query.message)
     with suppress(exceptions.MessageNotModified):
         await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
-                                         reply_markup=kb.admin_unmoderate(broadcast, status))
+                                         reply_markup=kb.admin_unmoderate(ether, status))
 
 
-async def admin_unmoderate(query: types.CallbackQuery, broadcast: Broadcast, status: kb.STATUS):
+async def admin_unmoderate(query: types.CallbackQuery, ether: Ether, status: kb.STATUS):
     user = utils.get_user_from_entity(query.message)
-    admin_text = await _gen_order_caption(broadcast, user, audio_name=utils.get_audio_name(query.message.audio))
+    admin_text = await _gen_order_caption(ether, user, audio_name=utils.get_audio_name(query.message.audio))
 
     try:
-        await query.message.edit_caption(admin_text, reply_markup=kb.admin_moderate(broadcast))
+        await query.message.edit_caption(admin_text, reply_markup=kb.admin_moderate(ether))
     except exceptions.MessageNotModified:
         return  # если не отредачилось значит кнопка уже отработалась
 
     if status != kb.STATUS.REJECT:  # если заказ был принят а щас отменяют
-        await broadcast.remove_track(PlaylistItem.from_tg(query.message.audio))
+        await Broadcast(ether).remove_track(PlaylistItem.from_tg(query.message.audio))
 
 
 #
 
-async def _gen_order_caption(broadcast: Broadcast, user: types.User,
+
+async def _can_make_order(ether: Ether, user: types.User):
+    if banned_to := db.Users.get(user.id).banned_to():
+        raise BannedException(banned_to)
+
+    pl = await Broadcast(ether).get_next_tracklist()
+
+    if ether.num != 5 and len(pl.find_by_user_id(user.id)) > 5:
+        raise TooManyOrdersException()
+
+
+async def _can_approve_order(ether: Ether, audio: types.Audio):
+    br = Broadcast(ether)
+    pl = await br.get_next_tracklist()
+
+    if pl.find_by_path(PlaylistItem.from_tg(audio).path):
+        raise DuplicateException()
+
+    if await br.get_free_time(pl) < audio.duration:
+        raise NotEnoughSpaceException()
+
+
+async def _gen_order_caption(ether: Ether, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
-    is_now = broadcast.is_now()
+    is_now = ether.is_now()
     user_name = utils.get_user_name(user) + ' #' + id_to_hashtag(user.id)
-    text_datetime = broadcast.name + (' (сейчас!)' if is_now else '')
+    text_datetime = ether.name + (' (сейчас!)' if is_now else '')
 
     if not status:  # Неотмодеренный заказ
         assert audio_name is not None
