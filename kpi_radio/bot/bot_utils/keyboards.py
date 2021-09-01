@@ -68,7 +68,7 @@ async def order_choose_time(day: int, attempts: int = 5) -> InlineKeyboardMarkup
         if ether.is_already_play_today():
             continue  # если сегодня и перерыв прошел - не добавляем кнопку
 
-        free_minutes = await ether.get_free_time()
+        free_minutes = await Broadcast(ether).get_free_time()
 
         if free_minutes == 0 and attempts > 0:
             btn = _ikb('❌' + ETHER_NAMES[num], cb.CBOrderNoTime(day, attempts))
