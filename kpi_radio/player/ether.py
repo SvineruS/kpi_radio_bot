@@ -11,7 +11,6 @@ from utils import DateTime
 class Ether:
     ALL: List[Ether] = []
 
-    @cache
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
 
