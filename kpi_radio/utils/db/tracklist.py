@@ -28,7 +28,7 @@ class Tracklist(BaseModel):
     @classmethod
     def add(cls, track: PlaylistItem, ether: Ether):
         assert track.track_info is not None, "Local playlist need track info!"
-        position = cls.select(fn.Max(cls.position)).where(*_e2cmp(ether)).first().position or 0
+        position = cls.select(fn.Max(cls.position)).where(*_e2cmp(ether)).scalar() or 0
         day, num = (0, 0) if ether is None else (ether.day, ether.num)
 
         cls.insert(
@@ -36,7 +36,7 @@ class Tracklist(BaseModel):
             track_title=track.title, track_duration=track.duration,
             info_user_id=track.track_info.user_id, info_user_name=track.track_info.user_name,
             info_message_id=track.track_info.moderation_id,
-            ether_day=day, ether_num=num, position=position
+            ether_day=day, ether_num=num, position=position+1
         ).on_conflict_replace().execute()
 
     @classmethod
