@@ -72,5 +72,5 @@ class Broadcast:
             return logging.info("Play " + str(track.path))
 
         logging.error("Failed to play " + str(track.path))
-        await self.remove_track(track)
+        await Broadcast(track.ether).remove_track(track)
         await self.play()

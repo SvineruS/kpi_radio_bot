@@ -89,6 +89,7 @@ async def _get_playlist_text(ether: Ether) -> str:
     if not (pl := await Broadcast(ether).get_next_tracklist()):
         return name + "❗️Еще ничего не заказали"
 
+    # todo start_time here display wrong
     return '\n'.join([
         f"🕖<b>{track.start_time.strftime('%H:%M:%S')}</b> {track.title}"
         for track in pl[:10]

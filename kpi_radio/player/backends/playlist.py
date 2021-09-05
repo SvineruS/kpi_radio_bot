@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta, datetime
 from pathlib import Path
@@ -9,6 +8,7 @@ from typing import Optional, List, Union, Iterable
 from aiogram import types
 
 from consts import others
+from player.ether import Ether
 from utils import utils
 
 
@@ -27,6 +27,7 @@ class PlaylistItem:
     duration: int
     start_time: Optional[datetime] = None
     track_info: Optional[TrackInfo] = None
+    ether: Optional[Ether] = None
 
     @property
     def is_order(self) -> bool:

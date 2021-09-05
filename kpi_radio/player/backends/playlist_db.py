@@ -44,16 +44,16 @@ class DBPlaylistProvider:
             return await Broadcast.player.current_track_stop_time()
         return DateTime.now()
 
-
-def internal_to_playlist_item(track: db.Tracklist, start_time=None) -> PlaylistItem:
-    return PlaylistItem(
-        performer=track.track_performer,
-        title=track.track_title,
-        path=others.PATH_MUSIC / track.track_path,
-        duration=track.track_duration,
-        start_time=start_time
-    ).add_track_info(
-        user_id=track.info_user_id,
-        user_name=track.info_user_name,
-        moderation_msg_id=track.info_message_id
-    )
+    def internal_to_playlist_item(self, track: db.Tracklist, start_time=None) -> PlaylistItem:
+        return PlaylistItem(
+            performer=track.track_performer,
+            title=track.track_title,
+            path=others.PATH_MUSIC / track.track_path,
+            duration=track.track_duration,
+            start_time=start_time,
+            ether=self.ether
+        ).add_track_info(
+            user_id=track.info_user_id,
+            user_name=track.info_user_name,
+            moderation_msg_id=track.info_message_id
+        )
