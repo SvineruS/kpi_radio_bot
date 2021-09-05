@@ -17,12 +17,12 @@ class DBPlaylistProvider:
 
     async def get_next_track(self) -> Optional[PlaylistItem]:
         if track := db.Tracklist.get_by_ether(self.ether).first():
-            return internal_to_playlist_item(track, start_time=await self._get_start_time())
+            return self.internal_to_playlist_item(track, start_time=await self._get_start_time())
 
     async def get_playlist(self) -> Playlist:
         pl = db.Tracklist.get_by_ether(self.ether)
         return Playlist(
-            map(internal_to_playlist_item, pl),
+            map(self.internal_to_playlist_item, pl),
             time_start=await self._get_start_time()
         )
 
@@ -33,7 +33,7 @@ class DBPlaylistProvider:
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         if track := db.Tracklist.remove_track(self.ether, track_path):
-            return internal_to_playlist_item(track)
+            return self.internal_to_playlist_item(track)
 
     async def clear(self):
         db.Tracklist.clear_ether(self.ether)
@@ -44,16 +44,16 @@ class DBPlaylistProvider:
             return await Broadcast.player.current_track_stop_time()
         return DateTime.now()
 
-
-def internal_to_playlist_item(track: db.Tracklist, start_time=None) -> PlaylistItem:
-    return PlaylistItem(
-        performer=track.track_performer,
-        title=track.track_title,
-        path=others.PATH_MUSIC / track.track_path,
-        duration=track.track_duration,
-        start_time=start_time
-    ).add_track_info(
-        user_id=track.info_user_id,
-        user_name=track.info_user_name,
-        moderation_msg_id=track.info_message_id
-    )
+    def internal_to_playlist_item(self, track: db.Tracklist, start_time=None) -> PlaylistItem:
+        return PlaylistItem(
+            performer=track.track_performer,
+            title=track.track_title,
+            path=others.PATH_MUSIC / track.track_path,
+            duration=track.track_duration,
+            start_time=start_time,
+            ether=self.ether
+        ).add_track_info(
+            user_id=track.info_user_id,
+            user_name=track.info_user_name,
+            moderation_msg_id=track.info_message_id
+        )
