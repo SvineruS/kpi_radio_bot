@@ -86,7 +86,7 @@ class Playlist(list):
                 if time_max and time_start > time_max:
                     break
                 yield track
-        return self.__class__(list(trim_()))
+        return self.__class__(list(trim_()), time_start=self.time_start)
 
     def duration(self) -> int:
         return sum((i.duration for i in self))
