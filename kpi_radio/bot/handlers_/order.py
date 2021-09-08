@@ -157,7 +157,7 @@ async def _can_approve_order(ether: Ether, audio: types.Audio):
     br = Broadcast(ether)
     pl = await br.get_next_tracklist()
 
-    if pl.find_by_path(PlaylistItem.from_tg(audio).path):
+    if pl.find_by_path(PlaylistItem.from_tg(audio).path)[0]:
         raise DuplicateException()
 
     if await br.get_free_time(pl) < audio.duration:
