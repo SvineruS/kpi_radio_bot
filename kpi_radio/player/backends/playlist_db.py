@@ -26,10 +26,8 @@ class DBPlaylistProvider:
             time_start=await self._get_start_time()
         )
 
-    async def add_track(self, track: PlaylistItem) -> PlaylistItem:
+    async def add_track(self, track: PlaylistItem):
         db.Tracklist.add(track, self.ether)
-        t = await self.get_playlist()
-        return t[0]
 
     async def remove_track(self, track_path: Path) -> Optional[PlaylistItem]:
         if track := db.Tracklist.remove_track(self.ether, track_path):

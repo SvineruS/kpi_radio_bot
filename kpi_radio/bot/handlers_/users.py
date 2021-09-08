@@ -42,7 +42,9 @@ async def playlist_choose_time(query: types.CallbackQuery, day: int):
 
 async def playlist_show(query: types.CallbackQuery, ether: Ether):
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_text(await _get_playlist_text(ether), reply_markup=kb.playlist_choose_time(ether.day))
+        return await query.message.edit_text(await _get_playlist_text(ether),
+                                             reply_markup=kb.playlist_choose_time(ether.day))
+    await query.answer()
 
 
 # endregion
@@ -89,8 +91,7 @@ async def _get_playlist_text(ether: Ether) -> str:
     if not (pl := await Broadcast(ether).get_next_tracklist()):
         return name + "❗️Еще ничего не заказали"
 
-    # todo start_time here display wrong
-    return '\n'.join([
+    return name + '\n'.join([
         f"🕖<b>{track.start_time.strftime('%H:%M:%S')}</b> {track}"
         for track in pl[:10]
     ]) + ('\n<pre>   ...</pre>' if len(pl) > 10 else '')

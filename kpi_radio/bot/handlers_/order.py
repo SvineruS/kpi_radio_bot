@@ -94,8 +94,9 @@ async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.ST
     await query.message.chat.do('record_audio')
     msg_to_user: Optional[str]
     try:
+        if status != kb.STATUS.NOW:
+            await _can_approve_order(ether, query.message.audio)
         ether_ = None if status == kb.STATUS.NOW else ether
-        await _can_approve_order(ether_, query.message.audio)
         new_track = await Broadcast(ether_).add_track(track, audio=query.message.audio)
 
     except DuplicateException:
@@ -107,28 +108,23 @@ async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.ST
         communication.cache_add(await BOT.send_audio(
             user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
             caption=texts.ORDER_ACCEPTED_TOOLATE.format(track, ether.name)), query.message
-                                )
+        )
     else:
-        if status == kb.STATUS.NOW:  # кнопка сейчас
+        if status == kb.STATUS.NOW:
             when_playing = 'прямо сейчас!'
             msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
-
-        else:  # кнопка принять
-            # если прямо сейчас не тот эфир, на который заказ
-            if not ether.is_now():
-                when_playing = 'Заиграет когда надо'
-                msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
-
-            else:
-                minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
-                when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-                msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
+        elif ether.is_now():
+            minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
+            when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
+            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
+        else:
+            when_playing = 'Заиграет когда надо'
+            msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
 
     if msg_to_user:
         communication.cache_add(await BOT.send_message(user.id, msg_to_user), query.message)
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
-                                         reply_markup=kb.admin_unmoderate(ether, status))
+        await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing, reply_markup=kb.admin_unmoderate(ether, status))
 
 
 async def admin_unmoderate(query: types.CallbackQuery, ether: Ether, status: kb.STATUS):

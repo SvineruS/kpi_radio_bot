@@ -24,16 +24,22 @@ class Broadcast:
         return DBPlaylistProvider(self.ether)
 
     async def get_next_track(self) -> Optional[PlaylistItem]:
-        ether = self.ether or Ether.now()
-        return await DBPlaylistProvider(ether).get_next_track()
+        if r := await DBPlaylistProvider(None).get_next_track():
+            return r
+        elif self.ether:
+            return await DBPlaylistProvider(self.ether).get_next_track()
 
     async def get_next_tracklist(self) -> Playlist:
         pl_outofturn = await DBPlaylistProvider(None).get_playlist()
         if not self.ether:
             return pl_outofturn
 
-        pl_outofturn.extend(await self.playlist.get_playlist())
-        return pl_outofturn.trim(time_min=self.ether.start_time, time_max=self.ether.stop_time)
+        pl_ether = await self.playlist.get_playlist()
+        pl = Playlist(
+            pl_outofturn.trim_by(self.ether) + pl_ether,
+            time_start=pl_ether.time_start
+        )
+        return pl.trim_by(self.ether)
 
     async def get_playback(self) -> List[Optional[PlaylistItem]]:
         return [
@@ -46,10 +52,13 @@ class Broadcast:
         pl = pl or await self.get_next_tracklist()
         return max(0, self.ether.duration(from_now=True) - pl.duration())
 
-    async def add_track(self, track: PlaylistItem, audio) -> PlaylistItem:
+    async def add_track(self, track: PlaylistItem, audio) -> Optional[PlaylistItem]:
         if not track.path.exists():
             await audio.download(track.path)
-        return await self.playlist.add_track(track)
+        await self.playlist.add_track(track)
+        if not self.is_ether_now():
+            return track
+        return (await self.get_next_tracklist()).find_by_path(track.path)[0]
 
     async def remove_track(self, track: PlaylistItem, remove_file=False):
         if remove_file:
@@ -61,9 +70,7 @@ class Broadcast:
                await self.playlist.remove_track(path)
 
     async def play(self):
-        track = await DBPlaylistProvider(None).get_next_track() or \
-                await self.playlist.get_next_track() or \
-                get_random_from_archive()
+        track = await self.get_next_track() or get_random_from_archive()
         if not track:
             return logging.warning('No tracks to play')
 

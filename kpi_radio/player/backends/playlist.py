@@ -63,19 +63,22 @@ class Playlist(list):
     def __init__(self, seq=(), time_start=None):
         super().__init__(seq)
         self.time_start = time_start
-        self._recalc_time_start()
+        self.recalc_time_start()
 
     def add(self, tracks: Union[PlaylistItem, Playlist]):
         t = tracks if isinstance(tracks, Iterable) else [tracks]
         self.extend(t)
-        self._recalc_time_start(-len(t))
+        self.recalc_time_start(-len(t))
 
-    def find_by_path(self, path: Path) -> List[PlaylistItem]:
-        return [t for t in self if t.path == path]
+    def find_by_path(self, path: Path) -> List[Optional[PlaylistItem]]:
+        return [t for t in self if t.path == path] or [None]
 
     def find_by_user_id(self, user_id: int) -> List[PlaylistItem]:
         return [t for t in self
                 if t.track_info and t.track_info.user_id == user_id]
+
+    def trim_by(self, ether: Ether) -> Playlist:
+        return self.trim(time_min=ether.start_time, time_max=ether.stop_time)
 
     def trim(self, time_min: datetime = None, time_max: datetime = None) -> Playlist:
         def trim_():
@@ -91,14 +94,15 @@ class Playlist(list):
     def duration(self) -> int:
         return sum((i.duration for i in self))
 
-    def _recalc_time_start(self, from_=0):
+    def recalc_time_start(self, from_=0):
         try:
+            if self[from_] is self[from_ - 1]:  # don't set t.start_time = t.stop_time
+                raise ValueError
             start_time = self[from_ - 1].stop_time
-        except (IndexError, AttributeError):
+        except (IndexError, AttributeError, ValueError):
             start_time = self.time_start
             from_ = 0
 
         for t in self[from_:]:
             t.start_time = start_time
             start_time = t.stop_time
-

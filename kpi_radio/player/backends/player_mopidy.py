@@ -78,8 +78,9 @@ class PlayerMopidy:
 
     async def current_track_stop_time(self) -> DateTime:
         if track := await self.get_current_track():
-            return DateTime.now() + timedelta(seconds=track.duration) - \
-                   timedelta(milliseconds=await self._CLIENT.playback.get_time_position())
+            start_time = DateTime.now() - timedelta(milliseconds=await self._CLIENT.playback.get_time_position())
+            return start_time + timedelta(seconds=track.duration)
+
         return DateTime.now()
 
     async def get_history(self) -> Iterable[PlaylistItem]:
