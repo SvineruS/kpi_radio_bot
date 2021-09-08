@@ -68,8 +68,7 @@ def _parse_stats(n_days: float = float('inf')) -> Dict[int, Dict[str, Counter]]:
         if rec.moderator_id not in stats:
             stats[rec.moderator_id] = _get_counters(rec.date)
 
-        if rec.is_own():
-            stats[rec.moderator_id]['own'][rec.date] += 1
+        stats[rec.moderator_id]['own'][rec.date] += 1 if rec.is_own() else 0
         stats[rec.moderator_id]['all'][rec.date] += 1
 
     return stats
