@@ -96,7 +96,7 @@ class Playlist(list):
 
     def recalc_time_start(self, from_=0):
         try:
-            if self[from_] is self[from_ - 1]:  # don't set t.start_time = t.stop_time
+            if from_ == 0:
                 raise ValueError
             start_time = self[from_ - 1].stop_time
         except (IndexError, AttributeError, ValueError):
