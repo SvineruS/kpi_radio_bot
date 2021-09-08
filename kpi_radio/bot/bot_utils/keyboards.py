@@ -103,10 +103,10 @@ def admin_unmoderate(ether: Ether, status: str) -> InlineKeyboardMarkup:
 
 
 def playlist_choose_day() -> InlineKeyboardMarkup:
-    today = DateTime.day_num()
+    day_start = Ether.get_closest().day
     btns = []
     for day in range(4):
-        day = (day + today) % 7
+        day = (day + day_start) % 7
         btns.append(_ikb(WEEK_DAYS[day], cb.CBPlaylistDay(day)))
     return InlineKeyboardMarkup(row_width=4).add(*btns)
 
@@ -115,6 +115,7 @@ def playlist_choose_time(day: int) -> InlineKeyboardMarkup:
     btns = [
         _ikb(ETHER_NAMES[time], cb.CBPlaylistTime(day, time))
         for time in ETHER_TIMES[day]
+        if not Ether(day, time).is_already_play_today()
     ] + [_ikb(btns_text.BACK, cb.CBPlaylistBack())]
     return InlineKeyboardMarkup(row_width=3).add(*btns)
 
