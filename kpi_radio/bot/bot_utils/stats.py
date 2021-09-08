@@ -68,8 +68,8 @@ def _parse_stats(n_days: float = float('inf')) -> Dict[int, Dict[str, Counter]]:
         if rec.moderator_id not in stats:
             stats[rec.moderator_id] = _get_counters(rec.date)
 
-        stats[rec.moderator_id]['own'][rec.date] += 1 if rec.is_own() else 0
-        stats[rec.moderator_id]['all'][rec.date] += 1
+        stats[rec.moderator_id]['own'][rec.date.date()] += 1 if rec.is_own() else 0
+        stats[rec.moderator_id]['all'][rec.date.date()] += 1
 
     return stats
 
@@ -100,7 +100,7 @@ def _draw_bars_plot(names: List[str], moderations_all: List[int], moderations_ow
 def _get_counters(start_date):
     counter = Counter()
     for day in _get_all_days_to_today(start_date):
-        counter[day] = 0
+        counter[day.date()] = 0
     return {'all': counter, 'own': counter.copy()}
 
 
