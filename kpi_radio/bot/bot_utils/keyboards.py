@@ -48,7 +48,7 @@ async def order_choose_day() -> InlineKeyboardMarkup:
     today = DateTime.day_num()
     btns = []
 
-    if (ether_now := Ether.now()) and await Broadcast(ether_now).get_free_time() > 5:  # кнопка сейчас если эфир+влазит
+    if (ether_now := Ether.now()) and await Broadcast(ether_now).get_free_time() > 3*60:  # кнопка сейчас если эфир+влазит
         btns.append(_ikb(NEXT_DAYS[-1], cb.CBOrderTime(today, ether_now.num)))
 
     if Ether.get_closest().is_today():  # кнопка сегодня
