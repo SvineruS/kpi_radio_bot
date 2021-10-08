@@ -39,15 +39,12 @@ class Ether:
         tomorrow = (today + 1) % 7
         return cls(tomorrow, 0)
 
-    @cached_property
     def name(self) -> str:
         return ', '.join((others.WEEK_DAYS[self.day], others.ETHER_NAMES[self.num]))
 
-    @cached_property
     def start_time(self) -> datetime:
         return DateTime.strptoday(others.ETHER_TIMES[self.day][self.num][0], '%H:%M')
 
-    @cached_property
     def stop_time(self) -> datetime:
         return DateTime.strptoday(others.ETHER_TIMES[self.day][self.num][1], '%H:%M')
 
