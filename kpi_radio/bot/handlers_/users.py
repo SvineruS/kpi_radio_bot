@@ -16,7 +16,9 @@ async def menu(message: types.Message):
 # region playlist
 
 async def playlist_now(message: types.Message):
-    if not (ether := Ether.now()):
+    ether = Ether.now()
+    if not ether:
+        print(Ether.ALL)
         return await message.answer(texts.PLAYLIST_NOW_NOTHING, reply_markup=kb.WHAT_PLAYING)
 
     playback = [str(i) if i else r'¯\_(ツ)_/¯' for i in await Broadcast(ether).get_playback()]
