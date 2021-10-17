@@ -83,8 +83,8 @@ async def start_scheduler():
     # for every job need to create new object
     for day_num, day_name in enumerate(('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')):
         for ether_num, (ether_time_start, ether_time_stop) in others.ETHER_TIMES[day_num].items():
-            _every(day_name).at(ether_time_start).do(ETHER_BEGIN_EVENT, day_num, ether_num)
             _every(day_name).at(ether_time_stop).do(ETHER_END_EVENT, day_num, ether_num)
+            _every(day_name).at(ether_time_start).do(ETHER_BEGIN_EVENT, day_num, ether_num)
         _every(day_name).at("23:00").do(DAY_END_EVENT, day_num)
 
     while True:
