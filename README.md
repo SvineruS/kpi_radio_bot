@@ -13,3 +13,9 @@
 Автор [@svinerus](https://t.me/svinerus)
 
 Бесплатно Для КПИ
+
+
+### Run
+`cd /opt/kpi_radio_bot`  
+`./start_pulse.sh` - create pulse audio socket (on first launch)  
+`./update.sh` - start/restart  
