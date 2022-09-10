@@ -17,14 +17,19 @@ from .playlist import PlaylistItem
 
 class PlayerMopidy:
     def __init__(self, **kwargs):
-        self._CLIENT = MopidyClient(parse_results=True, **kwargs)
-
-        self._CLIENT.listener.bind("playback_state_changed", playback_state_changed)
-        self._CLIENT.listener.bind("track_playback_started", track_playback_started)
+        self._client_options = kwargs
+        self._CLIENT = None  # will be set when connect is called; coz need to create this in loop where bot runs
 
     async def connect(self):
-        await self._CLIENT.connect()
-        await self._CLIENT.tracklist.set_consume(True)  # треки убираются из треклиста когда играют
+        if self._CLIENT is None:
+            self._CLIENT = MopidyClient(parse_results=True, **self._client_options)
+
+            self._CLIENT.listener.bind("playback_state_changed", playback_state_changed)
+            self._CLIENT.listener.bind("track_playback_started", track_playback_started)
+
+        if not self._CLIENT.is_connected():
+            await self._CLIENT.connect()
+            await self._CLIENT.tracklist.set_consume(True)  # треки убираются из треклиста когда играют
 
     #
 
