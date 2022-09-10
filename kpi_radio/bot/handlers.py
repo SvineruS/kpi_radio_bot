@@ -167,7 +167,7 @@ def register_handlers(dp):
     @dp.callback_query_handler()  # Какая то левая кнопка
     async def query_handler_other(query):
         with suppress(exceptions.InvalidQueryID):
-            await query.answer("Устаревшая кнопка")
+            await query.answer("Застара кнопка")
 
     # endregion other
     # endregion callback
