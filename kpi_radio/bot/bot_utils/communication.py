@@ -43,9 +43,9 @@ async def admin_message(message: Message):
     if reply_to:
         text = ''
     elif message.reply_to_message.audio:
-        text = "На ваш заказ <i>(" + utils.get_audio_name(message.reply_to_message.audio) + ")</i> ответили: \n"
+        text = "На твоє замовлення <i>(" + utils.get_audio_name(message.reply_to_message.audio) + ")</i> відповіли: \n"
     else:
-        text = "На ваше сообщение ответили: \n"
+        text = "На твоє повідомлення відповіли: \n"
 
     await _resend_message(message, user, additional_text=text, reply_to=reply_to)
 
