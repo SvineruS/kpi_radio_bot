@@ -64,7 +64,7 @@ BAD_ORDER_BADWORDS = 'Імовірно, трек містить мати'
 BAD_ORDER_ANIME = 'Імовірно, трек є аніме опенінгом'
 BAD_ORDER_PERFORMER = 'Імовірно, трек є "не форматом радіо"'
 
-HASHTAG_MODERATE = '#отмодерить'
+HASHTAG_MODERATE = '#відмодерити'
 
 HELP = {
     'orders': '''
