@@ -94,9 +94,11 @@ async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.ST
     await query.message.chat.do('record_audio')
     msg_to_user: Optional[str]
     try:
-        if status != kb.STATUS.NOW:
+        if status != kb.STATUS.NOW:  # NOW button ignore exceptions below :)
+            # do some checks and raise DuplicateException or NotEnoughSpaceException if needed
             await _can_approve_order(ether, query.message.audio)
-        ether_ = None if status == kb.STATUS.NOW else ether
+
+        ether_ = Ether.OUT_OF_QUEUE if status == kb.STATUS.NOW else ether
         new_track = await Broadcast(ether_).add_track(track, audio=query.message.audio)
 
     except DuplicateException:

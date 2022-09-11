@@ -29,14 +29,13 @@ class Tracklist(BaseModel):
     def add(cls, track: PlaylistItem, ether: Ether):
         assert track.track_info is not None, "Local playlist need track info!"
         position = cls.select(fn.Max(cls.position)).where(*_e2cmp(ether)).scalar() or 0
-        day, num = (0, 0) if ether is None else (ether.day, ether.num)
 
         cls.insert(
             track_path=track.path.name, track_performer=track.performer,
             track_title=track.title, track_duration=track.duration,
             info_user_id=track.track_info.user_id, info_user_name=track.track_info.user_name,
             info_message_id=track.track_info.moderation_id,
-            ether_day=day, ether_num=num, position=position+1
+            ether_day=ether.day, ether_num=ether.num, position=position+1
         ).on_conflict_replace().execute()
 
     @classmethod
@@ -67,5 +66,4 @@ class Tracklist(BaseModel):
 
 
 def _e2cmp(e: Ether):
-    day, num = (0, 0) if e is None else (e.day, e.num)
-    return Tracklist.ether_day == day, Tracklist.ether_num == num
+    return Tracklist.ether_day == e.day, Tracklist.ether_num == e.num

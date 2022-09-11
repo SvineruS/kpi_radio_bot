@@ -24,19 +24,19 @@ class Broadcast:
         return DBPlaylistProvider(self.ether)
 
     async def get_next_track(self) -> Optional[PlaylistItem]:
-        if r := await DBPlaylistProvider(None).get_next_track():
+        if r := await DBPlaylistProvider(Ether.OUT_OF_QUEUE).get_next_track():
             return r
         elif self.ether:
             return await DBPlaylistProvider(self.ether).get_next_track()
 
     async def get_next_tracklist(self) -> Playlist:
-        pl_outofturn = await DBPlaylistProvider(None).get_playlist()
+        pl_out_of_queue = await DBPlaylistProvider(Ether.OUT_OF_QUEUE).get_playlist()
         if not self.ether:
-            return pl_outofturn
+            return pl_out_of_queue
 
         pl_ether = await self.playlist.get_playlist()
         pl = Playlist(
-            pl_outofturn.trim_by(self.ether) + pl_ether,
+            pl_out_of_queue.trim_by(self.ether) + pl_ether,
             time_start=pl_ether.time_start
         )
         return pl.trim_by(self.ether)
@@ -66,7 +66,7 @@ class Broadcast:
         await self.playlist.remove_track(track.path)
 
     async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
-        return await DBPlaylistProvider(None).remove_track(path) or \
+        return await DBPlaylistProvider(Ether.OUT_OF_QUEUE).remove_track(path) or \
                await self.playlist.remove_track(path)
 
     async def play(self):

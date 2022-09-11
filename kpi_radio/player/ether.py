@@ -11,6 +11,10 @@ from utils import DateTime
 class Ether:
     ALL: List[Ether] = []
 
+    # special ether for orders accepted with "NOW" button
+    # will be play at any time if not empty
+    OUT_OF_QUEUE: Ether
+
     def __new__(cls, day: int, num: int):
         return super().__new__(cls)
 
@@ -76,3 +80,6 @@ class Ether:
 
 
 Ether.ALL = [Ether(day, num) for day, _num in others.ETHER_TIMES.items() for num in _num]
+
+Ether.OUT_OF_QUEUE = Ether(0, 0)
+Ether.OUT_OF_QUEUE.day = -1
