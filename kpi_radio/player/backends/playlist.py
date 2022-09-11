@@ -56,7 +56,7 @@ class PlaylistItem:
         return self
 
     def __str__(self):
-        return f"{self.performer} - {self.title}"
+        return utils.get_audio_name_(self.performer, self.title)
 
 
 class Playlist(list):
