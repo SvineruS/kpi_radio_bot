@@ -50,7 +50,7 @@ async def _get_lyrics(url: str) -> Optional[str]:
         res.raise_for_status()
         html = await res.text()
 
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     return soup.find("div", id="lyrics-root-pin-spacer").get_text("\n")
 
 
