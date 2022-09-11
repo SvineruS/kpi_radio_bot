@@ -51,9 +51,19 @@ async def _get_lyrics(url: str) -> Optional[str]:
         html = await res.text()
 
     soup = BeautifulSoup(html, "html.parser")
-    return soup.find("div", id="lyrics-root-pin-spacer").get_text("\n")
+    lyrics = soup.find("div", id="lyrics-root")
+
+    # remove tags without lyrics
+    for child in list(lyrics.children):  # list for copy
+        if "data-lyrics-container" not in child.attrs:
+            child.decompose()
+    # replace <br> with \n
+    for br in lyrics.find_all("br"):
+        br.string = "\n"
+
+    return lyrics.get_text()
 
 
 if __name__ == '__main__':
     result = LOOP.run_until_complete(search_text("Death Grips - Hacker"))
-    print(result)
+    print(result[1].replace("\\n", "\n"))
