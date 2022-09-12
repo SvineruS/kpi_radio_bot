@@ -63,7 +63,7 @@ ORDER_CAPTION = '{is_now_mark} Нове замовлення: \n' \
 
 ORDER_CAPTION_MODERATED = 'Замовлення: \n' \
                           '{ether_name} \n' \
-                          'від {user_name}<code>\n' \
+                          'від {user_name} \n' \
                           '{status_text} ({moder_name})'
 
 ORDER_IS_NOW_MARK = '❗️', '‼️'
