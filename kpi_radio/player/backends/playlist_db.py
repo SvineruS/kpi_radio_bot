@@ -37,12 +37,13 @@ class DBPlaylistProvider:
         db.Tracklist.clear_ether(self.ether)
 
     async def _get_start_time(self):
-        if not self.ether:
+        if self.ether == Ether.OUT_OF_QUEUE:
             return DateTime.now()
 
         if self.ether.is_now():
             from player import Broadcast
             return await Broadcast.player.current_track_stop_time()
+
         return self.ether.start_time
 
     def internal_to_playlist_item(self, track: db.Tracklist, start_time=None) -> PlaylistItem:

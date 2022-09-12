@@ -17,29 +17,31 @@ class Broadcast:
         self.ether: Optional[Ether] = ether
 
     def is_ether_now(self):
-        return self.ether and self.ether.now()
+        return self.ether != Ether.OUT_OF_QUEUE and self.ether.now()
 
     @property
     def playlist(self) -> DBPlaylistProvider:
         return DBPlaylistProvider(self.ether)
 
+    playlist_out_of_queue = DBPlaylistProvider(Ether.OUT_OF_QUEUE)
+
     async def get_next_track(self) -> Optional[PlaylistItem]:
-        if r := await DBPlaylistProvider(Ether.OUT_OF_QUEUE).get_next_track():
-            return r
-        elif self.ether:
-            return await DBPlaylistProvider(self.ether).get_next_track()
+        """ if out_of_queue playlist is not empty - get from it
+        else - get from self ether playlist """
+        return await self.playlist_out_of_queue.get_next_track() or \
+               await self.playlist.get_next_track()
 
     async def get_next_tracklist(self) -> Playlist:
-        pl_out_of_queue = await DBPlaylistProvider(Ether.OUT_OF_QUEUE).get_playlist()
-        if not self.ether:
+        # merge out_of_queue playlist (only tracks that will be played at current ether) and self.ether playlist
+        pl_out_of_queue = await self.playlist_out_of_queue.get_playlist()
+        if self.ether == Ether.OUT_OF_QUEUE:
             return pl_out_of_queue
-
         pl_ether = await self.playlist.get_playlist()
-        pl = Playlist(
+
+        return Playlist(
             pl_out_of_queue.trim_by(self.ether) + pl_ether,
             time_start=pl_ether.time_start
-        )
-        return pl.trim_by(self.ether)
+        ).trim_by(self.ether)
 
     async def get_playback(self) -> List[Optional[PlaylistItem]]:
         return [
@@ -56,9 +58,10 @@ class Broadcast:
         if not track.path.exists():
             await audio.download(track.path)
         await self.playlist.add_track(track)
+
         if not self.is_ether_now():
-            return track
-        return (await self.get_next_tracklist()).find_by_path(track.path)[0]
+            return track  # no time_start :(
+        return (await self.get_next_tracklist()).find_by_path(track.path)[0]  # have calculated time_start :)
 
     async def remove_track(self, track: PlaylistItem, remove_file=False):
         if remove_file:
@@ -66,7 +69,7 @@ class Broadcast:
         await self.playlist.remove_track(track.path)
 
     async def mark_played(self, path: Path) -> Optional[PlaylistItem]:
-        return await DBPlaylistProvider(Ether.OUT_OF_QUEUE).remove_track(path) or \
+        return await self.playlist_out_of_queue.remove_track(path) or \
                await self.playlist.remove_track(path)
 
     async def play(self):
