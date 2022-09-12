@@ -34,7 +34,7 @@ ORDER_ACCEPTED = 'Твоє замовлення "<b>{0}</b>", ({1}) прийня
 ORDER_ACCEPTED_NOW = 'Твоє замовлення "<b>{0}</b>" прийняте та заграє {1}'
 ORDER_ACCEPTED_TOOLATE = 'Ми хотіли прийняти твоє замовлення "<b>{0}</b>", ({1}), але воно вже не влізе в етер(( ' \
                          'Бажаєш перезамовлення?'
-ORDER_DENIED = 'Твоє замовлення "<b>{0}</b>", ({1}) відхилено('
+ORDER_DENIED = 'Твоє замовлення "<b>{0}</b>" ({1}) відхилено('
 
 # pasted in ORDER_ACCEPTED_NOW.1
 # and after ORDER_CAPTION_MODERATED *for admins*
