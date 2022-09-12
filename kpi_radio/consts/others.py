@@ -71,4 +71,7 @@ ETHER_TIMES_VACATION = {
 
 ETHER_TIMES = ETHER_TIMES_NORMAL
 
+TIMETABLE_SECTIONS = {0: 'Будні', 6: 'Неділя'}
+
+
 PATH_MUSIC = Path('/music') if not IS_TEST_ENV else PATH_ROOT / 'music'

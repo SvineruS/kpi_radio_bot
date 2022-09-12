@@ -13,11 +13,10 @@ from consts import texts, others, config, BOT
 from player import Broadcast, Ether, PlaylistItem
 from utils import utils, db, DateTime
 
-
-NotEnoughSpaceException = type("NotEnoughSpace", (Exception, ), {})
-DuplicateException = type("DuplicateException", (Exception, ), {})
-BannedException = type("BannedException", (Exception, ), {})
-TooManyOrdersException = type("BannedException", (Exception, ), {})
+NotEnoughTimeException = type("NotEnoughTime", (Exception,), {})
+DuplicateException = type("DuplicateException", (Exception,), {})
+BannedException = type("BannedException", (Exception,), {})
+TooManyOrdersException = type("BannedException", (Exception,), {})
 
 
 async def order_make(query: types.CallbackQuery, ether: Ether):
@@ -95,17 +94,17 @@ async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.ST
     msg_to_user: Optional[str]
     try:
         if status != kb.STATUS.NOW:  # NOW button ignore exceptions below :)
-            # do some checks and raise DuplicateException or NotEnoughSpaceException if needed
+            # do some checks and raise DuplicateException or NotEnoughTimeException if needed
             await _can_approve_order(ether, query.message.audio)
 
         ether_ = Ether.OUT_OF_QUEUE if status == kb.STATUS.NOW else ether
         new_track = await Broadcast(ether_).add_track(track, audio=query.message.audio)
 
     except DuplicateException:
-        when_playing = 'Такой же трек уже принят на этот эфир'
+        when_playing = texts.ORDER_ERR_DUPLICATE
         msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
-    except NotEnoughSpaceException:
-        when_playing = 'не успел :('
+    except NotEnoughTimeException:
+        when_playing = texts.ORDER_ERR_NOT_ENOUGH_TIME
         msg_to_user = None
         communication.cache_add(await BOT.send_audio(
             user.id, query.message.audio.file_id, reply_markup=await kb.order_choose_day(),
@@ -113,20 +112,21 @@ async def admin_moderate(query: types.CallbackQuery, ether: Ether, status: kb.ST
         )
     else:
         if status == kb.STATUS.NOW:
-            when_playing = 'прямо сейчас!'
-            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
+            when_playing = texts.ORDER_WILL_PLAY_UPNEXT
+            msg_to_user = texts.ORDER_ACCEPTED_NOW.format(track, when_playing)
         elif ether.is_now():
             minutes_left = round((new_track.start_time - DateTime.now()).seconds / 60)
-            when_playing = f'через {minutes_left} ' + utils.case_by_num(minutes_left, 'минуту', 'минуты', 'минут')
-            msg_to_user = texts.ORDER_ACCEPTED_UPNEXT.format(track, when_playing)
+            when_playing = texts.ORDER_WILL_PLAY_IN.format(minutes_left, utils.case_by_num(minutes_left, *texts.MINUTES))
+            msg_to_user = texts.ORDER_ACCEPTED_NOW.format(track, when_playing)
         else:
-            when_playing = 'Заиграет когда надо'
+            when_playing = texts.ORDER_WILL_PLAY_SOMETIME
             msg_to_user = texts.ORDER_ACCEPTED.format(track, ether.name)
 
     if msg_to_user:
         communication.cache_add(await BOT.send_message(user.id, msg_to_user), query.message)
     with suppress(exceptions.MessageNotModified):
-        await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing, reply_markup=kb.admin_unmoderate(ether, status))
+        await query.message.edit_caption(admin_text + '\n🕑 ' + when_playing,
+                                         reply_markup=kb.admin_unmoderate(ether, status))
 
 
 async def admin_unmoderate(query: types.CallbackQuery, ether: Ether, status: kb.STATUS):
@@ -163,45 +163,44 @@ async def _can_approve_order(ether: Ether, audio: types.Audio):
         raise DuplicateException()
 
     if await br.get_free_time(pl) < audio.duration:
-        raise NotEnoughSpaceException()
+        raise NotEnoughTimeException()
 
 
 async def _gen_order_caption(ether: Ether, user: types.User,
                              audio_name: str = None, status: kb.STATUS = None, moder: types.User = None) -> str:
     is_now = ether.is_now()
     user_name = utils.get_user_name(user) + ' #' + id_to_hashtag(user.id)
-    text_datetime = ether.name + (' (сейчас!)' if is_now else '')
+    text_datetime = ether.name + texts.ORDER_IS_NOW_TEXT[is_now]
 
     if not status:  # Неотмодеренный заказ
         assert audio_name is not None
-        is_now_mark = '‼️' if is_now else '❗️'
-        bad_words = await _get_bad_words_text(audio_name)
-        is_anime = '🅰️' if await music.check.is_anime(audio_name) else ''
-
-        return f'{is_now_mark} Новый заказ: \n' \
-               f'{text_datetime} \n' \
-               f'от {user_name}<code>   </code>{texts.HASHTAG_MODERATE}\n' \
-               f'{is_anime}{bad_words}'
+        return texts.ORDER_CAPTION.format(
+            is_now_mark=texts.ORDER_IS_NOW_MARK[is_now],
+            ether_name=text_datetime,
+            user_name=user_name,
+            is_anime_mark=texts.ORDER_IS_ANIME_MARK[await music.check.is_anime(audio_name)],
+            bad_words=await _get_bad_words_text(audio_name)
+        )
     else:
         assert moder is not None
-        status_text = "✅Принят" if status != kb.STATUS.REJECT else "❌Отклонен"
-        moder_name = utils.get_user_name(moder)
-
-        return f'Заказ: \n' \
-               f'{text_datetime}\n' \
-               f'от {user_name}\n' \
-               f'{status_text} ({moder_name})'
+        return texts.ORDER_CAPTION_MODERATED.format(
+            ether_name=text_datetime,
+            user_name=user_name,
+            status_text=texts.ORDER_STATUS[status != kb.STATUS.REJECT],
+            moder_name=utils.get_user_name(moder)
+        )
 
 
 async def _get_bad_words_text(audio_name: str) -> str:
     if not (res := await music.check.get_bad_words(audio_name)):
-        return ''
-
-    title, b_w = res
+        return texts.ORDER_BAD_WORDS_MARK[0]
+    title, bad_words = res
     title = f'<a href="{_get_gettext_link(audio_name)}">{title}</a>'
-    if not b_w:
-        return "🆗" + title
-    return f"⚠ {title}: " + ', '.join(b_w)
+
+    if not bad_words:
+        return texts.ORDER_BAD_WORDS_MARK[1] + title
+
+    return texts.ORDER_BAD_WORDS_MARK[2] + f" {title}: " + ', '.join(bad_words)
 
 
 def _get_gettext_link(audio_name: str) -> str:

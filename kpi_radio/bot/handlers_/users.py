@@ -53,17 +53,19 @@ async def playlist_show(query: types.CallbackQuery, ether: Ether):
 
 async def timetable(message: types.Message):
     text = ''
-    for day_num, day_name in {0: 'Будни', 6: 'Воскресенье'}.items():
+    for day_num, day_name in others.TIMETABLE_SECTIONS.items():
         text += f"{day_name} \n"
         for break_num, (start, stop) in others.ETHER_TIMES[day_num].items():
-            text += f"   {start} - {stop}   {others.ETHER_NAMES[break_num]}\n"
+            text += texts.TIMETABLE_ITEM.format(start=start, stop=stop, ether_name=others.ETHER_NAMES[break_num])
 
-    br = Ether.get_closest()
-    if br.is_now():
-        text += "\nЭфир прямо сейчас!"
+    closest_ether = Ether.get_closest()
+    if closest_ether.is_now():
+        text += "\n" + texts.TIMETABLE_ETHER_NOW
     else:
-        text += f"\nБлижайший эфир - {'сегодня' if br.is_today() else others.WEEK_DAYS[br.day]}," \
-                f" {br.start_time.strftime('%H:%M')}"
+        text += "\n" + texts.TIMETABLE_ETHER_CLOSEST.format(
+            when_day=others.NEXT_DAYS[0] if closest_ether.is_today() else others.WEEK_DAYS[closest_ether.day],
+            when_time=closest_ether.start_time.strftime('%H:%M')
+        )
 
     await message.answer(text)
 
@@ -76,9 +78,7 @@ async def help_change(query: types.CallbackQuery, key: str):
 async def notify_switch(message: types.Message):
     status = Users.notification_get(message.from_user.id)
     Users.notification_set(message.from_user.id, not status)
-    text = "Уведомления <b>включены</b> \n /notify - выключить" if status else \
-        "Уведомления <b>выключены</b> \n /notify - включить"
-    await message.answer(text)
+    await message.answer(texts.ORDER_NOTIFY_STATUS[status])
 
 
 def add_in_db(message: types.Message):
@@ -91,9 +91,9 @@ def add_in_db(message: types.Message):
 async def _get_playlist_text(ether: Ether) -> str:
     name = f"<b>{ether.name}</b>\n"
     if not (pl := await Broadcast(ether).get_next_tracklist()):
-        return name + "❗️Еще ничего не заказали"
+        return name + texts.PLAYLIST_EMPTY
 
     return name + '\n'.join([
-        f"🕖<b>{track.start_time.strftime('%H:%M:%S')}</b> {track}"
+        texts.PLAYLIST_ITEM.format(start_time=track.start_time.strftime('%H:%M:%S'), track_name=str(track))
         for track in pl[:10]
     ]) + ('\n<pre>   ...</pre>' if len(pl) > 10 else '')

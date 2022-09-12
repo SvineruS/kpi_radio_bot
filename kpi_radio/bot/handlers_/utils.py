@@ -41,4 +41,4 @@ async def perezaklad(ether: Ether):
 
 
 async def send_startup_message():
-    await BOT.send_message(config.ADMINS_CHAT_ID, "Ребутнулся!")
+    await BOT.send_message(config.ADMINS_CHAT_ID, texts.STARTUP_MESSAGE)

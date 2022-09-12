@@ -4,6 +4,7 @@ from typing import Tuple, Optional
 from aiogram.types import Message
 
 from consts.config import BOT, ADMINS_CHAT_ID
+from consts import texts
 from utils import utils, lru
 from .id_to_hashtag import id_to_hashtag
 
@@ -28,7 +29,8 @@ async def user_message(message: Message):
     if message.reply_to_message and cache_is_set(message.reply_to_message.message_id):
         _, reply_to = cache_get(message.reply_to_message.message_id)
 
-    text = f"От {utils.get_user_name(message.from_user)} #{id_to_hashtag(message.from_user.id)}: \n"
+    text = texts.COMMUNICATION_RECEIVE.format(user=utils.get_user_name(message.from_user),
+                                              hashtag=id_to_hashtag(message.from_user.id))
     await _resend_message(message, ADMINS_CHAT_ID, additional_text=text, reply_to=reply_to)
 
 
@@ -43,9 +45,9 @@ async def admin_message(message: Message):
     if reply_to:
         text = ''
     elif message.reply_to_message.audio:
-        text = "На твоє замовлення <i>(" + utils.get_audio_name(message.reply_to_message.audio) + ")</i> відповіли: \n"
+        text = texts.COMMUNICATION_REPLY_TO_AUDIO.format(utils.get_audio_name(message.reply_to_message.audio))
     else:
-        text = "На твоє повідомлення відповіли: \n"
+        text = texts.COMMUNICATION_REPLY_TO_TEXT
 
     await _resend_message(message, user, additional_text=text, reply_to=reply_to)
 

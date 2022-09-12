@@ -113,7 +113,7 @@ def _get_ban_time_and_reason_from_message(message: types.Message) -> Tuple[int, 
     if len(cmd) >= 1 and cmd[0].isdigit():
         ban_time = int(cmd[0])
     if len(cmd) >= 2:
-        reason = f" Бан по причине: <i>{cmd[1]}</i>"
+        reason = texts.BAN_REASON.format(cmd[1])
 
     # big numbers can produce overflow errors in datetime methods
     ban_time = min(ban_time, 44640)
